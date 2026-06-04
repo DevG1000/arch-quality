@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# arch-quality — 跨项目架构评估启动器
+# Works in git-bash, WSL, MSYS, Linux, macOS
+
+# Force Python I/O to UTF-8 (Windows + Unix)
+export PYTHONIOENCODING=utf-8
+export PYTHONUTF8=1
+
+# Try to set locale to UTF-8 (no-op if locale not installed)
+if command -v locale >/dev/null 2>&1; then
+    export LC_ALL=C.UTF-8 2>/dev/null || export LC_ALL=en_US.UTF-8 2>/dev/null || true
+    export LANG=C.UTF-8 2>/dev/null || export LANG=en_US.UTF-8 2>/dev/null || true
+fi
+
+exec python -m arch_quality "$@"
