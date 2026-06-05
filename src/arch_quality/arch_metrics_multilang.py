@@ -187,6 +187,25 @@ class MultilangMetrics:
                     if target in self.graph.nodes:
                         self.graph.add_edge(node_id, target)
 
+            # ── Fortran: use module ──
+            elif f["ext"] in (".f90", ".f95", ".f03", ".f08"):
+                for m in re.finditer(r'^\s*use\s+(?:,\s*intrinsic\s*::\s*)?(\w+)', content, re.MULTILINE):
+                    mod_name = m.group(1).lower()
+                    for other in self.index.by_lang("fortran"):
+                        other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
+                        if other_base == mod_name:
+                            self.graph.add_edge(node_id, other["path"])
+                            break
+            elif f["ext"] == ".f":
+                # F77 has no module system; track via common blocks and subprogram calls
+                for m in re.finditer(r'^\s*call\s+(\w+)', content, re.MULTILINE):
+                    called_name = m.group(1).lower()
+                    for other in self.index.by_lang("fortran"):
+                        other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
+                        if other_base == called_name:
+                            self.graph.add_edge(node_id, other["path"])
+                            break
+
             # ── SWIG: %include → C++ 头文件 ──
             elif f["lang"] == "swig":
                 for m in re.finditer(r'%include\s+[<"](.+?)[>"]', content):
@@ -729,6 +748,35 @@ class MultilangMetrics:
                 "detail": f"发现 {len(cycles)} 个跨语言循环依赖",
             })
 
+        # MLR-001b: 同语言模块级循环依赖检测
+        from arch_quality.arch_python_ast import is_third_party_path
+        for lang in self.graph.languages:
+            same_lang_cycles = self.graph.detect_same_lang_cycles(lang=lang)
+            if not same_lang_cycles:
+                continue
+            non_tp_cycles = []
+            tp_cycles = 0
+            for cycle in same_lang_cycles:
+                if any(is_third_party_path(n) for n in cycle):
+                    tp_cycles += 1
+                else:
+                    non_tp_cycles.append(cycle)
+            if tp_cycles:
+                mlr_results.append({
+                    "rule": "MLR-001", "name": f"{lang}模块级循环依赖（第三方，已豁免）",
+                    "severity": "INFO",
+                    "count": tp_cycles,
+                    "detail": f"发现 {tp_cycles} 个 {lang} 模块级循环依赖（第三方代码，已豁免）",
+                })
+            if non_tp_cycles:
+                cycle_samples = [" → ".join(c[:5]) for c in non_tp_cycles[:3]]
+                mlr_results.append({
+                    "rule": "MLR-001", "name": f"{lang}模块级循环依赖",
+                    "severity": "MEDIUM",
+                    "count": len(non_tp_cycles),
+                    "detail": f"发现 {len(non_tp_cycles)} 个 {lang} 模块级循环依赖: {cycle_samples}",
+                })
+
         # MLR-002: 绑定层接口缺失
         if self.index.by_lang("cpp"):
             cpp_files = self.index.by_lang("cpp")
@@ -805,6 +853,40 @@ class MultilangMetrics:
                 "count": 1,
                 "detail": f"{fpath}: 使用了 ctypes.CDLL 直接访问内部符号",
             })
+
+        # MLR-004b: Tcl 命名空间直接访问内部变量
+        _TCL_ALLOWED_NS = frozenset([
+            "tcl", "tk", "msgcat", "http", "cookie", "ftp", "smtp",
+            "string", "list", "array", "dict", "file", "chan", "clock",
+            "info", "interp", "namespace", "package", "platform", "registry",
+            "socket", "console", "dde", "regexp", "pid",
+        ])
+        _TCL_INTERNAL_RE = re.compile(r'(::[a-z_]\w*)::([$\w]+)', re.MULTILINE)
+        for f in self.index.files:
+            if f["lang"] != "tcl":
+                continue
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+            violations = []
+            for m in _TCL_INTERNAL_RE.finditer(content):
+                ns = m.group(1).lstrip(":")
+                if ns not in _TCL_ALLOWED_NS and not ns.startswith("tk"):
+                    var = m.group(2)
+                    if not var.startswith("__") and var not in ("create", "delete", "eval", "origin", "parent", "qualifiers", "tail", "which", "current", "ensemble", "export", "forget", "import", "inscope", "unknown"):
+                        line_num = content[:m.start()].count('\n') + 1
+                        violations.append((ns, var, line_num))
+            if violations:
+                from arch_quality.arch_python_ast import is_third_party_path
+                is_tp = is_third_party_path(f["path"])
+                unique_ns = list(dict.fromkeys(ns for ns, _, _ in violations))[:5]
+                mlr_results.append({
+                    "rule": "MLR-004", "name": "Tcl脚本直接访问内部",
+                    "severity": "INFO" if is_tp else "MEDIUM",
+                    "count": len(violations),
+                    "detail": f"{f['path']}: {len(violations)} 处直接访问 Tcl 命名空间内部变量: {unique_ns}",
+                })
 
         # MLR-005: 跨语言回调深度超标
         depth_score, depth_info = self.calc_call_depth()
@@ -973,9 +1055,10 @@ class MultilangMetrics:
                     "detail": f"{f['path']}: 循环内存在约 {loop_calls} 处跨语言调用，建议批量化",
                 })
 
-        # MLR-012: Fortran缺少ISO_C_BINDING (v2 — 第三方/固定格式降级)
+        # MLR-012: Fortran缺少ISO_C_BINDING (v3 — 第三方/固定格式/同语言降级)
         from arch_quality.arch_python_ast import is_third_party_path
-        for f in self.index.by_lang("fortran"):
+        fortran_files = self.index.by_lang("fortran")
+        for f in fortran_files:
             try:
                 content = read_text_smart(f["abs_path"])
             except Exception:
@@ -983,15 +1066,22 @@ class MultilangMetrics:
             if "iso_c_binding" not in content.lower() and re.search(r"subroutine|function", content):
                 is_tp = is_third_party_path(f["path"])
                 is_f77 = f["ext"] == ".f"
+                has_cross_lang_edge = (
+                    any(f["path"] == s for s, d in self.graph.cross_edges) or
+                    any(f["path"] == d for s, d in self.graph.cross_edges)
+                )
                 if is_tp:
                     severity = "INFO"
                     detail_suffix = "第三方代码，建议标注 @third_party 豁免"
                 elif is_f77:
                     severity = "INFO"
                     detail_suffix = "Fortran 77 固定格式不支持 iso_c_binding，确认未被 C 直接调用后可豁免"
+                elif not has_cross_lang_edge:
+                    severity = "INFO"
+                    detail_suffix = "同语言内部调用，不需要 iso_c_binding"
                 else:
                     severity = "MEDIUM"
-                    detail_suffix = "跨语言调用可能不稳定"
+                    detail_suffix = "被 C/C++ 直接调用，跨语言接口可能不稳定"
                 mlr_results.append({
                     "rule": "MLR-012", "name": "Fortran缺少ISO_C_BINDING",
                     "severity": severity,

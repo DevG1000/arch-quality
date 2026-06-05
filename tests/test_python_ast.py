@@ -439,3 +439,85 @@ class TestSWIGParsing(unittest.TestCase):
         self.assertEqual(swig_files[0]["ext"], ".i")
         os.unlink(swig_file)
         os.rmdir(tmpdir)
+
+
+class TestMLR001SameLangCycles(unittest.TestCase):
+
+    def test_fortran_use_module_detection(self):
+        import re
+        content = "use HeatSolve\nuse StatCurrentSolve\nimplicit none\n"
+        matches = re.findall(r'^\s*use\s+(?:,\s*intrinsic\s*::\s*)?(\w+)', content, re.MULTILINE)
+        self.assertIn("HeatSolve", matches)
+        self.assertIn("StatCurrentSolve", matches)
+
+    def test_same_lang_cycle_detection(self):
+        from arch_quality.arch_core import DepGraph
+        g = DepGraph()
+        g.add_node("a.f90", "fortran", "a.f90")
+        g.add_node("b.f90", "fortran", "b.f90")
+        g.add_node("c.f90", "fortran", "c.f90")
+        g.add_edge("a.f90", "b.f90")
+        g.add_edge("b.f90", "c.f90")
+        g.add_edge("c.f90", "a.f90")
+        cycles = g.detect_same_lang_cycles(lang="fortran")
+        self.assertTrue(len(cycles) > 0)
+
+    def test_no_same_lang_cycle(self):
+        from arch_quality.arch_core import DepGraph
+        g = DepGraph()
+        g.add_node("a.f90", "fortran", "a.f90")
+        g.add_node("b.f90", "fortran", "b.f90")
+        g.add_edge("a.f90", "b.f90")
+        cycles = g.detect_same_lang_cycles(lang="fortran")
+        self.assertEqual(len(cycles), 0)
+
+
+class TestMLR004TclDetection(unittest.TestCase):
+
+    def test_tcl_internal_access_pattern(self):
+        import re
+        content = 'set mode $::bu::global_debug_mode\n::bu::log_file $::bu::log_name\nset x [::my_ns::do_stuff]'
+        pattern = re.compile(r'(::[a-z_]\w*)::([$\w]+)', re.MULTILINE)
+        matches = pattern.findall(content)
+        ns_list = [ns for ns, var in matches]
+        self.assertIn("::bu", ns_list)
+        self.assertIn("::my_ns", ns_list)
+
+    def test_tcl_allowed_namespaces(self):
+        import re
+        _TCL_ALLOWED_NS = frozenset([
+            "tcl", "tk", "msgcat", "http", "string", "list", "array", "dict",
+            "file", "chan", "clock", "info", "interp", "namespace", "package",
+        ])
+        content = 'set x $::tcl::PatchLevel\nset y $::bu::log_name'
+        pattern = re.compile(r'(::[a-z_]\w*)::([$\w]+)', re.MULTILINE)
+        matches = pattern.findall(content)
+        violations = [(ns, var) for ns, var in matches if ns.lstrip(":") not in _TCL_ALLOWED_NS]
+        self.assertEqual(len(violations), 1)
+        self.assertTrue(violations[0][0].endswith("bu"))
+
+
+class TestMLR012CrossLangCheck(unittest.TestCase):
+
+    def test_fortran_no_cross_edge_info(self):
+        from arch_quality.arch_core import DepGraph
+        g = DepGraph()
+        g.add_node("solver.f90", "fortran", "solver.f90")
+        g.add_node("helper.f90", "fortran", "helper.f90")
+        g.add_edge("solver.f90", "helper.f90")
+        has_edge = (
+            any("solver.f90" == s for s, d in g.cross_edges) or
+            any("solver.f90" == d for s, d in g.cross_edges)
+        )
+        self.assertFalse(has_edge)
+
+    def test_fortran_with_cross_edge_medium(self):
+        from arch_quality.arch_core import DepGraph
+        g = DepGraph()
+        g.add_node("wrapper.cpp", "cpp", "wrapper.cpp")
+        g.add_node("solver.f90", "fortran", "solver.f90")
+        g.add_edge("wrapper.cpp", "solver.f90")
+        has_edge = (
+            any("solver.f90" == d for s, d in g.cross_edges)
+        )
+        self.assertTrue(has_edge)

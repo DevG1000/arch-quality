@@ -197,7 +197,6 @@ class DepGraph:
             path_set = set(path)
             for neighbor in adj.get(node, []):
                 if neighbor in path_set:
-                    # 发现循环
                     cycle_start = path.index(neighbor)
                     cycles.append(path[cycle_start:] + [neighbor])
                 elif neighbor not in visited:
@@ -207,6 +206,47 @@ class DepGraph:
         for node in list(adj.keys()):
             if node not in visited:
                 dfs(node, [node])
+        return cycles
+
+    def detect_same_lang_cycles(self, lang=None):
+        """检测同语言内模块级循环依赖
+
+        参数:
+            lang: 指定语言（如 'fortran'），为None时检测所有语言的内部循环
+
+        返回:
+            循环列表，每个循环为 [node_id, ..., node_id] 路径
+        """
+        lang_nodes = set()
+        if lang:
+            lang_nodes = {n for n, info in self.nodes.items() if info.get("lang") == lang}
+        else:
+            lang_nodes = set(self.nodes.keys())
+
+        if not lang_nodes or len(self.edges) < 2:
+            return []
+
+        adj = defaultdict(set)
+        for s, d in self.edges:
+            if s in lang_nodes and d in lang_nodes:
+                adj[s].add(d)
+
+        cycles = []
+        visited_global = set()
+
+        def _dfs(node, path, path_set):
+            visited_global.add(node)
+            for neighbor in sorted(adj.get(node, set())):
+                if neighbor in path_set:
+                    cycle_start = path.index(neighbor)
+                    cycles.append(path[cycle_start:] + [neighbor])
+                elif neighbor not in visited_global:
+                    _dfs(neighbor, path + [neighbor], path_set | {neighbor})
+
+        for node in sorted(lang_nodes):
+            if node not in visited_global:
+                _dfs(node, [node], {node})
+
         return cycles
 
 
