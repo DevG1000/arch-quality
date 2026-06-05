@@ -295,5 +295,58 @@ class TestMLR012Context(unittest.TestCase):
         self.assertNotEqual("f95", "f")
 
 
+class TestMLR005CallbackChain(unittest.TestCase):
+
+    def test_pybind11_callback_detection(self):
+        cpp_code = (
+            '#include <pybind11/pybind11.h>\n'
+            'PYBIND11_MODULE(foo, m) {\n'
+            '  m.def("solve", &solve);\n'
+            '}\n'
+            'void solve() {\n'
+            '  py::function cb = py::reinterpret_borrow<py::function>(m.attr("callback"));\n'
+            '  cb();\n'
+            '}\n'
+        )
+        self.assertTrue(has_pybind11_context(cpp_code))
+
+    def test_python_callback_registration(self):
+        import re
+        py_code = (
+            'solver = FemSolver()\n'
+            'solver.set_callback(material_callback)\n'
+            'solver.solve()\n'
+        )
+        callback_reg_patterns = [
+            r'set(?:_?)(?:callback|handler|listener|delegate|slot|notify)',
+            r'register(?:_?)(?:callback|handler|listener)',
+        ]
+        has_callback = any(re.search(p, py_code) for p in callback_reg_patterns)
+        self.assertTrue(has_callback)
+
+    def test_cpp_python_callback_pattern(self):
+        import re
+        cpp_code = (
+            'PyObject* result = PyObject_CallObject(callback, NULL);\n'
+            'PyGILState_STATE gstate = PyGILState_Ensure();\n'
+        )
+        self.assertTrue(bool(re.search(
+            r'Py(?:thon)?_(?:Run|Call|Eval|Eval_Call|Object)|'
+            r'py::(?:call|cast|function)|'
+            r'PyObject_CallObject',
+            cpp_code
+        )))
+
+    def test_third_party_filter_mlr006(self):
+        hotspots_all = [
+            "src/3rdParty/Clipper2/clipper.engine.h",
+            "src/Mod/CAM/libarea/pyarea.cpp",
+            "src/vendor/openssl/crypto.h",
+            "src/App/Application.cpp",
+        ]
+        hotspots_non_tp = [n for n in hotspots_all if not is_third_party_path(n)]
+        self.assertEqual(hotspots_non_tp, ["src/Mod/CAM/libarea/pyarea.cpp", "src/App/Application.cpp"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

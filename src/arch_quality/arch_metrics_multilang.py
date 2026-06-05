@@ -340,23 +340,123 @@ class MultilangMetrics:
     def calc_call_depth(self) -> tuple:
         """维度3: 跨语言回调深度
 
-        算法见 skill: multilang-dependency.md → 跨语言回调深度
+        通过三条路径检测回调深度:
+        1. 跨语言边BFS最大深度（原有逻辑）
+        2. 静态回调链检测: Py→C++→Py→C++ 模式
+        3. pybind11回调注册检测: .def(py::init, py::callback) 模式
+
+        返回 (score, {"max_depth": D, "callback_chains": [...], "max_depth_path": [...]})
         """
         if not self.graph.cross_edges:
-            return 100.0, {"max_depth": 0}
+            return 100.0, {"max_depth": 0, "callback_chains": [], "max_depth_path": []}
 
+        # ── 路径 1: BFS 跨语言最大深度 ──
         max_depth = 0
+        max_depth_path = []
         for node_id in self.graph.nodes:
             visited = {node_id}
-            queue = [(node_id, 0)]
+            queue = [(node_id, 0, [node_id])]
             while queue:
-                node, depth = queue.pop(0)
+                node, depth, path = queue.pop(0)
                 if depth > max_depth:
                     max_depth = depth
+                    max_depth_path = path[:]
                 for neighbor in self.graph.cross_successors(node):
                     if neighbor not in visited:
                         visited.add(neighbor)
-                        queue.append((neighbor, depth + 1))
+                        queue.append((neighbor, depth + 1, path + [neighbor]))
+
+        # ── 路径 2: 静态回调链检测 (Py→C++→Py→C++) ──
+        callback_chains = []
+        py_files = {f["path"]: f for f in self.index.by_lang("python")}
+        cpp_files = {f["path"]: f for f in self.index.files if f["ext"] in (".cpp", ".cxx", ".cc")}
+
+        for py_path, py_info in py_files.items():
+            try:
+                py_content = read_text_smart(py_info["abs_path"])
+            except Exception:
+                continue
+
+            # 检测回调注册模式: set_callback, register_callback, etc.
+            callback_reg_patterns = [
+                r'set(?:_?)(?:callback|handler|listener|delegate|slot|notify)',
+                r'register(?:_?)(?:callback|handler|listener)',
+                r'\.connect\s*\(',
+                r'signal\s*\.\s*connect\s*\(',
+                r'py::init\s*<',
+                r'subprocess\.(?:run|call|Popen|check_output)',
+            ]
+            has_callback_reg = any(re.search(p, py_content) for p in callback_reg_patterns)
+            if not has_callback_reg:
+                continue
+
+            # 找到此 Python 文件的跨语言后继（C++ 文件）
+            cpp_targets = self.graph.cross_successors(py_path)
+            for cpp_path in cpp_targets:
+                if cpp_path not in cpp_files:
+                    continue
+                # 检查 C++ 文件是否回调 Python
+                try:
+                    cpp_content = read_text_smart(cpp_files[cpp_path]["abs_path"])
+                except Exception:
+                    continue
+
+                cpp_cbs_python = bool(re.search(
+                    r'Py(?:thon)?_(?:Run|Call|Eval|Eval_Call|Object)|'
+                    r'py::(?:call|cast|function)|'
+                    r'PyErr_|PyImport_|PyObject_Call|'
+                    r'PyGILState_|Py_BEGIN_ALLOW_THREADS',
+                    cpp_content
+                ))
+                if not cpp_cbs_python:
+                    continue
+
+                # 找到 C++ 文件回调的 Python 文件
+                py_targets = self.graph.cross_successors(cpp_path)
+                chain_depth_3_paths = []
+                for py2_path in py_targets:
+                    if py2_path in py_files and py2_path != py_path:
+                        chain_depth_3_paths.append(py2_path)
+
+                if cpp_cbs_python:
+                    chain = f"{py_path} [Py] → {cpp_path} [C++]"
+                    if chain_depth_3_paths:
+                        for py2 in chain_depth_3_paths[:3]:
+                            full_chain = chain + f" → {py2} [Py]"
+                            callback_chains.append(full_chain)
+                            max_depth = max(max_depth, 3)
+                    else:
+                        callback_chains.append(chain + " → [callback to Py]")
+                        max_depth = max(max_depth, 2)
+
+        # ── 路径 3: pybind11 回调检测 ──
+        for f in self.index.files:
+            if f["ext"] not in (".cpp", ".cxx", ".cc"):
+                continue
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+            has_pybind_callback = bool(re.search(
+                r'py::(?:function|override|cast)|'
+                r'PyEval_CallObject|PyObject_CallObject|'
+                r'PyRun_SimpleString|PyRun_String|'
+                r'PyGILState_Ensure|Py_BEGIN_ALLOW_THREADS',
+                content
+            ))
+            if has_pybind_callback:
+                has_gil_release = bool(re.search(
+                    r'py::gil_scoped_release|gil_scoped_release|Py_BEGIN_ALLOW_THREADS',
+                    content
+                ))
+                if not has_gil_release:
+                    py_succs = self.graph.cross_predecessors(f["path"])
+                    py_succs = [p for p in py_succs if p in py_files]
+                    if py_succs:
+                        chain = f"{py_succs[0]} [Py] → {f['path']} [C++] → [callback to Py]"
+                        if chain not in callback_chains:
+                            callback_chains.append(chain)
+                            max_depth = max(max_depth, 2)
 
         D = max_depth
         if D <= 1:
@@ -367,7 +467,11 @@ class MultilangMetrics:
             score = 50
         else:
             score = 20
-        return round(score, 2), {"max_depth": D}
+        return round(score, 2), {
+            "max_depth": D,
+            "callback_chains": callback_chains[:10],
+            "max_depth_path": max_depth_path[:10] if max_depth_path else [],
+        }
 
     def calc_binding_consistency(self) -> tuple:
         """维度4: 绑定层接口一致性
@@ -562,16 +666,38 @@ class MultilangMetrics:
         # MLR-005: 跨语言回调深度超标
         depth_score, depth_info = self.calc_call_depth()
         if depth_info.get("max_depth", 0) >= 3:
+            chains = depth_info.get("callback_chains", [])
+            detail = f"最大跨语言回调深度 = {depth_info['max_depth']}，建议 ≤ 2"
+            if chains:
+                detail += "；回调链: " + "; ".join(chains[:5])
             mlr_results.append({
                 "rule": "MLR-005", "name": "跨语言回调深度超标",
                 "severity": "MEDIUM",
-                "count": 1,
-                "detail": f"最大跨语言回调深度 = {depth_info['max_depth']}，建议 ≤ 2",
+                "count": len(chains) if chains else 1,
+                "detail": detail,
+            })
+        elif depth_info.get("max_depth", 0) == 2 and depth_info.get("callback_chains"):
+            chains = depth_info.get("callback_chains", [])
+            mlr_results.append({
+                "rule": "MLR-005", "name": "跨语言回调深度警告",
+                "severity": "LOW",
+                "count": len(chains),
+                "detail": f"存在 {len(chains)} 条深度 2 回调链: " + "; ".join(chains[:5]),
             })
 
         # MLR-006: 热点模块
+        from arch_quality.arch_python_ast import is_third_party_path
         intensity_score, intensity_scores = self.calc_coupling_intensity()
-        hotspots = [n for n, s in intensity_scores.items() if s < 60]
+        hotspots_all = [n for n, s in intensity_scores.items() if s < 60]
+        hotspots_tp = [n for n in hotspots_all if is_third_party_path(n)]
+        hotspots = [n for n in hotspots_all if not is_third_party_path(n)]
+        if hotspots_tp:
+            mlr_results.append({
+                "rule": "MLR-006", "name": "热点模块（第三方，已豁免）",
+                "severity": "INFO",
+                "count": len(hotspots_tp),
+                "detail": f"{len(hotspots_tp)} 个第三方模块跨语言调用强度得分 < 60（已豁免）",
+            })
         if hotspots:
             is_single = self.graph.is_single_language
             rule_name = "高耦合模块（模块依赖过多）" if is_single else "热点模块（高频跨语言调用）"
