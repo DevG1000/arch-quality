@@ -14,7 +14,7 @@ ESC = "\033"
 
 
 def _severity_icon(s: str) -> str:
-    return {"HIGH": "🔴", "MEDIUM": "🟠", "LOW": "🟢", "": "⚪"}.get(s, "⚪")
+    return {"HIGH": "🔴", "MEDIUM": "🟠", "LOW": "🟢", "INFO": "ℹ️", "": "⚪"}.get(s, "⚪")
 
 
 def _score_grade(score: float) -> str:
@@ -332,6 +332,7 @@ class ReportGenerator:
         high = [v for v in violations if v.get("severity") == "HIGH"]
         med = [v for v in violations if v.get("severity") == "MEDIUM"]
         low = [v for v in violations if v.get("severity") == "LOW"]
+        info = [v for v in violations if v.get("severity") == "INFO"]
 
         lines = []
         for v in violations:
@@ -339,9 +340,12 @@ class ReportGenerator:
             icon = _severity_icon(sev)
             lines.append(f"- {icon} **{v['rule']}** ({sev}) {v['name']}: {v['detail']}")
 
+        summary = f"共 {len(violations)} 项 — {len(high)} HIGH, {len(med)} MEDIUM, {len(low)} LOW"
+        if info:
+            summary += f", {len(info)} INFO"
         return (
             "## 六、MLR 规则违反\n\n"
-            f"共 {len(violations)} 项 — {len(high)} HIGH, {len(med)} MEDIUM, {len(low)} LOW\n\n"
+            f"{summary}\n\n"
             + "\n".join(lines)
         )
 

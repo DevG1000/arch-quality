@@ -16,6 +16,9 @@ arch_python_ast.py — Python 端 pybind11 调用 AST 解析器
 """
 
 import ast
+import io
+import re
+import tokenize
 from pathlib import Path
 
 from arch_quality.arch_core import read_text_smart
@@ -235,6 +238,113 @@ class Pybind11CallExtractor(ast.NodeVisitor):
     def resolve_pending_calls(self):
         """处理跨语句的延迟解析（占位，当前直接调用 _record_call）"""
         pass
+
+
+_MALLOC_TOKENS_RE = re.compile(r'^(malloc|calloc|realloc)$')
+
+_MALLOC_CALL_RE = re.compile(
+    r'\b(malloc|calloc|realloc)\s*\('
+    r'|'
+    r'\.\s*(malloc|calloc|realloc)\s*\('
+)
+
+_PAIRED_FREE_RE = re.compile(
+    r'\b(free|Free|FREE)\s*\('
+    r'|'
+    r'\.\s*(free|Free|FREE)\s*\('
+    r'|'
+    r'\b\w+Free\b|\b\w+_Free\b'
+)
+
+_FFI_CONTEXT_RE = re.compile(
+    r'\b(?:ctypes|CDLL|cdll|windll|oledll|WinDLL'
+    r'|cffi|ffi\b'
+    r'|pybind11|PYBIND11_MODULE'
+    r'|PyObject_New|PyMem_Malloc'
+    r')\b'
+)
+
+_CODEGEN_TEMPLATE_RE = re.compile(
+    r'\{[0-9]+\}'
+)
+
+_PYBIND11_CONTEXT_RE = re.compile(
+    r'\b(?:'
+    r'pybind11|PYBIND11_MODULE|py::module_|py::object|py::class_|py::def\b'
+    r'|py::cast\b|py::init\b|py::arg\b|py::return_value_policy'
+    r'|Python\.h|PyObject|PyGILState|Py_Initialize'
+    r')\b'
+    r'|'
+    r'#include\s*[<"]pybind11[/>"]'
+)
+
+_THIRD_PARTY_MARKERS_RE = re.compile(
+    r'(?:third[_-]party|vendor|external|contrib|3rdparty|thirdparty)[/\\]',
+    re.IGNORECASE
+)
+
+
+def find_malloc_tokens_in_py(source: str) -> list:
+    """在 Python 源码中定位 malloc/calloc/realloc 的 NAME token。
+
+    使用 tokenize 模块精确过滤字符串字面量和注释中的匹配。
+    语法错误时回退到逐行正则匹配（带词边界）。
+
+    返回: [(行号, token字符串), ...]
+    """
+    hits = []
+    try:
+        tokens = tokenize.generate_tokens(io.StringIO(source).readline)
+        for tok_type, tok_string, (srow, scol), (erow, ecol), line in tokens:
+            if tok_type == tokenize.NAME and _MALLOC_TOKENS_RE.match(tok_string):
+                hits.append((srow, tok_string))
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        for i, line in enumerate(source.splitlines(), 1):
+            for m in re.finditer(r'\b(malloc|calloc|realloc)\b', line):
+                hits.append((i, m.group(1)))
+    return hits
+
+
+def is_codegen_template(source: str) -> bool:
+    """判断 Python 文件是否是代码生成模板。
+
+    特征:
+    - 包含 {0}, {1} 等位置模板（>=5 处）
+    - 包含 extern "C" 块（原始或转义引号）
+    - 包含 #include <...> 指令（在 Python 文件中不应出现）
+    - 大量双花括号 {{ }}（模板转义）
+    """
+    format_holes = len(_CODEGEN_TEMPLATE_RE.findall(source))
+    has_extern_c = (
+        'extern "C"' in source
+        or 'extern \\"C\\"' in source
+        or "extern \"C\"" in source
+    )
+    c_includes = len(re.findall(r'#include\s*[<"]', source))
+    double_braces = source.count('{{') + source.count('}}')
+    return (format_holes >= 5
+            or (has_extern_c and (format_holes > 0 or double_braces > 5))
+            or c_includes > 3)
+
+
+def has_ffi_context(content: str) -> bool:
+    """判断文件内容是否包含 FFI 相关导入或调用上下文。"""
+    return bool(_FFI_CONTEXT_RE.search(content))
+
+
+def check_paired_free(content: str) -> bool:
+    """判断文件是否包含配对的 free/Free/XXXFree 调用。"""
+    return bool(_PAIRED_FREE_RE.search(content))
+
+
+def has_pybind11_context(content: str) -> bool:
+    """判断 C++ 文件内容是否包含 pybind11/CPython 绑定上下文。"""
+    return bool(_PYBIND11_CONTEXT_RE.search(content))
+
+
+def is_third_party_path(path: str) -> bool:
+    """判断文件路径是否属于第三方/外部代码目录。"""
+    return bool(_THIRD_PARTY_MARKERS_RE.search(path))
 
 
 def main():

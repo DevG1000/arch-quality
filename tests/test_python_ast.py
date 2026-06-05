@@ -15,7 +15,12 @@ test_python_ast.py — arch_python_ast.py 单元测试
 
 import unittest
 
-from arch_quality.arch_python_ast import extract_pybind11_calls, _parse_content
+from arch_quality.arch_python_ast import (
+    extract_pybind11_calls, _parse_content,
+    find_malloc_tokens_in_py, is_codegen_template,
+    has_ffi_context, check_paired_free,
+    has_pybind11_context, is_third_party_path,
+)
 
 
 class TestPythonAST(unittest.TestCase):
@@ -188,6 +193,106 @@ print("done")
 '''
         calls = _parse_content(code, "test.py")
         self.assertEqual(len(calls), 0)
+
+
+class TestMLR010Detection(unittest.TestCase):
+
+    def test_find_malloc_tokens_normal(self):
+        source = "buf = ctypes.malloc(1024)\nfree(buf)"
+        hits = find_malloc_tokens_in_py(source)
+        self.assertEqual(len(hits), 1)
+        self.assertEqual(hits[0][1], "malloc")
+
+    def test_find_malloc_tokens_string_literal(self):
+        source = 'msg = "return malloc(n);"\nprint(msg)'
+        hits = find_malloc_tokens_in_py(source)
+        self.assertEqual(len(hits), 0)
+
+    def test_find_malloc_tokens_comment(self):
+        source = "# uses malloc internally\nx = 42"
+        hits = find_malloc_tokens_in_py(source)
+        self.assertEqual(len(hits), 0)
+
+    def test_find_malloc_tokens_substring(self):
+        source = "data = preallocated_mem\nresult = reallocated_list"
+        hits = find_malloc_tokens_in_py(source)
+        self.assertEqual(len(hits), 0)
+
+    def test_find_malloc_tokens_code_generator(self):
+        source = (
+            'c_code = """\n'
+            '{3}_API void *{2}Malloc(size_t n)\n'
+            '{{\n'
+            '  return malloc(n);\n'
+            '}}\n'
+            '"""\n'
+        )
+        hits = find_malloc_tokens_in_py(source)
+        self.assertEqual(len(hits), 0)
+
+    def test_is_codegen_template(self):
+        source = (
+            'c_code = """\n'
+            '#include <stdlib.h>\n'
+            '#include <string.h>\n'
+            'extern "C" {{\n'
+            '#include {2}c.h"\n'
+            '}}\n'
+            '{3}_API void *{2}Malloc(size_t n)\n'
+            '{{\n'
+            '  return malloc(n);\n'
+            '}}\n'
+            '"""\n'
+        )
+        self.assertTrue(is_codegen_template(source))
+
+    def test_is_codegen_template_extern_c(self):
+        source = 'extern "C" {\n#include "mylib.h"\n}\n' * 1 + '{{\nreturn malloc(n);\n}}\n' * 3
+        self.assertTrue(is_codegen_template(source))
+
+    def test_is_not_codegen_template(self):
+        source = "x = 42\nprint(x)"
+        self.assertFalse(is_codegen_template(source))
+
+    def test_has_ffi_context(self):
+        self.assertTrue(has_ffi_context("from ctypes import CDLL"))
+        self.assertTrue(has_ffi_context("lib = CDLL('mylib.so')"))
+        self.assertTrue(has_ffi_context("import pybind11"))
+        self.assertFalse(has_ffi_context("x = 42\nprint(x)"))
+
+    def test_check_paired_free(self):
+        self.assertTrue(check_paired_free("lib.free(buf)"))
+        self.assertTrue(check_paired_free("gmshFree(ptr)"))
+        self.assertFalse(check_paired_free("x = 42"))
+
+
+class TestMLR008Context(unittest.TestCase):
+
+    def test_has_pybind11_context_cpp(self):
+        self.assertTrue(has_pybind11_context('#include <pybind11/pybind11.h>'))
+        self.assertTrue(has_pybind11_context('PYBIND11_MODULE(foo, m) {'))
+        self.assertTrue(has_pybind11_context('py::object result = m.attr("name");'))
+        self.assertTrue(has_pybind11_context('#include "Python.h"'))
+        self.assertTrue(has_pybind11_context('PyObject *obj = PyLong_FromLong(42);'))
+        self.assertFalse(has_pybind11_context('doc.attr("idprefix", "_");'))
+        self.assertFalse(has_pybind11_context('x.call(42);'))
+        self.assertFalse(has_pybind11_context('int result = parser.parse(line);'))
+
+
+class TestMLR012Context(unittest.TestCase):
+
+    def test_is_third_party_path(self):
+        self.assertTrue(is_third_party_path("src/libbg/geogram/third_party/liblbfgs/fortran/lbfgs.f"))
+        self.assertTrue(is_third_party_path("contrib/foobar/baz.c"))
+        self.assertTrue(is_third_party_path("vendor/libfoo/foo.cpp"))
+        self.assertTrue(is_third_party_path("external/openssl/crypto.c"))
+        self.assertFalse(is_third_party_path("src/librt/primitives/bot/bot.c"))
+        self.assertFalse(is_third_party_path("src/libbu/bu.c"))
+
+    def test_f77_ext_detection(self):
+        self.assertEqual("f", "f")
+        self.assertNotEqual("f90", "f")
+        self.assertNotEqual("f95", "f")
 
 
 if __name__ == "__main__":

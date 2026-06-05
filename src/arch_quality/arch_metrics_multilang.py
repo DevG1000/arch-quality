@@ -596,23 +596,27 @@ class MultilangMetrics:
                 "detail": f"{len(tnt_modules)} 个模块影响半径 > {radius_threshold}: {tnt_modules[:10]}",
             })
 
-        # MLR-008: GIL死锁风险
+        # MLR-008: GIL死锁风险 (v2 — 增加 pybind11/CPython 上下文前置条件)
+        from arch_quality.arch_python_ast import has_pybind11_context
         for f in self.index.files:
-            if f["ext"] != ".cpp":
+            if f["ext"] not in (".cpp", ".cxx", ".cc", ".h", ".hpp"):
                 continue
             try:
                 content = read_text_smart(f["abs_path"])
             except Exception:
                 continue
-            if "py::gil_scoped_release" not in content and "gil_scoped_release" not in content:
-                if re.search(r"py::object|\.attr\(|\.call\(", content):
-                    mlr_results.append({
-                        "rule": "MLR-008", "name": "GIL死锁风险",
-                        "severity": "HIGH",
-                        "count": 1,
-                        "detail": f"{f['path']}: C++ 代码调用 Python 回调但未显式释放 GIL",
-                    })
-                    break
+            if not has_pybind11_context(content):
+                continue
+            if "py::gil_scoped_release" in content or "gil_scoped_release" in content:
+                continue
+            if re.search(r"py::object|\.attr\(|\.call\(", content):
+                mlr_results.append({
+                    "rule": "MLR-008", "name": "GIL死锁风险",
+                    "severity": "HIGH",
+                    "count": 1,
+                    "detail": f"{f['path']}: C++ 代码调用 Python 回调但未显式释放 GIL",
+                })
+                break
 
         # MLR-009: 绑定层使用通用类型（在 _build_cross_lang_graph 中收集）
         for fpath in self.mlr_hits.get("MLR-009", []):
@@ -623,7 +627,11 @@ class MultilangMetrics:
                 "detail": f"{fpath}: 使用了 ctypes.c_void_p 等通用类型",
             })
 
-        # MLR-010: FFI内存所有权混乱
+        # MLR-010: FFI内存所有权混乱 (v2 — 5层过滤 + 3级严重度)
+        from arch_quality.arch_python_ast import (
+            find_malloc_tokens_in_py, is_codegen_template,
+            has_ffi_context, check_paired_free, _MALLOC_CALL_RE,
+        )
         for f in self.index.files:
             if f["ext"] not in (".c", ".cpp", ".py"):
                 continue
@@ -631,12 +639,52 @@ class MultilangMetrics:
                 content = read_text_smart(f["abs_path"])
             except Exception:
                 continue
-            if re.search(r"(malloc|calloc|realloc)", content) and f["ext"] == ".py":
+
+            if f["ext"] == ".py":
+                # L5: 代码生成模板 → 跳过（如 gmsh/api/GenApi.py）
+                if is_codegen_template(content):
+                    continue
+
+                # L1: tokenize 精确提取（排除字符串/注释中的匹配）
+                hits = find_malloc_tokens_in_py(content)
+
+                if not hits:
+                    continue
+
+                # L2: FFI 上下文检测
+                has_ffi = has_ffi_context(content)
+
+                # L3+L4: 确认是函数调用形式 + 收集命中
+                real_hits = []
+                lines = content.splitlines()
+                for line_no, tok in hits:
+                    if line_no <= len(lines):
+                        line = lines[line_no - 1]
+                        if _MALLOC_CALL_RE.search(line) or has_ffi:
+                            real_hits.append((line_no, tok))
+
+                if not real_hits:
+                    continue
+
+                # L4: 配对释放检测
+                paired_free = check_paired_free(content)
+
+                if has_ffi and not paired_free:
+                    severity = "HIGH"
+                    detail_suffix = "且无配对 free，内存所有权不清晰"
+                elif has_ffi and paired_free:
+                    severity = "MEDIUM"
+                    detail_suffix = "有配对 free，但建议使用封装 API"
+                else:
+                    severity = "LOW"
+                    detail_suffix = "非 FFI 上下文中的 malloc/calloc/realloc 引用"
+
                 mlr_results.append({
                     "rule": "MLR-010", "name": "FFI内存所有权混乱",
-                    "severity": "HIGH",
-                    "count": 1,
-                    "detail": f"{f['path']}: Python 中直接调用 malloc/calloc/realloc，内存所有权不清晰",
+                    "severity": severity,
+                    "count": len(real_hits),
+                    "detail": (f"{f['path']}: {len(real_hits)} 处 "
+                               f"malloc/calloc/realloc，{detail_suffix}"),
                 })
 
         # MLR-011: 小数据频繁跨语言传输
@@ -656,18 +704,30 @@ class MultilangMetrics:
                     "detail": f"{f['path']}: 循环内存在约 {loop_calls} 处跨语言调用，建议批量化",
                 })
 
-        # MLR-012: Fortran缺少ISO_C_BINDING
+        # MLR-012: Fortran缺少ISO_C_BINDING (v2 — 第三方/固定格式降级)
+        from arch_quality.arch_python_ast import is_third_party_path
         for f in self.index.by_lang("fortran"):
             try:
                 content = read_text_smart(f["abs_path"])
             except Exception:
                 continue
             if "iso_c_binding" not in content.lower() and re.search(r"subroutine|function", content):
+                is_tp = is_third_party_path(f["path"])
+                is_f77 = f["ext"] == ".f"
+                if is_tp:
+                    severity = "INFO"
+                    detail_suffix = "第三方代码，建议标注 @third_party 豁免"
+                elif is_f77:
+                    severity = "INFO"
+                    detail_suffix = "Fortran 77 固定格式不支持 iso_c_binding，确认未被 C 直接调用后可豁免"
+                else:
+                    severity = "MEDIUM"
+                    detail_suffix = "跨语言调用可能不稳定"
                 mlr_results.append({
                     "rule": "MLR-012", "name": "Fortran缺少ISO_C_BINDING",
-                    "severity": "MEDIUM",
+                    "severity": severity,
                     "count": 1,
-                    "detail": f"{f['path']}: Fortran 代码未使用 ISO_C_BINDING，跨语言调用可能不稳定",
+                    "detail": f"{f['path']}: Fortran 代码未使用 ISO_C_BINDING，{detail_suffix}",
                 })
 
         return mlr_results
