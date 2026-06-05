@@ -20,6 +20,7 @@ from arch_quality.arch_python_ast import (
     find_malloc_tokens_in_py, is_codegen_template,
     has_ffi_context, check_paired_free,
     has_pybind11_context, is_third_party_path,
+    extract_swig_bindings, match_swig_to_headers,
 )
 
 
@@ -348,5 +349,93 @@ class TestMLR005CallbackChain(unittest.TestCase):
         self.assertEqual(hotspots_non_tp, ["src/Mod/CAM/libarea/pyarea.cpp", "src/App/Application.cpp"])
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=2)
+class TestSWIGParsing(unittest.TestCase):
+
+    def test_extract_swig_module(self):
+        swig_content = '%module pcbnew\n%include "board.h"\n'
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.i', delete=False, encoding='utf-8') as f:
+            f.write(swig_content)
+            f.flush()
+            result = extract_swig_bindings(f.name)
+        os.unlink(f.name)
+        self.assertIn("pcbnew", result["modules"])
+        self.assertIn("board.h", result["includes"])
+
+    def test_extract_swig_extend(self):
+        swig_content = (
+            '%module pcbnew\n'
+            '%extend CONNECTIVITY_DATA {\n'
+            '  std::vector<BOARD_CONNECTED_ITEM*> GetNetItems(int aNetCode, ...) {\n'
+            '    return $self->GetNetItems(aNetCode);\n'
+            '  }\n'
+            '};\n'
+        )
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.i', delete=False, encoding='utf-8') as f:
+            f.write(swig_content)
+            f.flush()
+            result = extract_swig_bindings(f.name)
+        os.unlink(f.name)
+        self.assertIn("pcbnew", result["modules"])
+        self.assertIn("CONNECTIVITY_DATA", result["extended_classes"])
+        self.assertIn("GetNetItems", result["extended_funcs"])
+
+    def test_extract_swig_inline(self):
+        swig_content = (
+            '%module kicad\n'
+            '%inline %{\n'
+            '  void init_board() {}\n'
+            '  int get_version() { return 7; }\n'
+            '%}\n'
+        )
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.i', delete=False, encoding='utf-8') as f:
+            f.write(swig_content)
+            f.flush()
+            result = extract_swig_bindings(f.name)
+        os.unlink(f.name)
+        self.assertIn("init_board", result["inline_funcs"])
+        self.assertIn("get_version", result["inline_funcs"])
+
+    def test_extract_swig_rename(self):
+        swig_content = '%module pcbnew\n%rename(get_items) GetNetItems;\n'
+        import tempfile, os
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.i', delete=False, encoding='utf-8') as f:
+            f.write(swig_content)
+            f.flush()
+            result = extract_swig_bindings(f.name)
+        os.unlink(f.name)
+        self.assertIn("get_items", result["renames"])
+
+    def test_match_swig_to_headers(self):
+        swig_bindings = {
+            "modules": ["pcbnew"],
+            "extended_classes": ["BOARD"],
+            "extended_funcs": ["GetNetItems", "GetBoard"],
+            "includes": ["board.h"],
+            "renames": [],
+            "inline_funcs": [],
+        }
+        header_functions = {
+            "include/board.h": {"GetNetItems", "GetBoard", "GetNetClass"},
+            "include/footprint.h": {"GetFootprint"},
+        }
+        matches = match_swig_to_headers(swig_bindings, header_functions)
+        matched = [(name, hdr) for name, hdr in matches if hdr is not None]
+        self.assertTrue(len(matched) > 0)
+        self.assertTrue(any(name == "GetNetItems" for name, _ in matched))
+
+    def test_swig_lang_in_fileindex(self):
+        from arch_quality.arch_core import FileIndex
+        import tempfile, os
+        tmpdir = tempfile.mkdtemp()
+        swig_file = os.path.join(tmpdir, "test_module.i")
+        with open(swig_file, 'w', encoding='utf-8') as f:
+            f.write('%module test\n')
+        idx = FileIndex(tmpdir)
+        swig_files = idx.by_lang("swig")
+        self.assertTrue(len(swig_files) >= 1)
+        self.assertEqual(swig_files[0]["ext"], ".i")
+        os.unlink(swig_file)
+        os.rmdir(tmpdir)

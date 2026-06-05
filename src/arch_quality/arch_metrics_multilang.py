@@ -70,6 +70,7 @@ class MultilangMetrics:
         self.weights = _load_weights()
         self.index = FileIndex(root)
         self.graph = DepGraph()
+        self._swig_bindings = {}
         self._build_cross_lang_graph()
         self.git = GitHistory(root)
 
@@ -186,6 +187,13 @@ class MultilangMetrics:
                     if target in self.graph.nodes:
                         self.graph.add_edge(node_id, target)
 
+            # ── SWIG: %include → C++ 头文件 ──
+            elif f["lang"] == "swig":
+                for m in re.finditer(r'%include\s+[<"](.+?)[>"]', content):
+                    target = os.path.basename(m.group(1))
+                    if target in self.graph.nodes:
+                        self.graph.add_edge(node_id, target)
+
         # ── 第 4 步: ★ pybind11 跨语言边（AST + BindingMap + ctypes 兜底）──
         try:
             from arch_quality.arch_bindings_parser import BindingMap
@@ -208,6 +216,46 @@ class MultilangMetrics:
                     self.graph.add_edge(py_path, cpp_path)
         except Exception as e:
             # pybind11 检测失败时不影响主流程
+            pass
+
+        # ── 第 5 步: ★ SWIG 绑定跨语言边 ──
+        try:
+            from arch_quality.arch_python_ast import extract_swig_bindings
+            swig_files = self.index.by_lang("swig")
+            for sf in swig_files:
+                try:
+                    sb = extract_swig_bindings(sf["abs_path"])
+                except Exception:
+                    continue
+
+                # SWIG %module → Python 模块名（跨语言边: .i → Python）
+                for mod_name in sb.get("modules", []):
+                    for pf in self.index.by_lang("python"):
+                        if mod_name in pf["path"] or mod_name in read_text_smart(pf["abs_path"]):
+                            self.graph.add_edge(pf["path"], sf["path"])
+
+                # SWIG %include "header.h" → C++ 头文件（跨语言边: .i → .h）
+                for inc_path in sb.get("includes", []):
+                    inc_basename = os.path.basename(inc_path)
+                    if inc_basename in self.graph.nodes:
+                        self.graph.add_edge(sf["path"], inc_basename)
+                    else:
+                        for hf in self.index.files:
+                            if hf["ext"] in (".h", ".hpp") and hf["path"].endswith(inc_basename):
+                                self.graph.add_edge(sf["path"], hf["path"])
+                                break
+
+                # SWIG %extend 函数名 → 头文件同名声明（跨语言边: .i → .h）
+                for func_name in sb.get("extended_funcs", []):
+                    for hdr_path, funcs in header_functions.items():
+                        if func_name in funcs:
+                            self.graph.add_edge(sf["path"], hdr_path)
+                            break
+
+                # 保存 SWIG 绑定信息供 MLR-003 使用
+                self._swig_bindings[sf["path"]] = sb
+
+        except Exception:
             pass
 
     # ── 6 个评估维度 ──
@@ -473,14 +521,40 @@ class MultilangMetrics:
             "max_depth_path": max_depth_path[:10] if max_depth_path else [],
         }
 
+    def _build_header_functions(self):
+        """构建头文件函数声明索引，供绑定一致性和MLR-003共用。"""
+        if hasattr(self, '_header_functions') and self._header_functions:
+            return self._header_functions
+        header_functions = {}
+        for f in self.index.files:
+            if f["ext"] in (".h", ".hpp"):
+                try:
+                    content = read_text_smart(f["abs_path"])
+                except Exception:
+                    continue
+                funcs = set()
+                for m in re.finditer(
+                    r"(?:virtual\s+)?(?:void|int|double|float|bool|std::\w+)\s+(\w+)\s*\(",
+                    content
+                ):
+                    funcs.add(m.group(1))
+                if funcs:
+                    header_functions[f["path"]] = funcs
+        self._header_functions = header_functions
+        return header_functions
+
     def calc_binding_consistency(self) -> tuple:
         """维度4: 绑定层接口一致性
 
         算法见 skill: multilang-dependency.md → 绑定层接口一致性
+        
+        增强支持: pybind11 .def() 和 SWIG %extend/%inline 绑定均纳入统计。
         """
         cpp_exports = 0
         bound_exports = 0
         matched = 0
+        swig_bound = 0
+        swig_matched = 0
 
         for f in self.index.files:
             try:
@@ -497,15 +571,44 @@ class MultilangMetrics:
                 bound_exports += len(re.findall(r'\.def\s*\(', content))
                 matched += len(re.findall(r'\.def\s*\(\s*["\x27](\w+)["\x27]', content))
 
+        # SWIG 绑定统计
+        from arch_quality.arch_python_ast import extract_swig_bindings
+        header_functions = self._build_header_functions()
+        for sf in self.index.by_lang("swig"):
+            try:
+                sb = extract_swig_bindings(sf["abs_path"])
+            except Exception:
+                continue
+            swig_ext_funcs = sb.get("extended_funcs", [])
+            swig_inline_funcs = sb.get("inline_funcs", [])
+            swig_includes = sb.get("includes", [])
+            swig_renames = sb.get("renames", [])
+            swig_bound += len(swig_ext_funcs) + len(swig_inline_funcs)
+            for func_name in swig_ext_funcs + swig_inline_funcs:
+                for hdr_path, funcs in header_functions.items():
+                    if func_name in funcs:
+                        swig_matched += 1
+                        break
+            for inc_path in swig_includes:
+                inc_base = os.path.basename(inc_path)
+                for hdr_path in header_functions:
+                    if hdr_path.replace("\\", "/").endswith(inc_base):
+                        swig_matched += 1
+                        break
+            self._swig_bindings[sf["path"]] = sb
+
+        total_bound = bound_exports + swig_bound
+        total_matched = matched + swig_matched
+
         if cpp_exports == 0:
             ratio_bound = 1.0
         else:
-            ratio_bound = bound_exports / cpp_exports if cpp_exports > 0 else 0
+            ratio_bound = total_bound / cpp_exports if cpp_exports > 0 else 0
 
-        if bound_exports == 0:
+        if total_bound == 0:
             ratio_match = 1.0
         else:
-            ratio_match = matched / bound_exports if bound_exports > 0 else 0
+            ratio_match = total_matched / total_bound if total_bound > 0 else 0
 
         score = (ratio_bound * 100 + ratio_match * 100) / 2
         deductions = 0
@@ -523,6 +626,8 @@ class MultilangMetrics:
             "cpp_exports": cpp_exports,
             "bound_exports": bound_exports,
             "matched": matched,
+            "swig_bound": swig_bound,
+            "swig_matched": swig_matched,
             "deductions": deductions,
         }
 
@@ -629,15 +734,25 @@ class MultilangMetrics:
             cpp_files = self.index.by_lang("cpp")
             total_h = sum(1 for f in cpp_files if f["ext"] in (".hpp", ".h"))
             bound = sum(1 for f in cpp_files if f["ext"] == ".cpp")
-            if total_h > bound + 2:
+            swig_count = len(self.index.by_lang("swig"))
+            has_binding = bound > 0 or swig_count > 0
+            if total_h > bound + 2 and not has_binding:
                 mlr_results.append({
                     "rule": "MLR-002", "name": "绑定层接口缺失",
                     "severity": "HIGH",
                     "count": total_h - bound,
                     "detail": f"头文件数 ({total_h}) >> 绑定cpp数 ({bound})，可能存在未注册接口",
                 })
+            elif total_h > bound + 2 and swig_count > 0 and bound == 0:
+                mlr_results.append({
+                    "rule": "MLR-002", "name": "绑定层接口缺失（SWIG项目）",
+                    "severity": "MEDIUM",
+                    "count": total_h - bound,
+                    "detail": f"头文件数 ({total_h}) >> 绑定cpp数 ({bound})，但有 {swig_count} 个 SWIG 绑定文件",
+                })
 
-        # MLR-003: 绑定层签名不匹配（简化检测）
+        # MLR-003: 绑定层签名不匹配（pybind11 + SWIG）
+        # pybind11 .def() 签名检测
         for f in self.index.files:
             if f["ext"] != ".cpp":
                 continue
@@ -652,6 +767,34 @@ class MultilangMetrics:
                     "severity": "HIGH",
                     "count": len(missing_defaults),
                     "detail": f"{f['path']}: {len(missing_defaults)} 处 .def() 可能缺少默认参数定义: {missing_defaults[:5]}",
+                })
+
+        # SWIG 绑定签名检测
+        from arch_quality.arch_python_ast import extract_swig_bindings, match_swig_to_headers
+        header_functions_cache = self._build_header_functions()
+
+        for sf in self.index.by_lang("swig"):
+            try:
+                sb = extract_swig_bindings(sf["abs_path"])
+            except Exception:
+                continue
+            unmatched = []
+            for func_name in sb.get("extended_funcs", []):
+                found = False
+                for hdr_path, funcs in header_functions_cache.items():
+                    if func_name in funcs:
+                        found = True
+                        break
+                if not found:
+                    unmatched.append(func_name)
+            if unmatched:
+                from arch_quality.arch_python_ast import is_third_party_path
+                is_tp = is_third_party_path(sf["path"])
+                mlr_results.append({
+                    "rule": "MLR-003", "name": "SWIG绑定签名不匹配",
+                    "severity": "INFO" if is_tp else "MEDIUM",
+                    "count": len(unmatched),
+                    "detail": f"{sf['path']}: {len(unmatched)} 处 %extend 函数未在头文件中找到声明: {unmatched[:5]}" + ("（第三方代码，建议豁免）" if is_tp else ""),
                 })
 
         # MLR-004: 脚本直接访问内部（在 _build_cross_lang_graph 中收集）

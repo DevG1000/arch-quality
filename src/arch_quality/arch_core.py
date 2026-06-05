@@ -77,6 +77,8 @@ class FileIndex:
         ".java": "java",
         ".rs": "rust",
         ".go": "go",
+        ".i": "swig",
+        ".swg": "swig",
     }
 
     EXCLUDE_DIRS = {"node_modules", ".opencode", ".git", "__pycache__",

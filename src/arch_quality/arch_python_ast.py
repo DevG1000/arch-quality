@@ -347,6 +347,99 @@ def is_third_party_path(path: str) -> bool:
     return bool(_THIRD_PARTY_MARKERS_RE.search(path))
 
 
+# ── SWIG 绑定解析 ──
+
+_SWIG_MODULE_RE = re.compile(r'%module\s*(?:\([^)]*\))?\s*(\w+)', re.MULTILINE)
+_SWIG_EXTEND_RE = re.compile(r'%extend\s+(\w+)\s*\{(.+?)\};', re.MULTILINE | re.DOTALL)
+_SWIG_FUNC_DECL_RE = re.compile(
+    r'(?:static\s+)?(?:inline\s+)?'
+    r'(?:const\s+)?(?:std::\w+(?:<[^>]*>)?\s+)?'
+    r'(?:void|int|double|float|bool|char|long|unsigned|std::string|std::vector[^&]*|PyObject\*?)\s+'
+    r'(\w+)\s*\([^)]*\)',
+    re.MULTILINE
+)
+_SWIG_INCLUDE_RE = re.compile(r'%include\s*[<"]([^>"]+)[>"]', re.MULTILINE)
+_SWIG_INLINE_RE = re.compile(r'%inline\s*%\{(.+?)%\}', re.MULTILINE | re.DOTALL)
+_SWIG_RENAME_RE = re.compile(r'%rename\s*\(\s*["\x27]?(\w+)["\x27]?\s*\)', re.MULTILINE)
+
+
+def extract_swig_bindings(swig_file_path: str) -> dict:
+    """从 SWIG .i/.swg 文件提取绑定信息。
+
+    返回:
+        {
+            "modules": [str],           # %module 声明的模块名
+            "extended_classes": [str],  # %extend 涉及的类名
+            "extended_funcs": [str],    # %extend 中的函数名
+            "includes": [str],          # %include 引用的头文件
+            "renames": [str],           # %rename 重命名的函数
+            "inline_funcs": [str],      # %inline 块中的函数名
+        }
+    """
+    try:
+        content = read_text_smart(swig_file_path)
+    except Exception:
+        return {"modules": [], "extended_classes": [], "extended_funcs": [],
+                "includes": [], "renames": [], "inline_funcs": []}
+
+    modules = [m.group(1) for m in _SWIG_MODULE_RE.finditer(content)]
+
+    extended_classes = []
+    extended_funcs = []
+    for m in _SWIG_EXTEND_RE.finditer(content):
+        class_name = m.group(1)
+        block = m.group(2)
+        extended_classes.append(class_name)
+        for fm in _SWIG_FUNC_DECL_RE.finditer(block):
+            fname = fm.group(1)
+            if fname not in ('if', 'for', 'while', 'switch', 'return', 'delete', 'new'):
+                extended_funcs.append(fname)
+
+    includes = [m.group(1) for m in _SWIG_INCLUDE_RE.finditer(content)]
+    renames = [m.group(1) for m in _SWIG_RENAME_RE.finditer(content)]
+
+    inline_funcs = []
+    for m in _SWIG_INLINE_RE.finditer(content):
+        block = m.group(1)
+        for fm in _SWIG_FUNC_DECL_RE.finditer(block):
+            fname = fm.group(1)
+            if fname not in ('if', 'for', 'while', 'switch', 'return'):
+                inline_funcs.append(fname)
+
+    return {
+        "modules": modules,
+        "extended_classes": extended_classes,
+        "extended_funcs": extended_funcs,
+        "includes": includes,
+        "renames": renames,
+        "inline_funcs": inline_funcs,
+    }
+
+
+def match_swig_to_headers(swig_bindings: dict, header_functions: dict) -> list:
+    """将 SWIG 绑定函数名与头文件声明的函数名交叉比对。
+
+    参数:
+        swig_bindings: extract_swig_bindings() 的返回值
+        header_functions: {header_path: {func_name1, func_name2, ...}}
+
+    返回:
+        列表，每项为 (swig_func_name, matched_header_path) 或 (swig_func_name, None)
+    """
+    matches = []
+    all_func_names = set(swig_bindings.get("extended_funcs", []) + swig_bindings.get("inline_funcs", []))
+    for func_name in all_func_names:
+        matched = False
+        for hdr_path, funcs in header_functions.items():
+            if func_name in funcs:
+                matches.append((func_name, hdr_path))
+                matched = True
+                break
+        if not matched:
+            matches.append((func_name, None))
+    return matches
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Python AST pybind11 解析器")
