@@ -23,7 +23,7 @@ SKILL_PATH = str(Path(__file__).parent / "skills" / "multilang-dependency.md")
 
 
 def _collect_std_imports(index):
-    """Collect Python import statements and resolve them to project-internal targets.
+    """Collect Python/Tcl import statements and resolve them to project-internal targets.
 
     Returns a set of (source_file, target_file) pairs where both ends are project files.
     Uses the same import-to-target resolution logic as StandardMetrics._build_graph.
@@ -34,17 +34,31 @@ def _collect_std_imports(index):
         basename = os.path.splitext(os.path.basename(f["path"]))[0]
         node_lookup[basename] = f["path"]
     for f in index.files:
-        if f["ext"] != ".py":
-            continue
-        try:
-            content = read_text_smart(f["abs_path"])
-        except Exception:
-            continue
-        for m in re.finditer(r"^(?:from|import)\s+(\S+)", content, re.MULTILINE):
-            root = m.group(1).split(".")[0]
-            src_basename = os.path.splitext(os.path.basename(f["path"]))[0]
-            if root != src_basename and root in node_lookup:
-                internal_edges.add((f["path"], node_lookup[root]))
+        if f["ext"] == ".py":
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+            for m in re.finditer(r"^(?:from|import)\s+(\S+)", content, re.MULTILINE):
+                root = m.group(1).split(".")[0]
+                src_basename = os.path.splitext(os.path.basename(f["path"]))[0]
+                if root != src_basename and root in node_lookup:
+                    internal_edges.add((f["path"], node_lookup[root]))
+        elif f["ext"] == ".tcl":
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+            for m in re.finditer(r'source\s+["\']?([^\s$"\']+\.(?:tcl|tk))["\']?', content):
+                src_base = os.path.splitext(os.path.basename(m.group(1)))[0]
+                if src_base in node_lookup:
+                    internal_edges.add((f["path"], node_lookup[src_base]))
+            for m in re.finditer(r'package\s+require\s+(?:::)?(\S+)', content):
+                pkg = m.group(1).strip("'\"")
+                for candidate in (pkg.rsplit("::", 1)[-1], pkg.split("::")[0], pkg):
+                    if candidate in node_lookup and node_lookup[candidate] != f["path"]:
+                        internal_edges.add((f["path"], node_lookup[candidate]))
+                        break
     return internal_edges
 
 # ──────────────────────────────────────────────
@@ -453,6 +467,73 @@ class MultilangMetrics:
                     target = os.path.basename(m.group(1))
                     if target in self.graph.nodes:
                         self.graph.add_edge(node_id, target)
+
+            # ── Tcl: source / package require / namespace eval ──
+            elif f["ext"] == ".tcl":
+                tcl_node_lookup = {}
+                tcl_node_lookup_lower = {}
+                if not hasattr(self, '_tcl_node_lookup_built'):
+                    for tf in self.index.by_lang("tcl"):
+                        tb = os.path.splitext(os.path.basename(tf["path"]))[0]
+                        tcl_node_lookup[tb] = tf["path"]
+                        tcl_node_lookup_lower[tb.lower()] = tf["path"]
+                    self._tcl_node_lookup = tcl_node_lookup
+                    self._tcl_node_lookup_lower = tcl_node_lookup_lower
+                    self._tcl_node_lookup_built = True
+                else:
+                    tcl_node_lookup = self._tcl_node_lookup
+                    tcl_node_lookup_lower = self._tcl_node_lookup_lower
+
+                # source "filepath.tcl" or source filepath.tcl (skip $variable paths)
+                for m in re.finditer(r'source\s+["\']?([^\s$"\']+\.(?:tcl|tk))["\']?', content):
+                    src_path = m.group(1)
+                    src_base = os.path.splitext(os.path.basename(src_path))[0]
+                    if src_base in tcl_node_lookup:
+                        target = tcl_node_lookup[src_base]
+                        if target != node_id:
+                            self.graph.add_edge(node_id, target)
+                    elif src_path in self.graph.nodes:
+                        if src_path != node_id:
+                            self.graph.add_edge(node_id, src_path)
+
+                # package require Name [version]
+                for m in re.finditer(r'package\s+require\s+(?:::)?(\S+)', content):
+                    pkg = m.group(1).strip("'\"")
+                    # package require cadwidgets::GeometryIO → map to file
+                    pkg_last = pkg.rsplit("::", 1)[-1]
+                    pkg_simple = pkg.split("::")[0]
+                    for candidate in (pkg_last, pkg_simple, pkg):
+                        if candidate in tcl_node_lookup:
+                            target = tcl_node_lookup[candidate]
+                            if target != node_id:
+                                self.graph.add_edge(node_id, target)
+                            break
+
+                # namespace eval ::Name { ... } — declares/uses a namespace
+                for m in re.finditer(r'namespace\s+eval\s+(?:::)(\w+)', content):
+                    ns = m.group(1)
+                    if ns in tcl_node_lookup:
+                        target = tcl_node_lookup[ns]
+                        if target != node_id:
+                            self.graph.add_edge(node_id, target)
+
+                # ::namespace::proc calls — cross-file Tcl dependency
+                for m in re.finditer(r'(?:::)(\w+)::(\w+)\s', content):
+                    ns = m.group(1)
+                    if ns in tcl_node_lookup:
+                        target = tcl_node_lookup[ns]
+                        if target != node_id:
+                            self.graph.add_edge(node_id, target)
+
+                # Cross-language: Tcl calling C/C++ via package require for wrapped libs
+                # e.g., package require Bu (BRL-CAD C library)
+                for m in re.finditer(r'package\s+require\s+(?:::)?(\w+)', content):
+                    pkg_name = m.group(1)
+                    for cf in self.index.files:
+                        if cf["ext"] in (".cpp", ".cxx", ".cc", ".h", ".hpp", ".c"):
+                            cb = os.path.splitext(os.path.basename(cf["path"]))[0]
+                            if cb.lower() == pkg_name.lower() and cf["path"] != node_id:
+                                self.graph.add_edge(node_id, cf["path"])
 
         # ── 第 4 步: ★ pybind11 跨语言边（AST + BindingMap + ctypes 兜底）──
         try:
