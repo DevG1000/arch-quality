@@ -315,12 +315,27 @@ class ReportGenerator:
             d = details.get(key, {})
             s = d.get("score", 0)
             rows.append(f"| {label} | {s:.1f} |")
+
+        fortran_note = ""
+        fm = self.m.get("fortran_mapping")
+        if fm and (fm.get("use_total", 0) > 0 or fm.get("call_total", 0) > 0):
+            use_hit = fm.get("use_hit_rate", 1.0) * 100
+            call_hit = fm.get("call_hit_rate", 1.0) * 100
+            fortran_note = (
+                f"\n> **Fortran 依赖映射命中率**: "
+                f"`use` {use_hit:.1f}% "
+                f"({fm.get('use_resolved', 0)}/{fm.get('use_total', 0)}), "
+                f"`call` {call_hit:.1f}% "
+                f"({fm.get('call_resolved', 0)}/{fm.get('call_total', 0)})"
+            )
+
         return (
             "## 五、多语言混合依赖评估\n\n"
             f"**综合得分**: {ml_score:.1f}/100 — 占结构质量 15%\n\n"
             f"| 维度 | 得分 |\n"
             f"|------|:----:|\n"
             + "\n".join(rows)
+            + fortran_note
         )
 
     # ── 章节 9: MLR 违规 ──

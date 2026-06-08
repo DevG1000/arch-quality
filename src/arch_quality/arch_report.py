@@ -31,13 +31,14 @@ SKILL_MULTILANG = str(Path(__file__).parent / "skills" / "multilang-dependency.m
 class ComprehensiveReport:
     """综合报告数据生成器"""
 
-    def __init__(self, root: str):
+    def __init__(self, root: str, build_dir: str = ""):
         self.root = root
+        self.build_dir = build_dir
         self.quality_weights = load_weights_from_skill(SKILL_QUALITY)
         self.multilang_weights = load_weights_from_skill(SKILL_MULTILANG)
 
         self.standard = StandardMetrics(root)
-        self.multilang = MultilangMetrics(root)
+        self.multilang = MultilangMetrics(root, build_dir=build_dir)
 
     def generate(self) -> dict:
         std_result = self.standard.all_metrics()
@@ -125,6 +126,7 @@ class ComprehensiveReport:
 def main():
     parser = argparse.ArgumentParser(description="架构质量综合评估报告")
     parser.add_argument("root", nargs="?", default=".", help="项目根目录")
+    parser.add_argument("--build-dir", default="", help="构建目录（包含 SWIG 生成文件的目录，如 build/）")
     parser.add_argument("--json", action="store_true", help="仅输出 JSON")
     parser.add_argument("--md", action="store_true", help="仅输出 Markdown")
     parser.add_argument("--report-mode", choices=["local", "central"], default="central",
@@ -134,7 +136,7 @@ def main():
 
     args = parser.parse_args()
 
-    reporter = ComprehensiveReport(args.root)
+    reporter = ComprehensiveReport(args.root, build_dir=args.build_dir)
     data = reporter.generate()
 
     # 加载历史

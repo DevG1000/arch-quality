@@ -62,17 +62,239 @@ def _load_weights() -> dict:
     return raw
 
 
+_FORTRAN_KEYWORDS = frozenset([
+    'if', 'then', 'else', 'elseif', 'endif', 'end', 'enddo',
+    'do', 'while', 'call', 'return', 'stop', 'pause', 'go', 'to',
+    'use', 'implicit', 'integer', 'real', 'character', 'logical',
+    'complex', 'double', 'parameter', 'data', 'common', 'dimension',
+    'allocatable', 'pointer', 'target', 'save', 'external', 'intrinsic',
+    'continue', 'format', 'print', 'write', 'read', 'open', 'close',
+    'inquire', 'rewind', 'backspace', 'endfile', 'contains', 'only',
+    'private', 'public', 'protected', 'sequence', 'equivalence',
+    'namelist', 'optional', 'intent', 'result', 'recursive',
+    'pure', 'elemental', 'interface', 'procedure', 'operator',
+    'assignment', 'generic', 'module', 'program', 'block', 'type',
+    'class', 'extends', 'abstract', 'enum', 'associate',
+])
+
+_MODULE_DECL_RE = re.compile(
+    r'^\s*module\s+(?!procedure\b)(\w+)', re.MULTILINE | re.IGNORECASE
+)
+_SUBROUTINE_DECL_RE = re.compile(
+    r'^\s*(?:(?:recursive|pure|elemental|integer|real|double\s*precision|logical|character|type\s*\([^)]*\)|class\s*\([^)]*\))\s+)*(?:subroutine|function)\s+(\w+)',
+    re.MULTILINE | re.IGNORECASE
+)
+
+
 class MultilangMetrics:
     """多语言混合依赖 6 维指标 + 12 MLR 规则检测"""
 
-    def __init__(self, root: str):
+    def __init__(self, root: str, build_dir: str = ""):
         self.root = root
+        self.build_dir = build_dir
         self.weights = _load_weights()
-        self.index = FileIndex(root)
+        self.index = FileIndex(root, build_dir=build_dir)
         self.graph = DepGraph()
         self._swig_bindings = {}
+        self._build_files = self._collect_build_bindings()
+        self._fortran_module_map = {}
+        self._fortran_subroutine_map = {}
+        self._fortran_use_total = 0
+        self._fortran_use_resolved = 0
+        self._fortran_call_total = 0
+        self._fortran_call_resolved = 0
+        self._compute_fortran_mapping_stats()
         self._build_cross_lang_graph()
         self.git = GitHistory(root)
+
+    def _collect_build_bindings(self):
+        """从 build_dir 收集 SWIG 绑定产物信息
+
+        扫描 _wrap.cxx/_wrap.cpp 文件提取 .def() 绑定，
+        扫描 .i 文件提取 SWIG 绑定定义，
+        扫描 .pyi 存根文件提取 Python 侧签名。
+
+        Returns:
+            dict: {
+                "wrap_files": [dict],   # SWIG wrap 文件信息
+                "swig_files": [dict],   # build_dir 中的 .i 文件
+                "pyi_files": [dict],     # Python 存根文件
+            }
+        """
+        from arch_quality.arch_python_ast import extract_swig_bindings
+        result = {"wrap_files": [], "swig_files": [], "pyi_files": []}
+        if not self.build_dir:
+            return result
+        build_path = Path(self.build_dir)
+        if not build_path.exists():
+            return result
+
+        for fpath in build_path.rglob("*"):
+            if not fpath.is_file():
+                continue
+            if any(part in FileIndex.EXCLUDE_DIRS for part in fpath.parts):
+                continue
+            filename = fpath.name
+            ext = fpath.suffix.lower()
+            is_wrap = filename.endswith("_wrap.cxx") or filename.endswith("_wrap.cpp")
+            is_swig = ext in (".i", ".swg")
+            is_pyi = filename.endswith(".pyi")
+
+            if is_wrap:
+                try:
+                    content = read_text_smart(str(fpath))
+                except Exception:
+                    content = ""
+                bound_funcs = re.findall(r'\.def\s*\(\s*["\x27](\w+)["\x27]', content)
+                module_match = re.search(r'PyInit_(\w+)', content)
+                module_name = module_match.group(1) if module_match else ""
+                includes = re.findall(r'#include\s+[<"](.+?)[>"]', content)
+                result["wrap_files"].append({
+                    "path": str(fpath),
+                    "abs_path": str(fpath),
+                    "module_name": module_name,
+                    "bound_funcs": bound_funcs,
+                    "includes": includes,
+                    "lines": content.count("\n") + 1 if content else 0,
+                })
+
+            if is_swig:
+                try:
+                    sb = extract_swig_bindings(str(fpath))
+                except Exception:
+                    sb = {"modules": [], "extended_classes": [], "extended_funcs": [],
+                          "includes": [], "renames": [], "inline_funcs": []}
+                result["swig_files"].append({
+                    "path": str(fpath),
+                    "abs_path": str(fpath),
+                    "bindings": sb,
+                })
+
+            if is_pyi:
+                try:
+                    content = read_text_smart(str(fpath))
+                except Exception:
+                    content = ""
+                pyi_funcs = re.findall(r'def\s+(\w+)\s*\(', content)
+                result["pyi_files"].append({
+                    "path": str(fpath),
+                    "abs_path": str(fpath),
+                    "functions": pyi_funcs,
+                })
+
+        return result
+
+    def _build_fortran_module_map(self) -> dict:
+        """构建 Fortran 模块名 → 文件路径映射表
+
+        扫描所有 .f90/.f95/.f03/.f08 文件，提取 module XXX 声明。
+        排除 'module procedure' 接口块语法和 F77 关键字。
+
+        Returns:
+            dict: {module_name_lower: file_path, ...}
+        """
+        module_map = {}
+        for f in self.index.by_lang("fortran"):
+            if f["ext"] not in (".f90", ".f95", ".f03", ".f08"):
+                continue
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+            for m in _MODULE_DECL_RE.finditer(content):
+                mod_name = m.group(1).lower()
+                if mod_name in _FORTRAN_KEYWORDS or mod_name.startswith("end"):
+                    continue
+                module_map[mod_name] = f["path"]
+        return module_map
+
+    def _build_fortran_subroutine_map(self) -> dict:
+        """构建 Fortran 子程序名 → 文件路径映射表
+
+        扫描所有 Fortran 文件中 subroutine/function 定义，
+        供 call 语句和 use 语句的回退解析使用。
+        仅包含不含在 module 中的顶层子程序（或 module 内的公共子程序）。
+
+        Returns:
+            dict: {subroutine_name_lower: file_path, ...}
+        """
+        sub_map = {}
+        for f in self.index.by_lang("fortran"):
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+            for m in _SUBROUTINE_DECL_RE.finditer(content):
+                name = m.group(1).lower()
+                if name in _FORTRAN_KEYWORDS or name.startswith("end"):
+                    continue
+                if name not in sub_map:
+                    sub_map[name] = f["path"]
+        return sub_map
+
+    def _compute_fortran_mapping_stats(self):
+        """计算 Fortran 模块/子程序映射的命中率"""
+        self._fortran_module_map = self._build_fortran_module_map()
+        self._fortran_subroutine_map = self._build_fortran_subroutine_map()
+
+        fortran_files = self.index.by_lang("fortran")
+        if not fortran_files:
+            self._fortran_use_total = 0
+            self._fortran_use_resolved = 0
+            self._fortran_call_total = 0
+            self._fortran_call_resolved = 0
+            return
+
+        use_total = 0
+        use_resolved = 0
+        call_total = 0
+        call_resolved = 0
+
+        for f in fortran_files:
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+
+            if f["ext"] in (".f90", ".f95", ".f03", ".f08"):
+                for m in re.finditer(
+                    r'^\s*use\s+(?:,\s*intrinsic\s*::\s*)?(\w+)',
+                    content, re.MULTILINE
+                ):
+                    mod_name = m.group(1).lower()
+                    use_total += 1
+                    if mod_name in self._fortran_module_map:
+                        use_resolved += 1
+                    elif mod_name in self._fortran_subroutine_map:
+                        use_resolved += 1
+                    else:
+                        for other in fortran_files:
+                            other_base = os.path.splitext(
+                                os.path.basename(other["path"])
+                            )[0].lower()
+                            if other_base == mod_name:
+                                use_resolved += 1
+                                break
+
+            elif f["ext"] == ".f":
+                for m in re.finditer(r'^\s*call\s+(\w+)', content, re.MULTILINE | re.IGNORECASE):
+                    called_name = m.group(1).lower()
+                    call_total += 1
+                    if called_name in self._fortran_subroutine_map:
+                        call_resolved += 1
+                    else:
+                        for other in fortran_files:
+                            other_base = os.path.splitext(
+                                os.path.basename(other["path"])
+                            )[0].lower()
+                            if other_base == called_name:
+                                call_resolved += 1
+                                break
+
+        self._fortran_use_total = use_total
+        self._fortran_use_resolved = use_resolved
+        self._fortran_call_total = call_total
+        self._fortran_call_resolved = call_resolved
 
     def _build_cross_lang_graph(self):
         """构建包含语言标签的依赖图
@@ -187,24 +409,43 @@ class MultilangMetrics:
                     if target in self.graph.nodes:
                         self.graph.add_edge(node_id, target)
 
-            # ── Fortran: use module ──
+            # ── Fortran: use module (3层解析: 模块映射 → 子程序映射 → 文件名回退) ──
             elif f["ext"] in (".f90", ".f95", ".f03", ".f08"):
                 for m in re.finditer(r'^\s*use\s+(?:,\s*intrinsic\s*::\s*)?(\w+)', content, re.MULTILINE):
                     mod_name = m.group(1).lower()
-                    for other in self.index.by_lang("fortran"):
-                        other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
-                        if other_base == mod_name:
-                            self.graph.add_edge(node_id, other["path"])
-                            break
+                    # 优先: 模块映射表（module name → file path）
+                    if mod_name in self._fortran_module_map:
+                        target = self._fortran_module_map[mod_name]
+                        if target != node_id:
+                            self.graph.add_edge(node_id, target)
+                    # 回退1: 子程序映射表
+                    elif mod_name in self._fortran_subroutine_map:
+                        target = self._fortran_subroutine_map[mod_name]
+                        if target != node_id:
+                            self.graph.add_edge(node_id, target)
+                    # 回退2: 文件名匹配
+                    else:
+                        for other in self.index.by_lang("fortran"):
+                            other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
+                            if other_base == mod_name:
+                                self.graph.add_edge(node_id, other["path"])
+                                break
             elif f["ext"] == ".f":
-                # F77 has no module system; track via common blocks and subprogram calls
-                for m in re.finditer(r'^\s*call\s+(\w+)', content, re.MULTILINE):
+                # F77: call 语句 (2层解析: 子程序映射 → 文件名回退)
+                for m in re.finditer(r'^\s*call\s+(\w+)', content, re.MULTILINE | re.IGNORECASE):
                     called_name = m.group(1).lower()
-                    for other in self.index.by_lang("fortran"):
-                        other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
-                        if other_base == called_name:
-                            self.graph.add_edge(node_id, other["path"])
-                            break
+                    # 优先: 子程序映射表
+                    if called_name in self._fortran_subroutine_map:
+                        target = self._fortran_subroutine_map[called_name]
+                        if target != node_id:
+                            self.graph.add_edge(node_id, target)
+                    # 回退: 文件名匹配
+                    else:
+                        for other in self.index.by_lang("fortran"):
+                            other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
+                            if other_base == called_name:
+                                self.graph.add_edge(node_id, other["path"])
+                                break
 
             # ── SWIG: %include → C++ 头文件 ──
             elif f["lang"] == "swig":
@@ -276,6 +517,71 @@ class MultilangMetrics:
 
         except Exception:
             pass
+
+        # ── 第 6 步: ★ build_dir SWIG 绑定产物跨语言边 ──
+        if self._build_files:
+            bf = self._build_files
+
+            # 6a. _wrap.cxx 文件中的 .def() 绑定 → 头文件跨语言边
+            for wrap_file in bf.get("wrap_files", []):
+                wrap_path = wrap_file["path"]
+                node_id = wrap_path
+                self.graph.add_node(node_id, "cpp", wrap_path)
+
+                for bound_func in wrap_file.get("bound_funcs", []):
+                    matched = False
+                    for hdr_path, funcs in header_functions.items():
+                        if bound_func in funcs:
+                            self.graph.add_edge(node_id, hdr_path)
+                            matched = True
+                            break
+                    if not matched:
+                        self.graph.add_edge(node_id, f"pybind:{bound_func}")
+
+                for inc_path in wrap_file.get("includes", []):
+                    inc_basename = os.path.basename(inc_path)
+                    if inc_basename in self.graph.nodes:
+                        self.graph.add_edge(node_id, inc_basename)
+
+                # _wrap.cxx → Python 模块（如果 PyInit_ 检测到模块名）
+                wrap_module = wrap_file.get("module_name", "")
+                if wrap_module:
+                    for pf in self.index.by_lang("python"):
+                        if wrap_module in pf["path"] or wrap_module in pf.get("path", ""):
+                            self.graph.add_edge(pf["path"], node_id)
+                            break
+
+            # 6b. build_dir 中的 .i 文件跨语言边（与源码树中的同一逻辑）
+            for sf_info in bf.get("swig_files", []):
+                sf_path = sf_info["path"]
+                sb = sf_info.get("bindings", {})
+                if not sb.get("modules") and not sb.get("includes"):
+                    continue
+
+                self.graph.add_node(sf_path, "swig", sf_path)
+
+                for mod_name in sb.get("modules", []):
+                    for pf in self.index.by_lang("python"):
+                        if mod_name in pf["path"] or mod_name in read_text_smart(pf["abs_path"]):
+                            self.graph.add_edge(pf["path"], sf_path)
+
+                for inc_path in sb.get("includes", []):
+                    inc_basename = os.path.basename(inc_path)
+                    if inc_basename in self.graph.nodes:
+                        self.graph.add_edge(sf_path, inc_basename)
+                    else:
+                        for hf in self.index.files:
+                            if hf["ext"] in (".h", ".hpp") and hf["path"].endswith(inc_basename):
+                                self.graph.add_edge(sf_path, hf["path"])
+                                break
+
+                for func_name in sb.get("extended_funcs", []):
+                    for hdr_path, funcs in header_functions.items():
+                        if func_name in funcs:
+                            self.graph.add_edge(sf_path, hdr_path)
+                            break
+
+                self._swig_bindings[sf_path] = sb
 
     # ── 6 个评估维度 ──
 
@@ -407,44 +713,86 @@ class MultilangMetrics:
     def calc_call_depth(self) -> tuple:
         """维度3: 跨语言回调深度
 
-        通过三条路径检测回调深度:
+        通过四条路径检测回调深度:
         1. 跨语言边BFS最大深度（原有逻辑）
         2. 静态回调链检测: Py→C++→Py→C++ 模式
         3. pybind11回调注册检测: .def(py::init, py::callback) 模式
+        4. C++ PyImport_ImportModule 动态回调链: Py→C++→Py
 
         返回 (score, {"max_depth": D, "callback_chains": [...], "max_depth_path": [...]})
         """
-        if not self.graph.cross_edges:
-            return 100.0, {"max_depth": 0, "callback_chains": [], "max_depth_path": []}
-
-        # ── 路径 1: BFS 跨语言最大深度 ──
         max_depth = 0
         max_depth_path = []
-        for node_id in self.graph.nodes:
-            visited = {node_id}
-            queue = [(node_id, 0, [node_id])]
-            while queue:
-                node, depth, path = queue.pop(0)
-                if depth > max_depth:
-                    max_depth = depth
-                    max_depth_path = path[:]
-                for neighbor in self.graph.cross_successors(node):
-                    if neighbor not in visited:
-                        visited.add(neighbor)
-                        queue.append((neighbor, depth + 1, path + [neighbor]))
-
-        # ── 路径 2: 静态回调链检测 (Py→C++→Py→C++) ──
         callback_chains = []
         py_files = {f["path"]: f for f in self.index.by_lang("python")}
-        cpp_files = {f["path"]: f for f in self.index.files if f["ext"] in (".cpp", ".cxx", ".cc")}
+        all_cpp_exts = (".cpp", ".cxx", ".cc", ".h", ".hpp")
+        cpp_files = {f["path"]: f for f in self.index.files if f["ext"] in all_cpp_exts}
 
+        def _py_imports_cpp(py_path, py_content):
+            """检测 Python 文件是否 import 了某个 C++ 模块，返回匹配的 cpp 路径列表"""
+            result = []
+            for m in re.finditer(r"^(?:from|import)\s+(\S+)", py_content, re.MULTILINE):
+                mod = m.group(1).split(".")[0]
+                for cpp_path in cpp_files:
+                    cpp_base = os.path.splitext(os.path.basename(cpp_path))[0]
+                    if cpp_base == mod:
+                        result.append(cpp_path)
+                        break
+            return result
+
+        def _resolve_pyimport_module(mod_name, exclude_paths=None):
+            """将 PyImport_ImportModule("module.name") 解析为项目内 Python 文件路径"""
+            if exclude_paths is None:
+                exclude_paths = set()
+            resolved = []
+            mod_parts = mod_name.replace(".", "/")
+            mod_path_candidates = [
+                mod_parts + ".py",
+                mod_parts + "/__init__.py",
+                mod_parts.rsplit("/", 1)[-1] + ".py",
+            ]
+            for py_path, py_info in py_files.items():
+                if py_path in exclude_paths:
+                    continue
+                py_basename = os.path.basename(py_path)
+                for candidate in mod_path_candidates:
+                    candidate_base = os.path.basename(candidate)
+                    if py_path.endswith(candidate) or py_basename == candidate_base:
+                        resolved.append(py_path)
+                        break
+                else:
+                    try:
+                        py_content = read_text_smart(py_info["abs_path"])
+                    except Exception:
+                        py_content = ""
+                    if mod_name in py_content or mod_name.rsplit(".", 1)[-1] in py_content:
+                        resolved.append(py_path)
+            return resolved
+
+        has_cross_edges = bool(self.graph.cross_edges)
+
+        # ── 路径 1: BFS 跨语言最大深度 ──
+        if has_cross_edges:
+            for node_id in self.graph.nodes:
+                visited = {node_id}
+                queue = [(node_id, 0, [node_id])]
+                while queue:
+                    node, depth, path = queue.pop(0)
+                    if depth > max_depth:
+                        max_depth = depth
+                        max_depth_path = path[:]
+                    for neighbor in self.graph.cross_successors(node):
+                        if neighbor not in visited:
+                            visited.add(neighbor)
+                            queue.append((neighbor, depth + 1, path + [neighbor]))
+
+        # ── 路径 2: 静态回调链检测 (Py→C++→Py→C++) ──
         for py_path, py_info in py_files.items():
             try:
                 py_content = read_text_smart(py_info["abs_path"])
             except Exception:
                 continue
 
-            # 检测回调注册模式: set_callback, register_callback, etc.
             callback_reg_patterns = [
                 r'set(?:_?)(?:callback|handler|listener|delegate|slot|notify)',
                 r'register(?:_?)(?:callback|handler|listener)',
@@ -457,12 +805,18 @@ class MultilangMetrics:
             if not has_callback_reg:
                 continue
 
-            # 找到此 Python 文件的跨语言后继（C++ 文件）
-            cpp_targets = self.graph.cross_successors(py_path)
+            cpp_targets = self.graph.cross_successors(py_path) if has_cross_edges else []
+            if not cpp_targets:
+                cpp_targets = _py_imports_cpp(py_path, py_content)
+            seen_cpp = set()
+            unique_cpp_targets = []
+            for ct in cpp_targets:
+                if ct not in seen_cpp and ct in cpp_files:
+                    seen_cpp.add(ct)
+                    unique_cpp_targets.append(ct)
+            cpp_targets = unique_cpp_targets
+
             for cpp_path in cpp_targets:
-                if cpp_path not in cpp_files:
-                    continue
-                # 检查 C++ 文件是否回调 Python
                 try:
                     cpp_content = read_text_smart(cpp_files[cpp_path]["abs_path"])
                 except Exception:
@@ -478,23 +832,33 @@ class MultilangMetrics:
                 if not cpp_cbs_python:
                     continue
 
-                # 找到 C++ 文件回调的 Python 文件
-                py_targets = self.graph.cross_successors(cpp_path)
-                chain_depth_3_paths = []
-                for py2_path in py_targets:
-                    if py2_path in py_files and py2_path != py_path:
-                        chain_depth_3_paths.append(py2_path)
+                py_targets = list(self.graph.cross_successors(cpp_path)) if has_cross_edges else []
+                py_target_set = set(py_targets)
+                import_targets = list(re.finditer(
+                    r'PyImport_ImportModule\s*\(\s*["\x27]([^"\x27]+)["\x27]\s*\)',
+                    cpp_content
+                ))
+                for imp_m in import_targets:
+                    resolved = _resolve_pyimport_module(imp_m.group(1), exclude_paths={py_path})
+                    for rp in resolved:
+                        if rp not in py_target_set:
+                            py_targets.append(rp)
+                            py_target_set.add(rp)
 
-                if cpp_cbs_python:
-                    chain = f"{py_path} [Py] → {cpp_path} [C++]"
-                    if chain_depth_3_paths:
-                        for py2 in chain_depth_3_paths[:3]:
-                            full_chain = chain + f" → {py2} [Py]"
+                chain_depth_3_paths = [p for p in py_targets if p in py_files and p != py_path]
+
+                chain = f"{py_path} [Py] → {cpp_path} [C++]"
+                if chain_depth_3_paths:
+                    for py2 in chain_depth_3_paths[:3]:
+                        full_chain = chain + f" → {py2} [Py]"
+                        if full_chain not in callback_chains:
                             callback_chains.append(full_chain)
-                            max_depth = max(max_depth, 3)
-                    else:
-                        callback_chains.append(chain + " → [callback to Py]")
-                        max_depth = max(max_depth, 2)
+                        max_depth = max(max_depth, 3)
+                else:
+                    cb_chain = chain + " → [callback to Py]"
+                    if cb_chain not in callback_chains:
+                        callback_chains.append(cb_chain)
+                    max_depth = max(max_depth, 2)
 
         # ── 路径 3: pybind11 回调检测 ──
         for f in self.index.files:
@@ -511,19 +875,73 @@ class MultilangMetrics:
                 r'PyGILState_Ensure|Py_BEGIN_ALLOW_THREADS',
                 content
             ))
-            if has_pybind_callback:
-                has_gil_release = bool(re.search(
-                    r'py::gil_scoped_release|gil_scoped_release|Py_BEGIN_ALLOW_THREADS',
-                    content
-                ))
-                if not has_gil_release:
-                    py_succs = self.graph.cross_predecessors(f["path"])
-                    py_succs = [p for p in py_succs if p in py_files]
-                    if py_succs:
-                        chain = f"{py_succs[0]} [Py] → {f['path']} [C++] → [callback to Py]"
+            if not has_pybind_callback:
+                continue
+            has_gil_release = bool(re.search(
+                r'py::gil_scoped_release|gil_scoped_release|Py_BEGIN_ALLOW_THREADS',
+                content
+            ))
+            if has_gil_release:
+                continue
+            py_preds = [p for p in self.graph.cross_predecessors(f["path"]) if p in py_files]
+            if not py_preds:
+                try:
+                    py_content_of = read_text_smart
+                except Exception:
+                    py_content_of = None
+                for py_path, py_info in py_files.items():
+                    try:
+                        pc = read_text_smart(py_info["abs_path"])
+                    except Exception:
+                        continue
+                    matched = _py_imports_cpp(py_path, pc)
+                    if f["path"] in matched:
+                        py_preds.append(py_path)
+                        break
+            if py_preds:
+                chain = f"{py_preds[0]} [Py] → {f['path']} [C++] → [callback to Py]"
+                if chain not in callback_chains:
+                    callback_chains.append(chain)
+                    max_depth = max(max_depth, 2)
+
+        # ── 路径 4: C++ PyImport_ImportModule 动态回调链检测 (Py→C++→Py) ──
+        for f in self.index.files:
+            if f["ext"] not in all_cpp_exts:
+                continue
+            try:
+                content = read_text_smart(f["abs_path"])
+            except Exception:
+                continue
+
+            import_matches = list(re.finditer(
+                r'PyImport_ImportModule\s*\(\s*["\x27]([^"\x27]+)["\x27]\s*\)',
+                content
+            ))
+            if not import_matches:
+                continue
+
+            py_preds = [p for p in self.graph.cross_predecessors(f["path"]) if p in py_files]
+            if not py_preds:
+                for py_path, py_info in py_files.items():
+                    try:
+                        pc = read_text_smart(py_info["abs_path"])
+                    except Exception:
+                        continue
+                    if f["path"] in _py_imports_cpp(py_path, pc):
+                        py_preds.append(py_path)
+
+            if not py_preds:
+                continue
+
+            for imp_m in import_matches:
+                mod_name = imp_m.group(1)
+                resolved = _resolve_pyimport_module(mod_name, exclude_paths=set(py_preds))
+                for py_path in resolved:
+                    for py_pred in py_preds[:3]:
+                        chain = f"{py_pred} [Py] → {f['path']} [C++] → {py_path} [Py]"
                         if chain not in callback_chains:
                             callback_chains.append(chain)
-                            max_depth = max(max_depth, 2)
+                            max_depth = max(max_depth, 3)
 
         D = max_depth
         if D <= 1:
@@ -616,6 +1034,32 @@ class MultilangMetrics:
                         break
             self._swig_bindings[sf["path"]] = sb
 
+        # build_dir SWIG 绑定统计
+        if self._build_files:
+            bf = self._build_files
+            for wrap_file in bf.get("wrap_files", []):
+                bound_exports += len(wrap_file.get("bound_funcs", []))
+                matched += len(wrap_file.get("bound_funcs", []))
+            for sf_info in bf.get("swig_files", []):
+                sb = sf_info.get("bindings", {})
+                if not sb:
+                    continue
+                swig_ext_funcs = sb.get("extended_funcs", [])
+                swig_inline_funcs = sb.get("inline_funcs", [])
+                swig_includes = sb.get("includes", [])
+                swig_bound += len(swig_ext_funcs) + len(swig_inline_funcs)
+                for func_name in swig_ext_funcs + swig_inline_funcs:
+                    for hdr_path, funcs in header_functions.items():
+                        if func_name in funcs:
+                            swig_matched += 1
+                            break
+                for inc_path in swig_includes:
+                    inc_base = os.path.basename(inc_path)
+                    for hdr_path in header_functions:
+                        if hdr_path.replace("\\", "/").endswith(inc_base):
+                            swig_matched += 1
+                            break
+
         total_bound = bound_exports + swig_bound
         total_matched = matched + swig_matched
 
@@ -648,6 +1092,9 @@ class MultilangMetrics:
             "swig_bound": swig_bound,
             "swig_matched": swig_matched,
             "deductions": deductions,
+            "build_dir_used": bool(self.build_dir and self._build_files.get("wrap_files") or self._build_files.get("swig_files")),
+            "build_wrap_count": len(self._build_files.get("wrap_files", [])),
+            "build_swig_count": len(self._build_files.get("swig_files", [])),
         }
 
     def calc_script_boundary(self) -> tuple:
@@ -783,7 +1230,9 @@ class MultilangMetrics:
             total_h = sum(1 for f in cpp_files if f["ext"] in (".hpp", ".h"))
             bound = sum(1 for f in cpp_files if f["ext"] == ".cpp")
             swig_count = len(self.index.by_lang("swig"))
-            has_binding = bound > 0 or swig_count > 0
+            build_wrap_count = len(self._build_files.get("wrap_files", []))
+            build_swig_count = len(self._build_files.get("swig_files", []))
+            has_binding = bound > 0 or swig_count > 0 or build_wrap_count > 0 or build_swig_count > 0
             if total_h > bound + 2 and not has_binding:
                 mlr_results.append({
                     "rule": "MLR-002", "name": "绑定层接口缺失",
@@ -797,6 +1246,13 @@ class MultilangMetrics:
                     "severity": "MEDIUM",
                     "count": total_h - bound,
                     "detail": f"头文件数 ({total_h}) >> 绑定cpp数 ({bound})，但有 {swig_count} 个 SWIG 绑定文件",
+                })
+            elif total_h > bound + 2 and build_wrap_count > 0 and swig_count == 0:
+                mlr_results.append({
+                    "rule": "MLR-002", "name": "绑定层接口缺失（build_dir中检测到SWIG包装）",
+                    "severity": "MEDIUM",
+                    "count": total_h - bound,
+                    "detail": f"头文件数 ({total_h}) >> 绑定cpp数 ({bound})，但 build_dir 中发现 {build_wrap_count} 个 _wrap 文件",
                 })
 
         # MLR-003: 绑定层签名不匹配（pybind11 + SWIG）
@@ -843,6 +1299,52 @@ class MultilangMetrics:
                     "severity": "INFO" if is_tp else "MEDIUM",
                     "count": len(unmatched),
                     "detail": f"{sf['path']}: {len(unmatched)} 处 %extend 函数未在头文件中找到声明: {unmatched[:5]}" + ("（第三方代码，建议豁免）" if is_tp else ""),
+                })
+
+        # build_dir SWIG 绑定签名检测
+        for sf_info in self._build_files.get("swig_files", []):
+            sb = sf_info.get("bindings", {})
+            if not sb:
+                continue
+            unmatched_build = []
+            for func_name in sb.get("extended_funcs", []):
+                found = False
+                for hdr_path, funcs in header_functions_cache.items():
+                    if func_name in funcs:
+                        found = True
+                        break
+                if not found:
+                    unmatched_build.append(func_name)
+            if unmatched_build:
+                sf_path = sf_info["path"]
+                is_tp_source = is_third_party_path(sf_path) if "is_third_party_path" in dir() else False
+                mlr_results.append({
+                    "rule": "MLR-003", "name": "SWIG绑定签名不匹配（build_dir）",
+                    "severity": "MEDIUM",
+                    "count": len(unmatched_build),
+                    "detail": f"{sf_path}: {len(unmatched_build)} 处 %extend 函数未在源码头文件中找到声明: {unmatched_build[:5]}（来自构建目录）",
+                })
+
+        # build_dir _wrap.cxx 签名匹配检测
+        for wrap_file in self._build_files.get("wrap_files", []):
+            wrap_bound = wrap_file.get("bound_funcs", [])
+            if not wrap_bound:
+                continue
+            unmatched_wrap = []
+            for func_name in wrap_bound:
+                found = False
+                for hdr_path, funcs in header_functions_cache.items():
+                    if func_name in funcs:
+                        found = True
+                        break
+                if not found:
+                    unmatched_wrap.append(func_name)
+            if unmatched_wrap:
+                mlr_results.append({
+                    "rule": "MLR-003", "name": "SWIG包装签名不匹配（build_dir）",
+                    "severity": "MEDIUM",
+                    "count": len(unmatched_wrap),
+                    "detail": f"{wrap_file['path']}: {len(unmatched_wrap)} 处 .def() 绑定未在源码头文件中找到声明: {unmatched_wrap[:5]}（来自构建目录）",
                 })
 
         # MLR-004: 脚本直接访问内部（在 _build_cross_lang_graph 中收集）
@@ -1176,19 +1678,30 @@ class MultilangMetrics:
                     key=lambda x: -x[1]
                 )),
             },
+            "fortran_mapping": {
+                "module_map_size": len(self._fortran_module_map),
+                "subroutine_map_size": len(self._fortran_subroutine_map),
+                "use_total": self._fortran_use_total,
+                "use_resolved": self._fortran_use_resolved,
+                "use_hit_rate": round(self._fortran_use_resolved / self._fortran_use_total, 4) if self._fortran_use_total > 0 else 1.0,
+                "call_total": self._fortran_call_total,
+                "call_resolved": self._fortran_call_resolved,
+                "call_hit_rate": round(self._fortran_call_resolved / self._fortran_call_total, 4) if self._fortran_call_total > 0 else 1.0,
+            },
         }
 
 
 def main():
     parser = argparse.ArgumentParser(description="多语言混合依赖评估")
     parser.add_argument("root", nargs="?", default=".", help="项目根目录")
+    parser.add_argument("--build-dir", default="", help="构建目录（包含 SWIG 生成文件的目录，如 build/）")
     parser.add_argument("--full", action="store_true", help="完整评估（6维 + MLR）")
     parser.add_argument("--scan", action="store_true", help="扫描并输出结果")
     parser.add_argument("--mlr-only", action="store_true", help="仅检测 MLR 规则")
 
     args = parser.parse_args()
 
-    metrics = MultilangMetrics(args.root)
+    metrics = MultilangMetrics(args.root, build_dir=args.build_dir)
 
     if args.mlr_only:
         result = {"mlr_violations": metrics.check_mlr_rules()}

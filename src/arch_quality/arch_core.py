@@ -84,8 +84,11 @@ class FileIndex:
     EXCLUDE_DIRS = {"node_modules", ".opencode", ".git", "__pycache__",
                     "build", "dist", ".vscode", ".idea", "platforms"}
 
-    def __init__(self, root: str):
+    BINDING_EXTENSIONS = {".i", ".swg", "_wrap.cxx", "_wrap.cpp"}
+
+    def __init__(self, root: str, build_dir: str = ""):
         self.root = Path(root)
+        self.build_dir = Path(build_dir) if build_dir else None
         self.files = []
         self._scan()
 
@@ -112,7 +115,67 @@ class FileIndex:
                 "ext": ext,
                 "lines": lines,
             })
+        if self.build_dir and self.build_dir.exists():
+            self._scan_build_dir()
         self.files.sort(key=lambda x: x["path"])
+
+    def _scan_build_dir(self):
+        scanned = {f["abs_path"] for f in self.files}
+        build_ext_map = {
+            ".i": "swig",
+            ".swg": "swig",
+            ".cxx": "cpp",
+            ".cpp": "cpp",
+            ".h": "c",
+            ".hpp": "cpp",
+            ".py": "python",
+            ".pyi": "python",
+        }
+        for fpath in self.build_dir.rglob("*"):
+            if not fpath.is_file():
+                continue
+            if any(part in self.EXCLUDE_DIRS for part in fpath.parts):
+                continue
+            ext = fpath.suffix.lower()
+            if ext not in build_ext_map:
+                continue
+            if str(fpath) in scanned:
+                continue
+            filename = fpath.name.lower()
+            is_wrap = filename.endswith("_wrap.cxx") or filename.endswith("_wrap.cpp")
+            is_pyi = filename.endswith(".pyi") and ext == ".pyi"
+            is_swig = ext in (".i", ".swg")
+            if not (is_wrap or is_pyi or is_swig or ext in (".h", ".hpp")):
+                continue
+            lang = build_ext_map[ext]
+            if is_wrap:
+                lang = "cpp"
+            lines = 0
+            try:
+                with open(fpath, "rb") as f:
+                    lines = sum(1 for _ in f)
+            except Exception:
+                pass
+            try:
+                rel = str(fpath.relative_to(self.root))
+            except ValueError:
+                rel = str(fpath)
+            entry = {
+                "path": rel,
+                "abs_path": str(fpath),
+                "lang": lang,
+                "ext": ext,
+                "lines": lines,
+                "from_build_dir": True,
+            }
+            if is_wrap:
+                entry["is_swig_wrap"] = True
+            if is_pyi:
+                entry["is_pyi_stub"] = True
+            if is_swig:
+                entry["is_build_swig"] = True
+            self.files.append(entry)
+            scanned.add(str(fpath))
 
     def by_lang(self, lang: str):
         return [f for f in self.files if f["lang"] == lang]

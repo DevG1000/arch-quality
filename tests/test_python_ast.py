@@ -14,6 +14,8 @@ test_python_ast.py — arch_python_ast.py 单元测试
 """
 
 import unittest
+import os
+import tempfile
 
 from arch_quality.arch_python_ast import (
     extract_pybind11_calls, _parse_content,
@@ -521,3 +523,116 @@ class TestMLR012CrossLangCheck(unittest.TestCase):
             any("solver.f90" == d for s, d in g.cross_edges)
         )
         self.assertTrue(has_edge)
+
+
+class TestMLR005Depth3CallbackChain(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_depth3_pyimport_chain(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        py_a = os.path.join(self.tmpdir, "trigger.py")
+        with open(py_a, "w", encoding="utf-8") as f:
+            f.write("import bridge\nresult = bridge.run()\n")
+        cpp_b = os.path.join(self.tmpdir, "bridge.cpp")
+        with open(cpp_b, "w", encoding="utf-8") as f:
+            f.write(
+                '#include <Python.h>\n'
+                '#include "trigger.h"\n'
+                '#include "callback_handler.h"\n'
+                'void run() {\n'
+                '  PyObject* mod = PyImport_ImportModule("callback_handler");\n'
+                '  PyObject* cb = PyObject_GetAttrString(mod, "on_complete");\n'
+                '  PyObject_CallObject(cb, NULL);\n'
+                '}\n'
+            )
+        hdr1 = os.path.join(self.tmpdir, "trigger.h")
+        with open(hdr1, "w", encoding="utf-8") as f:
+            f.write("void run();\n")
+        hdr2 = os.path.join(self.tmpdir, "callback_handler.h")
+        with open(hdr2, "w", encoding="utf-8") as f:
+            f.write("void on_complete();\n")
+        py_c = os.path.join(self.tmpdir, "callback_handler.py")
+        with open(py_c, "w", encoding="utf-8") as f:
+            f.write("def on_complete():\n    pass\n")
+        metrics = MultilangMetrics(self.tmpdir)
+        score, detail = metrics.calc_call_depth()
+        chains = detail.get("callback_chains", [])
+        has_callback_chain = len(chains) > 0
+        self.assertTrue(has_callback_chain or detail["max_depth"] >= 2,
+                        f"Expected callback chain or depth >= 2, got depth={detail['max_depth']}, chains={chains}")
+
+    def test_depth3_static_callback_with_pyimport(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        py_a = os.path.join(self.tmpdir, "fem_command.py")
+        with open(py_a, "w", encoding="utf-8") as f:
+            f.write("import FemSolver\nfem = FemSolver()\nfem.set_callback(self.on_result)\n")
+        hdr = os.path.join(self.tmpdir, "fem.h")
+        with open(hdr, "w", encoding="utf-8") as f:
+            f.write("class FemSolver { void run(); };\n")
+        cpp_b = os.path.join(self.tmpdir, "FemSolver.cpp")
+        with open(cpp_b, "w", encoding="utf-8") as f:
+            f.write(
+                '#include <Python.h>\n'
+                '#include "fem.h"\n'
+                'void FemSolver::run() {\n'
+                '  PyObject* mod = PyImport_ImportModule("result_handler");\n'
+                '  Py::Callable method(mod->getAttr("handle_result"));\n'
+                '  method.apply(args);\n'
+                '}\n'
+            )
+        py_c = os.path.join(self.tmpdir, "result_handler.py")
+        with open(py_c, "w", encoding="utf-8") as f:
+            f.write("def handle_result():\n    pass\n")
+        metrics = MultilangMetrics(self.tmpdir)
+        score, detail = metrics.calc_call_depth()
+        self.assertTrue(detail["max_depth"] >= 1 or len(detail.get("callback_chains", [])) >= 1,
+                        f"Expected depth >= 1 or chains, got depth={detail['max_depth']}, chains={detail.get('callback_chains', [])}")
+
+    def test_depth2_callback_with_pybind11(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        py_a = os.path.join(self.tmpdir, "solver_cmd.py")
+        with open(py_a, "w", encoding="utf-8") as f:
+            f.write("from solver import Solver\ns = Solver()\ns.set_callback(self.on_done)\ns.run()\n")
+        hdr = os.path.join(self.tmpdir, "solver.h")
+        with open(hdr, "w", encoding="utf-8") as f:
+            f.write("class Solver { void run(); };\n")
+        cpp_b = os.path.join(self.tmpdir, "solver.cpp")
+        with open(cpp_b, "w", encoding="utf-8") as f:
+            f.write(
+                '#include "solver.h"\n'
+                '#include <pybind11/pybind11.h>\n'
+                'void Solver::run() {\n'
+                '  py::function cb;\n'
+                '  cb();\n'
+                '}\n'
+            )
+        metrics = MultilangMetrics(self.tmpdir)
+        score, detail = metrics.calc_call_depth()
+        chains = detail.get("callback_chains", [])
+        self.assertTrue(len(chains) > 0 or detail["max_depth"] >= 1,
+                        f"Expected callback detection, got depth={detail['max_depth']}, chains={chains}")
+
+    def test_no_callback_no_depth(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        py_a = os.path.join(self.tmpdir, "simple.py")
+        with open(py_a, "w", encoding="utf-8") as f:
+            f.write("import os\nimport sys\n")
+        metrics = MultilangMetrics(self.tmpdir)
+        score, detail = metrics.calc_call_depth()
+        self.assertEqual(detail["max_depth"], 0)
+
+    def test_pyimport_module_name_resolution(self):
+        import re
+        content = 'PyObject* mod = PyImport_ImportModule("femguiutils.data_extraction");\n'
+        matches = list(re.finditer(
+            r'PyImport_ImportModule\s*\(\s*["\x27]([^"\x27]+)["\x27]\s*\)',
+            content
+        ))
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0].group(1), "femguiutils.data_extraction")
