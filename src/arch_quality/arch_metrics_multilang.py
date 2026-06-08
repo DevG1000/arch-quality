@@ -1574,7 +1574,34 @@ class MultilangMetrics:
             except Exception:
                 continue
 
-            if f["ext"] == ".py":
+            if f["ext"] == ".c" or f["ext"] == ".cpp":
+                # C/C++ files: detect malloc/calloc/realloc without paired free
+                malloc_hits = len(re.findall(r'\b(?:malloc|calloc|realloc)\s*\(', content))
+                if malloc_hits == 0:
+                    continue
+                free_hits = len(re.findall(r'\bfree\s*\(', content))
+                # Also detect FORTRAN SFREE macro wrapper
+                sfree_hits = len(re.findall(r'\bSFREE\s*\(', content))
+                total_free = free_hits + sfree_hits
+                has_ffi = bool(re.search(r'\b(?:PyObject|Py_|ctypes|CDLL|c_void_p|c_char_p)\b', content))
+                if has_ffi:
+                    severity = "HIGH"
+                    detail_suffix = "C/C++ FFI 代码中的内存分配，跨语言所有权风险"
+                elif total_free == 0:
+                    severity = "MEDIUM"
+                    detail_suffix = "有分配无释放，内存所有权不清晰"
+                else:
+                    severity = "LOW"
+                    detail_suffix = f"有配对 free({total_free})/{malloc_hits} alloc，但建议审查所有权"
+                mlr_results.append({
+                    "rule": "MLR-010", "name": "FFI内存所有权混乱",
+                    "severity": severity,
+                    "count": malloc_hits,
+                    "detail": (f"{f['path']}: {malloc_hits} 处 "
+                               f"malloc/calloc/realloc，{detail_suffix}"),
+                })
+
+            elif f["ext"] == ".py":
                 # L5: 代码生成模板 → 跳过（如 gmsh/api/GenApi.py）
                 if is_codegen_template(content):
                     continue

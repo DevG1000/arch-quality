@@ -730,3 +730,75 @@ class TestMLR005Depth3CallbackChain(unittest.TestCase):
         ))
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0].group(1), "femguiutils.data_extraction")
+
+
+class TestMLR010CFiles(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_c_malloc_no_free_medium(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        c_file = os.path.join(self.tmpdir, "alloc.c")
+        with open(c_file, "w") as f:
+            f.write("#include <stdlib.h>\nvoid init() {\n  char *p = malloc(100);\n}\n")
+        m = MultilangMetrics(self.tmpdir)
+        results = m.check_mlr_rules()
+        mlr010 = [r for r in results if r["rule"] == "MLR-010"]
+        self.assertTrue(len(mlr010) > 0, f"Expected MLR-010 violation for malloc without free")
+        self.assertEqual(mlr010[0]["severity"], "MEDIUM",
+                         f"malloc without free should be MEDIUM, got {mlr010[0]}")
+
+    def test_c_malloc_with_free_low(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        c_file = os.path.join(self.tmpdir, "alloc.c")
+        with open(c_file, "w") as f:
+            f.write("#include <stdlib.h>\nvoid init() {\n  char *p = malloc(100);\n  free(p);\n}\n")
+        m = MultilangMetrics(self.tmpdir)
+        results = m.check_mlr_rules()
+        mlr010 = [r for r in results if r["rule"] == "MLR-010"]
+        self.assertTrue(len(mlr010) > 0, f"Expected MLR-010 violation")
+        self.assertEqual(mlr010[0]["severity"], "LOW",
+                         f"malloc with free should be LOW, got {mlr010[0]}")
+
+    def test_c_malloc_with_ffi_high(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        c_file = os.path.join(self.tmpdir, "bridge.c")
+        with open(c_file, "w") as f:
+            f.write("#include <stdlib.h>\n#include <Python.h>\nvoid wrap() {\n  char *p = malloc(100);\n  PyObject *obj = Py_BuildValue(\"s\", p);\n}\n")
+        m = MultilangMetrics(self.tmpdir)
+        results = m.check_mlr_rules()
+        mlr010 = [r for r in results if r["rule"] == "MLR-010"]
+        self.assertTrue(len(mlr010) > 0, f"Expected MLR-010 violation for FFI malloc")
+        self.assertEqual(mlr010[0]["severity"], "HIGH",
+                         f"malloc in FFI context should be HIGH, got {mlr010[0]}")
+
+    def test_c_no_malloc_no_violation(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        c_file = os.path.join(self.tmpdir, "pure.c")
+        with open(c_file, "w") as f:
+            f.write("int add(int a, int b) { return a + b; }\n")
+        m = MultilangMetrics(self.tmpdir)
+        results = m.check_mlr_rules()
+        mlr010 = [r for r in results if r["rule"] == "MLR-010"]
+        self.assertEqual(len(mlr010), 0,
+                         f"No malloc = no MLR-010 violation, got {mlr010}")
+
+    def test_c_sfree_macro_detected(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        c_file = os.path.join(self.tmpdir, "calc.c")
+        with open(c_file, "w") as f:
+            f.write("#include <stdlib.h>\nvoid compute() {\n  double *arr = malloc(100*sizeof(double));\n  SFREE(arr);\n}\n")
+        m = MultilangMetrics(self.tmpdir)
+        results = m.check_mlr_rules()
+        mlr010 = [r for r in results if r["rule"] == "MLR-010"]
+        self.assertTrue(len(mlr010) > 0)
+        self.assertEqual(mlr010[0]["severity"], "LOW")
+
+
+if __name__ == "__main__":
+    unittest.main()
