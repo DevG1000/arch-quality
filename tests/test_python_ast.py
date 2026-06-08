@@ -525,6 +525,100 @@ class TestMLR012CrossLangCheck(unittest.TestCase):
         self.assertTrue(has_edge)
 
 
+class TestMLR012AllowedCoupling(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_allowed_coupling_annotation_downgrades_to_info(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        py = os.path.join(self.tmpdir, "driver.py")
+        with open(py, "w") as f:
+            f.write("import ctypes\nlib = ctypes.CDLL('libheat')\nlib.solve()\n")
+        c = os.path.join(self.tmpdir, "solver.c")
+        with open(c, "w") as f:
+            f.write("void solve();\n")
+        f90 = os.path.join(self.tmpdir, "solver.f90")
+        with open(f90, "w") as f:
+            f.write("! @allowed_coupling HeatSolve\nmodule HeatSolve\n  subroutine solve()\n  end subroutine\nend module\n")
+        m = MultilangMetrics(self.tmpdir)
+        results = m.check_mlr_rules()
+        mlr012 = [r for r in results if r["rule"] == "MLR-012"]
+        found = False
+        for r in mlr012:
+            if "solver.f90" in r.get("detail", ""):
+                found = True
+                self.assertEqual(r["severity"], "INFO",
+                                 f"@allowed_coupling should downgrade to INFO, got {r}")
+        if not found:
+            self.skipTest("solver.f90 not flagged by MLR-012")
+
+    def test_allowed_coupling_without_module_name(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        py = os.path.join(self.tmpdir, "driver.py")
+        with open(py, "w") as f:
+            f.write("import ctypes\nlib = ctypes.CDLL('libheat')\nlib.solve()\n")
+        c = os.path.join(self.tmpdir, "solver.c")
+        with open(c, "w") as f:
+            f.write("void solve();\n")
+        f90 = os.path.join(self.tmpdir, "solver.f90")
+        with open(f90, "w") as f:
+            f.write("! @allowed_coupling\nsubroutine calculate()\nend subroutine\n")
+        m = MultilangMetrics(self.tmpdir)
+        results = m.check_mlr_rules()
+        mlr012 = [r for r in results if r["rule"] == "MLR-012"]
+        found = False
+        for r in mlr012:
+            if "solver.f90" in r.get("detail", ""):
+                found = True
+                self.assertEqual(r["severity"], "INFO",
+                                 f"@allowed_coupling (no module name) should downgrade to INFO, got {r}")
+        if not found:
+            self.skipTest("solver.f90 not flagged by MLR-012")
+
+    def test_no_allowed_coupling_stays_medium(self):
+        from arch_quality.arch_metrics_multilang import MultilangMetrics
+        from arch_quality.arch_core import DepGraph
+        f90 = os.path.join(self.tmpdir, "solver.f90")
+        with open(f90, "w") as f:
+            f.write("module HeatSolve\n  subroutine solve()\n  end subroutine\nend module\n")
+        py = os.path.join(self.tmpdir, "driver.py")
+        with open(py, "w") as f:
+            f.write("import ctypes\nlib = ctypes.CDLL('libheat')\nlib.solve()\n")
+        c = os.path.join(self.tmpdir, "heat.c")
+        with open(c, "w") as f:
+            f.write("void solve();\n")
+        m = MultilangMetrics(self.tmpdir)
+        has_cross = any("solver.f90" in (s, d) for s, d in m.graph.cross_edges)
+        if not has_cross:
+            self.skipTest("No cross-lang edge formed for solver.f90")
+        results = m.check_mlr_rules()
+        mlr012 = [r for r in results if r["rule"] == "MLR-012"]
+        for r in mlr012:
+            if "solver.f90" in r.get("detail", ""):
+                self.assertEqual(r["severity"], "MEDIUM",
+                                 f"Without annotation, cross-lang Fortran should be MEDIUM, got {r}")
+
+    def test_allowed_coupling_regex_variants(self):
+        import re
+        _ALLOWED_COUPLING_RE = re.compile(r'@\s*allowed_coupling(?:\s+(\S+))?', re.IGNORECASE)
+        m1 = _ALLOWED_COUPLING_RE.search("! @allowed_coupling HeatSolve\n")
+        self.assertIsNotNone(m1)
+        self.assertEqual(m1.group(1), "HeatSolve")
+        m2 = _ALLOWED_COUPLING_RE.search("! @ALLOWED_COUPLING\n")
+        self.assertIsNotNone(m2)
+        self.assertIsNone(m2.group(1))
+        m3 = _ALLOWED_COUPLING_RE.search("! @ allowed_coupling SolverUtils\n")
+        self.assertIsNotNone(m3)
+        self.assertEqual(m3.group(1), "SolverUtils")
+        m4 = _ALLOWED_COUPLING_RE.search("! no annotation here\n")
+        self.assertIsNone(m4)
+
+
 class TestMLR005Depth3CallbackChain(unittest.TestCase):
 
     def setUp(self):

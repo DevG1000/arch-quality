@@ -1638,8 +1638,9 @@ class MultilangMetrics:
                     "detail": f"{f['path']}: 循环内存在约 {loop_calls} 处跨语言调用，建议批量化",
                 })
 
-        # MLR-012: Fortran缺少ISO_C_BINDING (v3 — 第三方/固定格式/同语言降级)
+        # MLR-012: Fortran缺少ISO_C_BINDING (v3 — 第三方/固定格式/同语言降级 + @allowed_coupling 豁免)
         from arch_quality.arch_python_ast import is_third_party_path
+        _ALLOWED_COUPLING_RE = re.compile(r'@\s*allowed_coupling(?:\s+(\S+))?', re.IGNORECASE)
         fortran_files = self.index.by_lang("fortran")
         for f in fortran_files:
             try:
@@ -1653,6 +1654,7 @@ class MultilangMetrics:
                     any(f["path"] == s for s, d in self.graph.cross_edges) or
                     any(f["path"] == d for s, d in self.graph.cross_edges)
                 )
+                allowed_coupling_match = _ALLOWED_COUPLING_RE.search(content)
                 if is_tp:
                     severity = "INFO"
                     detail_suffix = "第三方代码，建议标注 @third_party 豁免"
@@ -1662,6 +1664,10 @@ class MultilangMetrics:
                 elif not has_cross_lang_edge:
                     severity = "INFO"
                     detail_suffix = "同语言内部调用，不需要 iso_c_binding"
+                elif allowed_coupling_match:
+                    severity = "INFO"
+                    allowed_modules = allowed_coupling_match.group(1) or ""
+                    detail_suffix = f"@allowed_coupling 豁免{(' → ' + allowed_modules) if allowed_modules else ''}，耦合已确认安全"
                 else:
                     severity = "MEDIUM"
                     detail_suffix = "被 C/C++ 直接调用，跨语言接口可能不稳定"
