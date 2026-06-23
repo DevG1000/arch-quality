@@ -62,6 +62,9 @@ class FileIndex:
         ".txx": "cpp",
         ".c": "c",
         ".h": "c",
+        ".ixx": "cpp",
+        ".cppm": "cpp",
+        ".mpp": "cpp",
         ".f90": "fortran",
         ".f": "fortran",
         ".f03": "fortran",
@@ -93,31 +96,44 @@ class FileIndex:
         self._scan()
 
     def _scan(self):
-        for fpath in self.root.rglob("*"):
-            if any(part in self.EXCLUDE_DIRS for part in fpath.parts):
-                continue
-            if not fpath.is_file():
-                continue
-            ext = fpath.suffix.lower()
-            if ext not in self.LANG_MAP:
-                continue
-            lines = 0
-            try:
-                with open(fpath, "rb") as f:
-                    lines = sum(1 for _ in f)
-            except Exception:
-                pass
-            rel = str(fpath.relative_to(self.root))
-            self.files.append({
-                "path": rel,
-                "abs_path": str(fpath),
-                "lang": self.LANG_MAP[ext],
-                "ext": ext,
-                "lines": lines,
-            })
+        lc = self.LANG_MAP
+        ex = self.EXCLUDE_DIRS
+        root_str = str(self.root)
+        for dirpath, dirnames, filenames in os.walk(root_str):
+            dirnames[:] = [d for d in dirnames if d not in ex]
+            for fn in filenames:
+                ext = os.path.splitext(fn)[1].lower()
+                if ext not in lc:
+                    if ext == "" and self._is_cpp_header_no_ext(Path(os.path.join(dirpath, fn))):
+                        ext = ".h"
+                    else:
+                        continue
+                fpath = os.path.join(dirpath, fn)
+                rel = os.path.relpath(fpath, root_str)
+                lang = lc.get(ext, "cpp")
+                self.files.append({
+                    "path": rel,
+                    "abs_path": fpath,
+                    "lang": lang,
+                    "ext": ext,
+                    "lines": 0,
+                })
         if self.build_dir and self.build_dir.exists():
             self._scan_build_dir()
         self.files.sort(key=lambda x: x["path"])
+
+    def _is_cpp_header_no_ext(self, fpath: Path) -> bool:
+        parent = fpath.parent.name
+        name = fpath.name
+        if parent in ("Eigen", "unsupported", "boost"):
+            return True
+        try:
+            with open(fpath, "r", encoding="utf-8", errors="ignore") as f:
+                head = f.read(1024)
+        except Exception:
+            return False
+        cpp_markers = ("#ifndef", "#define", "#include", "template", "namespace", "class ", "struct ", "//")
+        return any(m in head for m in cpp_markers) and "#include" in head
 
     def _scan_build_dir(self):
         scanned = {f["abs_path"] for f in self.files}
@@ -183,8 +199,17 @@ class FileIndex:
     def total_files(self):
         return len(self.files)
 
-    def total_lines(self):
-        return sum(f["lines"] for f in self.files)
+    def total_lines(self, recalc: bool = False) -> int:
+        total = 0
+        for f in self.files:
+            if f["lines"] == 0 or recalc:
+                try:
+                    with open(f["abs_path"], "rb") as fp:
+                        f["lines"] = sum(1 for _ in fp)
+                except Exception:
+                    f["lines"] = 0
+            total += f["lines"]
+        return total
 
 
 class DepGraph:
@@ -451,6 +476,8 @@ def load_weights_from_skill(skill_path: str) -> dict:
     """从 skill Markdown 文件中解析权重表格
 
     Python 命令通过此函数保证权重与 skill 中声明的一致。
+    只解析 ``## 权重分配`` 标题到下一个 ``##`` 标题之间的表格行，
+    避免误匹配校准阈值等其他含百分号的表格。
     解析格式：| 维度名 | 数字% |
     权重和必须为 100%，否则抛出 ValueError。
     """
@@ -459,8 +486,16 @@ def load_weights_from_skill(skill_path: str) -> dict:
 
     text = read_text_smart(skill_path)
 
+    m = re.search(r"^##\s*权重分配\s*$", text, re.MULTILINE)
+    if m:
+        start = m.end()
+        m2 = re.search(r"^## ", text[start:], re.MULTILINE)
+        section = text[start:start + m2.start()] if m2 else text[start:]
+    else:
+        section = text
+
     pattern = r"^\|\s*(.+?)\s*\|\s*(\d+)%\s*\|"
-    matches = re.findall(pattern, text, re.MULTILINE)
+    matches = re.findall(pattern, section, re.MULTILINE)
 
     if not matches:
         raise ValueError(

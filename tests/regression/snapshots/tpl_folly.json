@@ -1,0 +1,20 @@
+{
+  "project": "Folly",
+  "snapshot_date": "2026-06-11",
+  "root_path": "D:\\OPENSOURCE\\folly",
+  "template_overall": null,
+  "is_cpp_project": true,
+  "cpp_file_count": 0,
+  "file_count": 0,
+  "dimensions": {
+    "compile_time_coupling": 100.0,
+    "template_redundancy": 100.0,
+    "header_influence_radius": 100.0,
+    "template_nesting_depth": 100.0,
+    "binary_bloat_ratio": 100.0,
+    "unnecessary_templating": 100.0
+  },
+  "mlr_violations": {},
+  "required_mlr_rules": [],
+  "forced_merge_rules": []
+}

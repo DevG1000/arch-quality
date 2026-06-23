@@ -1,0 +1,53 @@
+{
+  "project": "ElmerFEM",
+  "snapshot_date": "2026-06-08",
+  "root_path": "D:\\OPENSOURCE\\ElmerFEM",
+  "multilang_overall": 67.5,
+  "is_single_language": false,
+  "languages": [
+    "tcl",
+    "lua",
+    "python",
+    "cpp",
+    "fortran",
+    "c"
+  ],
+  "file_count": 3234,
+  "files_by_lang": {
+    "fortran": 2218,
+    "c": 601,
+    "cpp": 367,
+    "lua": 25,
+    "python": 22,
+    "tcl": 1
+  },
+  "dimensions": {
+    "coupling_intensity": 100.0,
+    "impact_radius": 100.0,
+    "call_depth": 100,
+    "binding_consistency": 30.0,
+    "script_boundary": 0,
+    "cross_lang_cycles": 100
+  },
+  "mlr_violations": {
+    "MLR-008|HIGH": 1,
+    "MLR-010|LOW": 393,
+    "MLR-010|MEDIUM": 59,
+    "MLR-012|INFO": 668
+  },
+  "fortran_mapping": {
+    "module_map_size": 140,
+    "subroutine_map_size": 5862,
+    "use_total": 62,
+    "use_resolved": 57,
+    "use_hit_rate": 0.9194,
+    "call_total": 14677,
+    "call_resolved": 14622,
+    "call_hit_rate": 0.9963
+  },
+  "required_mlr_rules": [
+    "MLR-008",
+    "MLR-010",
+    "MLR-012"
+  ]
+}

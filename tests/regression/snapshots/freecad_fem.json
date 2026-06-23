@@ -1,0 +1,46 @@
+{
+  "project": "FreeCAD-Fem",
+  "snapshot_date": "2026-06-08",
+  "root_path": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\Fem",
+  "multilang_overall": 62.38,
+  "is_single_language": false,
+  "languages": [
+    "typescript",
+    "python",
+    "cpp",
+    "c"
+  ],
+  "file_count": 749,
+  "files_by_lang": {
+    "python": 433,
+    "cpp": 140,
+    "c": 129,
+    "typescript": 47
+  },
+  "dimensions": {
+    "coupling_intensity": 99.39,
+    "impact_radius": 99.84,
+    "call_depth": 50,
+    "binding_consistency": 30.0,
+    "script_boundary": 0,
+    "cross_lang_cycles": 100
+  },
+  "mlr_violations": {
+    "MLR-005|MEDIUM": 10,
+    "MLR-006|MEDIUM": 3
+  },
+  "fortran_mapping": {
+    "module_map_size": 0,
+    "subroutine_map_size": 0,
+    "use_total": 0,
+    "use_resolved": 0,
+    "use_hit_rate": 1.0,
+    "call_total": 0,
+    "call_resolved": 0,
+    "call_hit_rate": 1.0
+  },
+  "required_mlr_rules": [
+    "MLR-005",
+    "MLR-006"
+  ]
+}

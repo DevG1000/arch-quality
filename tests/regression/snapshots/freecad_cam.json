@@ -1,0 +1,51 @@
+{
+  "project": "FreeCAD-CAM",
+  "snapshot_date": "2026-06-08",
+  "root_path": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\CAM",
+  "multilang_overall": 65.39,
+  "is_single_language": false,
+  "languages": [
+    "typescript",
+    "python",
+    "cpp",
+    "c"
+  ],
+  "file_count": 600,
+  "files_by_lang": {
+    "python": 415,
+    "cpp": 83,
+    "c": 63,
+    "typescript": 39
+  },
+  "dimensions": {
+    "coupling_intensity": 98.18,
+    "impact_radius": 99.5,
+    "call_depth": 100,
+    "binding_consistency": 23.06,
+    "script_boundary": 0,
+    "cross_lang_cycles": 100
+  },
+  "mlr_violations": {
+    "MLR-001|MEDIUM": 1,
+    "MLR-003|HIGH": 20,
+    "MLR-006|MEDIUM": 5,
+    "MLR-008|HIGH": 1,
+    "MLR-010|LOW": 1
+  },
+  "fortran_mapping": {
+    "module_map_size": 0,
+    "subroutine_map_size": 0,
+    "use_total": 0,
+    "use_resolved": 0,
+    "use_hit_rate": 1.0,
+    "call_total": 0,
+    "call_resolved": 0,
+    "call_hit_rate": 1.0
+  },
+  "required_mlr_rules": [
+    "MLR-001",
+    "MLR-003",
+    "MLR-006",
+    "MLR-008"
+  ]
+}

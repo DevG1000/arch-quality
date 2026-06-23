@@ -1,0 +1,42 @@
+{
+  "project": "Eigen",
+  "snapshot_date": "2026-06-11",
+  "root_path": "D:\\OPENSOURCE\\Eigen",
+  "template_overall": 17.79,
+  "is_cpp_project": true,
+  "cpp_file_count": 1576,
+  "file_count": 1637,
+  "dimensions": {
+    "compile_time_fanin": 38.74,
+    "template_redundancy": 0,
+    "header_influence_radius": 46.23,
+    "template_nesting_depth": 19,
+    "binary_bloat_ratio": 8.02,
+    "unnecessary_templating": 0
+  },
+  "mlr_violations": {
+    "MLR-013|HIGH|WARNING": 475,
+    "MLR-014|HIGH|WARNING": 254,
+    "MLR-015|MEDIUM|WARNING": 36,
+    "MLR-016|MEDIUM|WARNING": 47,
+    "MLR-017|MEDIUM|WARNING": 1,
+    "MLR-018|HIGH|WARNING": 12901,
+    "MLR-019|LOW|INFO": 1,
+    "MLR-020|MEDIUM|WARNING": 111,
+    "MLR-021|LOW|INFO": 2,
+    "MLR-022|HIGH|ERROR": 128,
+    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 2712
+  },
+  "required_mlr_rules": [
+    "MLR-013",
+    "MLR-014",
+    "MLR-017",
+    "MLR-018",
+    "MLR-020",
+    "MLR-021",
+    "MLR-023"
+  ],
+  "forced_merge_rules": [
+    "MLR-023+merge_to"
+  ]
+}

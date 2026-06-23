@@ -1,0 +1,38 @@
+{
+  "project": "OpenFOAM-v2512",
+  "snapshot_date": "2026-06-08",
+  "root_path": "D:\\OPENSOURCE\\OpenFOAM-v2512",
+  "multilang_overall": 79.5,
+  "is_single_language": false,
+  "languages": [
+    "c",
+    "cpp",
+    "python"
+  ],
+  "file_count": 10332,
+  "files_by_lang": {
+    "c": 9942,
+    "cpp": 388,
+    "python": 2
+  },
+  "dimensions": {
+    "coupling_intensity": 100.0,
+    "impact_radius": 100.0,
+    "call_depth": 100,
+    "binding_consistency": 30.0,
+    "script_boundary": 80.0,
+    "cross_lang_cycles": 100
+  },
+  "mlr_violations": {},
+  "fortran_mapping": {
+    "module_map_size": 0,
+    "subroutine_map_size": 0,
+    "use_total": 0,
+    "use_resolved": 0,
+    "use_hit_rate": 1.0,
+    "call_total": 0,
+    "call_resolved": 0,
+    "call_hit_rate": 1.0
+  },
+  "required_mlr_rules": []
+}
