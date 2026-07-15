@@ -1,0 +1,19 @@
+{
+  "nvr_overall": 80.67,
+  "is_numerical": true,
+  "dimensions": {
+    "numerical_stability": 100.0,
+    "roundoff_sensitivity": 55,
+    "mms_verification": 100.0,
+    "error_estimation": 100,
+    "regression_coverage": 30.0,
+    "numerical_debt": 66.66666666666667
+  },
+  "nvr_violations": {
+    "NVR-002|HIGH|ERROR": 54,
+    "NVR-003|HIGH|ERROR": 93,
+    "NVR-010|MEDIUM|WARNING": 1
+  },
+  "snapshot_date": "2026-06-25",
+  "root_path": "D:\\OPENSOURCE\\OpenFOAM-v2512"
+}

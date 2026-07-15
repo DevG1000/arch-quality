@@ -1,0 +1,18 @@
+{
+  "nvr_overall": 71.67,
+  "is_numerical": true,
+  "dimensions": {
+    "numerical_stability": 80.0,
+    "roundoff_sensitivity": 55,
+    "mms_verification": 80.0,
+    "error_estimation": 100,
+    "regression_coverage": 30.0,
+    "numerical_debt": 66.66666666666667
+  },
+  "nvr_violations": {
+    "NVR-002|HIGH|ERROR": 56,
+    "NVR-003|HIGH|ERROR": 30
+  },
+  "snapshot_date": "2026-06-25",
+  "root_path": "D:\\OPENSOURCE\\CalculiX\\CalculiX\\ccx_2.23"
+}
