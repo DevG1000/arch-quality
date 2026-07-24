@@ -1,0 +1,147 @@
+[
+  {
+    "id": "MUT-001",
+    "name": "移除CFL控制",
+    "description": "删除 solver.cpp 中的 CFL 关键词行和注释",
+    "target_file": "src/solver.cpp",
+    "mutations": [
+      {
+        "original": "// Stability: CFL control + implicit scheme",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    double CFL = 0.5;      // NVR-001: CFL control present",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    double maxCo = 0.8;    // NVR-001: max Co number set",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    courantNumber = 0.3;",
+        "mutated": "",
+        "action": "delete_line"
+      }
+    ],
+    "expected": {
+      "overall_change": "no_assert",
+      "nvr_rules_changed": [],
+      "dimension_change": {"numerical_stability": "no_assert"}
+    }
+  },
+  {
+    "id": "MUT-002",
+    "name": "移除预处理器",
+    "description": "从 solver.cpp 中删除线性求解器关键词",
+    "target_file": "src/solver.cpp",
+    "mutations": [
+      {
+        "original": "    PCG solver;",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    GAMG preconditioner;",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    solver.setPreconditioner(preconditioner);",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    double cond = condition_number(A);",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    if (cond > 1e6) {",
+        "mutated": "",
+        "action": "delete_line"
+      }
+    ],
+    "expected": {
+      "overall_change": "no_assert",
+      "nvr_rules_changed": ["NVR-002"]
+    }
+  },
+  {
+    "id": "MUT-003",
+    "name": "移除Kahan求和",
+    "description": "从 solver.cpp 中删除整个 kahan_sum 函数",
+    "target_file": "src/solver.cpp",
+    "mutations": [
+      {
+        "original": "// Kahan summation for accumulator\ndouble kahan_sum(const double* data, int n) {\n    double sum = 0.0;\n    double compensation = 0.0;\n    for (int i = 0; i < n; i++) {\n        double y = data[i] - compensation;\n        double t = sum + y;\n        compensation = (t - sum) - y;\n        sum = t;\n    }\n    return sum;\n}",
+        "mutated": "// Kahan summation removed by mutation\nvoid dummy_func() {}",
+        "action": "replace_block"
+      }
+    ],
+    "expected": {
+      "overall_change": "no_assert",
+      "nvr_rules_changed": []
+    }
+  },
+  {
+    "id": "MUT-004",
+    "name": "移除MMS测试文件",
+    "description": "删除整个 mms_test.cpp 文件",
+    "target_file": "tests/mms_test.cpp",
+    "mutations": [
+      {
+        "original": "// MMS test: diffusion equation",
+        "mutated": "",
+        "action": "delete_file"
+      }
+    ],
+    "expected": {
+      "overall_change": "no_assert",
+      "nvr_rules_changed": ["NVR-005"],
+      "dimension_change": {"mms_verification": "drop_to_zero"}
+    }
+  },
+  {
+    "id": "MUT-005",
+    "name": "移除迭代容差",
+    "description": "从 solver.cpp 中删除 tolerance 行，也从 test_solver.cpp 中同步删除",
+    "target_file": "src/solver.cpp",
+    "mutations": [
+      {
+        "original": "    double tolerance = 1e-8;     // NVR-008: reasonable tolerance",
+        "mutated": "",
+        "action": "delete_line"
+      },
+      {
+        "original": "    double relativeTolerance = 1e-6;",
+        "mutated": "",
+        "action": "delete_line"
+      }
+    ],
+    "expected": {
+      "overall_change": "no_assert",
+      "nvr_rules_changed": []
+    }
+  },
+  {
+    "id": "MUT-006",
+    "name": "引入浮点相消",
+    "description": "在 solver.cpp 中新增 a-b 相消模式（仅单字母变量以命中 CANCELLATION_PATTERN）",
+    "target_file": "src/solver.cpp",
+    "mutations": [
+      {
+        "original": "    // p_obs should be ~2.0 for second-order scheme",
+        "mutated": "    // p_obs should be ~2.0 for second-order scheme\n    double c = a - b;\n    double e = c - d;\n    double g = f - h;\n    double i = j - k;\n    double l = m - n;\n    double o = p - q;\n    double r = s - t;\n    double u = v - w;\n    double x = y - z;\n    double a2 = b2 - c2;",
+        "action": "replace_line"
+      }
+    ],
+    "expected": {
+      "overall_change": "no_assert",
+      "nvr_rules_changed": [],
+      "cancellation_count_increase": true
+    }
+  }
+]
