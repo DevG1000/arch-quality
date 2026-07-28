@@ -1,0 +1,11 @@
+{
+  "tool": "valgrind",
+  "project": "scripts",
+  "date": "2026-07-28",
+  "results": {
+    "floating_point_exceptions": [],
+    "cancellation_sites": [],
+    "accumulation_errors": [],
+    "tolerance_violations": []
+  }
+}
