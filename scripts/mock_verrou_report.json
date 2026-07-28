@@ -1,0 +1,158 @@
+{
+  "tool": "verrou_simulated",
+  "project": "FEniCSx",
+  "date": "2026-07-28",
+  "method": "Simulated from static code analysis with float/int disambiguation",
+  "results": {
+    "floating_point_exceptions": [],
+    "cancellation_sites": [
+      {
+        "file": "cpp\\dolfinx\\mesh\\generation.h",
+        "line": 271,
+        "severity": "medium",
+        "operands": [
+          "[0] < p[1].\");   if (std::abs(a ",
+          " b) < std::numeric_limits<T>::ep"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\dolfinx\\mesh\\generation.h",
+        "line": 542,
+        "severity": "medium",
+        "operands": [
+          "cast<T>(ny);     if (std::abs(b ",
+          " a) < std::numeric_limits<T>::ep"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\dolfinx\\mesh\\generation.h",
+        "line": 543,
+        "severity": "medium",
+        "operands": [
+          "epsilon()         or std::abs(d ",
+          " c) < std::numeric_limits<T>::ep"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\generation.cpp",
+        "line": 284,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    // edge l"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\generation.cpp",
+        "line": 323,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    // edge l"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\generation.cpp",
+        "line": 366,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    // edge l"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\generation.cpp",
+        "line": 409,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    // edge l"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\generation.cpp",
+        "line": 466,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    mesh.topo"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\generation.cpp",
+        "line": 541,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    mesh.topo"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\refinement\\interval.cpp",
+        "line": 89,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    // Check"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\refinement\\interval.cpp",
+        "line": 130,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    auto topo"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\refinement\\interval.cpp",
+        "line": 213,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    // Check"
+        ],
+        "significant_bits_lost": 5
+      },
+      {
+        "file": "cpp\\test\\mesh\\refinement\\rectangle.cpp",
+        "line": 128,
+        "severity": "medium",
+        "operands": [
+          "{ return std::abs(a ",
+          " b) <= EPS<T>; }));    // edge l"
+        ],
+        "significant_bits_lost": 5
+      }
+    ],
+    "accumulation_errors": [],
+    "tolerance_violations": [
+      {
+        "file": "project",
+        "line": 0,
+        "tolerance": "1e-4",
+        "actual_residual": "N/A (no tolerance setting found)"
+      }
+    ]
+  },
+  "analysis_summary": {
+    "total_files_scanned": 85,
+    "total_cancellation_matches": 25,
+    "float_cancellation_count": 13,
+    "int_cancellation_count": 12,
+    "high_risk_count": 0,
+    "medium_risk_count": 13
+  }
+}
