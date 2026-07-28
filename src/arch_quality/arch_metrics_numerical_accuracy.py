@@ -2,13 +2,13 @@
 """
 arch_metrics_numerical_accuracy.py — 数值算法正确性与精度保障评估
 
-实现《数值算法正确性与精度保障评估指南（1.7版）》定义的 6 维评分模型
+实现《数值算法正确性与精度保障评估指南（1.8版）》定义的 6 维评分模型
 和 12 条 NVR 规则（NVR-001~NVR-012）的静态分析检测。
 
 版本绑定：
-  - 指南版本：1.7（2026-07-10）
-  - Skill 版本：1.5
-  - 实现版本：1.5 对齐
+  - 指南版本：1.8（2026-07-14）
+  - Skill 版本：1.6
+  - 实现版本：1.6 对齐
 """
 
 import os
@@ -24,8 +24,9 @@ from arch_quality.arch_core import (
 )
 
 # 版本绑定声明
-GUIDE_VERSION = "1.7"
-SKILL_VERSION = "1.5"
+# 版本绑定声明
+GUIDE_VERSION = "1.8"
+SKILL_VERSION = "1.6"
 
 # 过环境变量覆盖阈值。默认值 0.3（工程经验值，无文献直接支撑）。
 _DEFAULT_CFL_THRESHOLD = 0.3
@@ -577,6 +578,11 @@ class NumericalAccuracyMetrics:
 
         通过检查各维度评分低分情况估算债务密度。
         注意：不调用 check_nvr_rules() 以避免循环调用。
+
+        与指南 §2.6、skill §2.6 的评分算法保持一致：
+          debt_ratio = low_score_count / 6
+          score = max(0, 100 - debt_ratio * 200)
+          触发 NVR-012: debt_ratio > 0.3
         """
         if not self._has_numerical:
             return None, {}
@@ -704,37 +710,38 @@ class NumericalAccuracyMetrics:
             })
 
         # NVR-007: 离散误差未控
-        _, err = self.calc_error_estimation()
+        err_score, err = self.calc_error_estimation()
         if err is None:
             err = {}
-        combined_mesh = (err.get("mesh_convergence_count", 0) > 0
-                         or err.get("dir_refine_count", 0) > 0)
-        if not combined_mesh:
-            results.append({
-                "rule": "NVR-007", "name": "离散误差未控",
-                "severity": "MEDIUM",
-                "output_level": "WARNING",
-                "count": 1,
-                "detail": "未检测到网格收敛性研究(如 Richardson 外推/网格细化)",
-            })
+        # 无求解器代码时不触发 NVR-007/NVR-008
+        if err_score is not None:
+            combined_mesh = (err.get("mesh_convergence_count", 0) > 0
+                             or err.get("dir_refine_count", 0) > 0)
+            if not combined_mesh:
+                results.append({
+                    "rule": "NVR-007", "name": "离散误差未控",
+                    "severity": "MEDIUM",
+                    "output_level": "WARNING",
+                    "count": 1,
+                    "detail": "未检测到网格收敛性研究(如 Richardson 外推/网格细化)",
+                })
 
-        # NVR-008: 迭代误差未控
-        if not err.get("has_reasonable_tolerance", False):
-            results.append({
-                "rule": "NVR-008", "name": "迭代误差未控",
-                "severity": "MEDIUM",
-                "output_level": "WARNING",
-                "count": 1,
-                "detail": "未检测到合理的迭代容差设置(tolerance < 1e-4)",
-            })
+            # NVR-008: 迭代误差未控
+            if not err.get("has_reasonable_tolerance", False):
+                results.append({
+                    "rule": "NVR-008", "name": "迭代误差未控",
+                    "severity": "MEDIUM",
+                    "output_level": "WARNING",
+                    "count": 1,
+                    "detail": "未检测到合理的迭代容差设置(tolerance < 1e-4)",
+                })
 
-        # NVR-008: 迭代误差未控
-        if not err.get("has_residual_control", False):
-            results.append({
-                "rule": "NVR-008", "name": "迭代误差未控",
-                "severity": "MEDIUM",
-                "output_level": "WARNING",
-                "count": 1,
+            if not err.get("has_residual_control", False):
+                results.append({
+                    "rule": "NVR-008", "name": "迭代误差未控",
+                    "severity": "MEDIUM",
+                    "output_level": "WARNING",
+                    "count": 1,
                 "detail": "未检测到迭代求解器残差或容差配置",
             })
 
