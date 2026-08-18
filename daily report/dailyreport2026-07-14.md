@@ -6,14 +6,18 @@
 |:---------|:-----|:----:|
 | Elmer FEM 数值算法验证 | 完成 Elmer 验证，综合评分 91.0 | ✅ 完成 |
 | MOOSE 多物理场验证 | 完成 MOOSE 验证，综合评分 **96.0** | ✅ 完成 |
-| deal.II FEM 库验证 | 完成 deal.II 验证，综合评分 **96.0**（并列第一）| ✅ 完成 |
-| FEniCSx 验证 | 完成 FEniCSx（dolfinx）验证，综合评分 **46.33** | ✅ 完成 |
-| FreeFEM 验证 | 完成 FreeFEM 验证，综合评分 **96.0**（并列第一）| ✅ 完成 |
-| MFEM 验证 | 完成 MFEM（LLNL）验证，综合评分 **96.0**（并列第一）| ✅ 完成 |
-| MESH_CONVERGENCE/REFINE 误报修复 | richardson→richardson_extrap 避人名、\b 避子串 | ✅ 完成 |
-| 更新数值算法验证总结报告 | 新增 4 个项目到全部表格（9 个项目总览）| ✅ 完成 |
-| 修复 GBK→UTF-8 编码问题 | 案例集、指南、审核报告 3 个文件转码 | ✅ 完成 |
 | MOOSE MMS 测试分析 | 深度分析 MOOSE 符号化 MMS 工作流 | ✅ 完成 |
+| deal.II FEM 库验证 | 完成 deal.II 验证，综合评分 **96.0** | ✅ 完成 |
+| FEniCSx 验证 | 完成 FEniCSx 验证，综合评分 **46.33** | ✅ 完成 |
+| FreeFEM 验证 | 完成 FreeFEM 验证，综合评分 **96.0** | ✅ 完成 |
+| MFEM 验证 | 完成 MFEM 验证，综合评分 **96.0** | ✅ 完成 |
+| MESH_CONVERGENCE/REFINE 误报修复 | richardson→richardson_extrap、\b 词边界 | ✅ 完成 |
+| FEniCSx 误报验证后重新评估 | 修正后评分从 55.67→46.33，新增 NVR-007/012 | ✅ 完成 |
+| 数值算法 PPT 文档 | 18 页深色主题 PPT，含完整评估体系介绍 | ✅ 完成 |
+| 更新数值算法验证总结报告 | 新增 6 个项目到全部表格（10 个项目总览）| ✅ 完成 |
+| 修复 GBK→UTF-8 编码问题 | 案例集、指南、审核报告 3 个文件转码 | ✅ 完成 |
+| 指南 §2.6 公式对齐 | 指南/skill/tool 三方一致化 | ✅ 完成 |
+| 三方一致性检查脚本 | `scripts/consistency_check.py` | ✅ 完成 |
 
 ## 二、修复的问题
 
@@ -84,6 +88,4 @@
 
 | 优先级 | 事项 |
 |:------:|:-----|
-| P2 | 验证 MOOSE / code_aster 等剩余开源项目 |
-| P3 | MMS_PATTERN 中 `analytical.solution` 和 `slope` 的过度匹配问题 |
-| P3 | 扩展 solidDisplacementFoam MMS |
+| code_aster | 源码下载超时 | 🔴 待网络改善 |
