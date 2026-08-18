@@ -1,0 +1,41 @@
+{
+  "project": "preCICE",
+  "overall": 50.75,
+  "is_multiphysics": true,
+  "dimensions": {
+    "boundary_integrity": 55,
+    "coupling_architecture": 50,
+    "extension_support": 20,
+    "data_transfer": 85
+  },
+  "mpr_violations": [
+    {
+      "rule": "MPR-005",
+      "name": "耦合逻辑集中度",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "count": 324,
+      "detail": "耦合逻辑散布在 324 个文件中，占比 41.5%",
+      "cross_dimension": {
+        "coupling_architecture": 0.5,
+        "data_transfer": 0.5
+      }
+    },
+    {
+      "rule": "MPR-008",
+      "name": "跨模块依赖关系",
+      "severity": "MEDIUM",
+      "output_level": "ERROR",
+      "count": 3,
+      "detail": "模块依赖图中发现 3 个循环依赖"
+    },
+    {
+      "rule": "MPR-009",
+      "name": "接口版本管理",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "count": 1,
+      "detail": "未检测到版本号规范; "
+    }
+  ]
+}

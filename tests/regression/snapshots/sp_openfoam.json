@@ -1,0 +1,53 @@
+{
+  "project": "OpenFOAM",
+  "overall": 41.0,
+  "is_multiphysics": true,
+  "dimensions": {
+    "boundary_integrity": 50,
+    "coupling_architecture": 35,
+    "extension_support": 20,
+    "data_transfer": 65
+  },
+  "mpr_violations": [
+    {
+      "rule": "MPR-001",
+      "name": "物理场模块边界识别",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "count": 1,
+      "detail": "多个物理场求解器未以独立编译单元形式存在"
+    },
+    {
+      "rule": "MPR-003",
+      "name": "模块数值验证基准完备性",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "count": 1,
+      "detail": "未检测到 MMS 验证文件，各模块缺乏独立数值验证基准"
+    },
+    {
+      "rule": "MPR-008",
+      "name": "跨模块依赖关系",
+      "severity": "MEDIUM",
+      "output_level": "ERROR",
+      "count": 70,
+      "detail": "模块依赖图中发现 70 个循环依赖"
+    },
+    {
+      "rule": "MPR-009",
+      "name": "接口版本管理",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "count": 1,
+      "detail": "未检测到版本号规范; 未检测到 @deprecated 注解"
+    },
+    {
+      "rule": "MPR-012",
+      "name": "数据格式转换统一性",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 47,
+      "detail": "数据格式转换函数分散在 47 个位置，建议集中管理"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "project": "MOOSE",
+  "path": "D:\\opensource\\MOOSE",
+  "overall": 70.5,
+  "is_multiphysics": true,
+  "dimensions": {
+    "boundary_integrity": 70,
+    "coupling_architecture": 50,
+    "extension_support": 100,
+    "data_transfer": 65
+  },
+  "mpr_violations": [
+    {
+      "rule": "MPR-012",
+      "name": "数据格式转换统一性",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 97,
+      "detail": "数据格式转换函数分散在 97 个位置，建议集中管理"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "project": "SU2",
+  "overall": 64.0,
+  "is_multiphysics": true,
+  "dimensions": {
+    "boundary_integrity": 70,
+    "coupling_architecture": 70,
+    "extension_support": 50,
+    "data_transfer": 65
+  },
+  "mpr_violations": [
+    {
+      "rule": "MPR-008",
+      "name": "跨模块依赖关系",
+      "severity": "MEDIUM",
+      "output_level": "ERROR",
+      "count": 5,
+      "detail": "模块依赖图中发现 5 个循环依赖"
+    },
+    {
+      "rule": "MPR-009",
+      "name": "接口版本管理",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "count": 1,
+      "detail": "未检测到 @deprecated 注解"
+    },
+    {
+      "rule": "MPR-012",
+      "name": "数据格式转换统一性",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 19,
+      "detail": "数据格式转换函数分散在 19 个位置，建议集中管理"
+    }
+  ]
+}

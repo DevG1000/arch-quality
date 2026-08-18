@@ -1,0 +1,29 @@
+{
+  "project": "Kratos",
+  "overall": 69.25,
+  "is_multiphysics": true,
+  "dimensions": {
+    "boundary_integrity": 70,
+    "coupling_architecture": 70,
+    "extension_support": 55,
+    "data_transfer": 85
+  },
+  "mpr_violations": [
+    {
+      "rule": "MPR-008",
+      "name": "跨模块依赖关系",
+      "severity": "MEDIUM",
+      "output_level": "ERROR",
+      "count": 33,
+      "detail": "模块依赖图中发现 33 个循环依赖"
+    },
+    {
+      "rule": "MPR-009",
+      "name": "接口版本管理",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "count": 1,
+      "detail": "未检测到版本号规范; "
+    }
+  ]
+}
