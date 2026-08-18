@@ -1,0 +1,150 @@
+{
+  "toc": [
+    {"num": "0", "title": "概念介绍", "sub": "PDE 求解器 -> 收敛阶 -> 阈值依据 -> V&V 区分"},
+    {"num": "1", "title": "为什么需要 MMS？", "sub": "传统方法的局限 -> MMS 的诞生"},
+    {"num": "2", "title": "MMS 的数学原理", "sub": "逆向构造 -> 五步法 -> 收敛阶判定"},
+    {"num": "3", "title": "MMS 的工程价值", "sub": "能发现什么 Bug -> 工业标准 -> 应用价值"},
+    {"num": "4", "title": "OpenFOAM 实战案例", "sub": "决策树 -> 四个坑 -> 实测结果"},
+    {"num": "5", "title": "最佳实践", "sub": "排查策略 -> CI/CD 集成 -> 实施路线"},
+    {"num": "6", "title": "总结", "sub": "三条核心信息"}
+  ],
+  "pde_solver_intro": [
+    "PDE（偏微分方程）描述物理规律：传热、流动、结构变形\u2026\u2026",
+    "求解器将连续 PDE 离散化为代数方程组 Ax = b",
+    "离散化引入离散误差（truncation error）",
+    "求解器的本质问题：离散误差有多大，是否可控？"
+  ],
+  "order_comparison": {
+    "theory_title": "理论阶（p_theory）",
+    "theory_body": "格式的设计精度，由截断误差分析决定\n中心差分 \u2192 2\n一阶迎风 \u2192 1\n线性插值 \u2192 2",
+    "observed_title": "观察阶（p_obs）",
+    "observed_body": "数值结果上的实测收敛速率\np_obs = log(E2/E1) / log(h2/h1)\n包含了所有实现细节的影响",
+    "result_pass": "p_obs = p_theory  \u2192  离散实现正确",
+    "result_fail": "p_obs \u2260 p_theory  \u2192  代码存在 Bug",
+    "example": "实测：理论阶 = 2，p_obs = 2.001  \u2192  验证通过"
+  },
+  "threshold_basis": [
+    ["高阶项污染", "SAND2000-1444\nRoy, JCP 2005", "\u00b10.01", "E = C\u2081h\u00b2 + C\u2082h\u2074 + O(h\u2076)\np_obs = 2 + O(h\u00b2)", "超过 0.01 = 代码有 Bug"],
+    ["网格畸变误差", "Diskin & Thomas\nAIAA 2011", "\u00b10.05~0.15", "E = C\u2081h\u00b2 + D\u2081\u00b7skew\u00b7h\u00b2\n畸变因子放大常数 D\u2081", "网格质量决定下限"],
+    ["非结构统计波动", "Venkatakrishnan\nAIAA 1995", "\u00b10.2~0.3", "非结构二阶为近似二阶\np_obs \u223c 1.6~1.8", "物理限制，非代码问题"]
+  ],
+  "verify_validate": {
+    "verification_title": "验证（Verification）",
+    "verification_body": "Are we solving the equations right?\n\n判断代码是否正确实现了数学模型\n\nMMS 负责验证",
+    "validation_title": "确认（Validation）",
+    "validation_body": "Are we solving the right equations?\n\n判断模型是否准确描述了真实世界\n\n实验 / 基准测试负责确认",
+    "footer": "ASME V&V 20-2009 的根本性区分。混淆这两个概念是工业软件验证中最常见的认知错误。"
+  },
+  "why_system_verify": [
+    ["手动推导截断误差", "只能验证简单格式，无法覆盖代码实现细节"],
+    ["单元测试", "无法验证 PDE 离散化的整体正确性"],
+    ["基准测试", "通过基准 \u2260 代码正确；基准覆盖范围有限"],
+    ["MMS", "系统验证 PDE 离散化正确性的唯一方法"]
+  ],
+  "disasters": [
+    ["飞机设计", "基于错误的升力系数", "red"],
+    ["核反应堆冷却", "基于错误的热通量", "orange"],
+    ["汽车碰撞安全", "基于错误的变形数据", "red"]
+  ],
+  "traditional_limits": [
+    ["解析解对比", "只能解极简单的 PDE，无法覆盖真实复杂度"],
+    ["实验数据对比", "误差不可控，无法区分模型误差与代码 Bug"],
+    ["单元测试", "无法验证 PDE 离散化的整体正确性"],
+    ["基准测试", "只测试特定场景，基准通过 \u2260 代码正确"],
+    ["与其他软件对比", "其他软件也可能有 Bug，没有标准答案"]
+  ],
+  "milestones": [
+    ["1978", "Roache 系统化 MMS 框架", "制造解方法正式命名"],
+    ["2009", "ASME V&V 20-2009", "CFD 代码验证首选方法"],
+    ["2015", "ISO 17534-1:2015", "声学软件精度阶数验证"],
+    ["2019", "ASME V&V 10-2019", "固体力学推荐 MMS"],
+    ["至今", "Sandia 国家实验室", "高后果仿真软件必须通过 MMS"]
+  ],
+  "bugs": [
+    ["Bug 类型", "传统测试", "MMS"],
+    ["边界条件实现错误", "可能漏检", "必现"],
+    ["源项计算错误", "可能漏检", "必现"],
+    ["离散格式实现错误", "难以发现", "观察阶异常"],
+    ["网格拓扑处理错误", "偶发", "收敛曲线异常"],
+    ["分区边界通量交换错误", "单元测试难覆盖", "串并行不一致"],
+    ["浮点精度问题", "偶发", "观察阶偏离"]
+  ],
+  "standards": [
+    ["ASME V&V 20-2009", "美国：CFD/传热", "代码验证必须执行，MMS 为首选"],
+    ["ASME V&V 10-2019", "美国：固体力学", "各级别推荐 MMS"],
+    ["ISO 17534-1:2015", "国际：声学", "需验证精度阶数"],
+    ["FDA Critical Path", "美国：医疗器件", "仿真必须遵循 V&V 流程"],
+    ["Sandia 国家实验室", "美国：核安全", "高后果软件必须通过 MMS"]
+  ],
+  "scenarios": [
+    ["研发阶段", "在上线前发现离散化错误，避免带着 Bug 开发半年"],
+    ["CI 门禁", "每次提交自动运行，防止精度退化"],
+    ["回归测试", "代码重构后确保精度阶数不变"],
+    ["技术债评估", "未通过 MMS 的模块自动标记为高风险"],
+    ["合规性", "MMS 验证记录是 ASME V&V 认证审核的必备材料"]
+  ],
+  "five_steps": [
+    ["步骤 1", "选择制造解", "u*(x,y) = sin(pi*x)*sin(pi*y)", "足够光滑，满足边界条件"],
+    ["步骤 2", "推导源项", "S = 2*pi^2*sin(pi*x)*sin(pi*y)", "推荐 SymPy/Mathematica 辅助"],
+    ["步骤 3", "数值求解", "-div(DT*grad(T)) = S", "scalarCodedSource 注入源项"],
+    ["步骤 4", "多套网格", "h, h/2, h/4, h/8", "最低 3 套，推荐 4-5 套"],
+    ["步骤 5", "验证判定", "|p_obs - 2.0| <= 0.1 -> PASS", "离散实现正确"]
+  ],
+  "pitfalls": [
+    ["符号约定", "数学：-laplacian(T) = S\n代码：-fvm::laplacian(T) == fvOptions(T)\n内部展开后源项需 -= S"],
+    ["权限限制", "root 用户被禁止动态编译\n需使用非 root 用户运行\n或设置 OPENFOAM_CODE_ALLOW_ROOT=1"],
+    ["版本兼容", "v8 及以前：codedSource\nv2212：codedSource\nv2512：scalarCodedSource\nv2306+：新增 fvModels 体系"],
+    ["矩阵对称性", "div(phi,T) upwind -> 矩阵非对称\n即使 phi=0 也被分类为非对称\n需用 PBiCG + DILU，非 PCG + DIC"]
+  ],
+  "results": [
+    ["网格", "单元数", "h", "L2 误差", "加密比", "p_obs"],
+    ["粗", "20x20", "0.05", "1.03e-03", "-", "-"],
+    ["中", "40x40", "0.025", "2.57e-04", "4.0x", "2.001"],
+    ["细", "80x80", "0.0125", "6.43e-05", "4.0x", "2.000"]
+  ],
+  "extensions": [
+    ["scalarTransportFoam", "稳态扩散", "sin(pi*x)*sin(pi*y)", "2", "简单", "已完成"],
+    ["simpleFoam", "稳态 NS", "多项式速度场", "2", "中等", "待办"],
+    ["rhoCentralFoam", "可压缩流", "正弦波（亚声速）", "1", "困难", "待办"],
+    ["solidDisplacementFoam", "线弹性", "多项式位移场", "2", "中等", "待办"]
+  ],
+  "troubleshooting": [
+    ["1", "符号错误", "检查 eqn.source() 正负号\n约 60% 的 MMS 失败源于此"],
+    ["2", "边界条件不匹配", "制造解是否精确满足 BC 类型？\nDirichlet/Neumann/mixed"],
+    ["3", "离散格式不匹配", "fvSchemes 中是否混用了不兼容的格式？\n如 upwind + 中心差分混合"],
+    ["4", "求解器容差不足", "容差是否远小于离散误差？\n建议 tolerance <= 1e-8"],
+    ["5", "浮点异常", "除零？大数相消？NaN？\n检查 OpenFOAM trapFpe 输出"]
+  ],
+  "ci_tiers": [
+    ["commit -> fast-check", "20x20 网格，~10s\n只检查运行不崩溃\n通过 -> PR merge", "green"],
+    ["nightly -> standard MMS", "3 套网格，1-2min\n验证 p_obs\n失败 -> 告警 + 阻断", "orange"],
+    ["weekly -> full regression", "4-5 套网格 + 多求解器，10-15min\n跨求解器一致性\n失败 -> 回滚", "red"]
+  ],
+  "phases": [
+    ["Phase 0", "团队培训 + 试运行", "先在简单求解器上跑通 MMS 全流程\n建立逆向构造思维模型", "P0"],
+    ["Phase 1", "稳态扩散 MMS", "验证脚本 + 文档\nscalarTransportFoam 实现", "完成"],
+    ["Phase 2", "环境搭建", "WSL/Linux OpenFOAM 安装\nMMS 全流程跑通", "完成"],
+    ["Phase 3", "扩展到 NS 求解器", "simpleFoam 稳态 NS MMS\nrhoCentralFoam 可压缩 MMS", "待办"],
+    ["Phase 4", "CI 集成", "每次提交自动 MMS 回归\n分层策略", "待办"],
+    ["Phase 5", "全自动回归", "CI/CD 流水线闭环\n自动生成报告 + 趋势图", "待办"]
+  ],
+  "verification_matrix": [
+    ["方法", "验证内容", "与 MMS 的关系"],
+    ["单元测试", "单个函数/模块的正确性", "互补：覆盖 MMS 无法覆盖的分支"],
+    ["MMS 验证", "PDE 离散化的整体正确性", "核心：验证数值算法的数学实现"],
+    ["基准测试", "标准算例对比参考解", "互补：验证物理模型效果"],
+    ["回归测试", "防止代码修改引入退化", "互补：持续监控精度变化"]
+  ],
+  "summary_cards": [
+    ["1", "MMS 是 PDE 求解器的单元测试", "将验证问题转化为自洽的数学闭环\n可以验证任意复杂度的 PDE 求解器"],
+    ["2", "p_obs = p_theory 意味着离散实现正确", "这是数学上的充分必要条件\n观察阶异常 = 代码存在 Bug"],
+    ["3", "必要条件，非充分条件", "须与单元测试、基准测试、回归测试组合使用\n完整的验证体系才是真正的质量保障"]
+  ],
+  "references": [
+    "ASME V&V 20-2009, Standard for Verification and Validation in CFD and Heat Transfer",
+    "ASME V&V 10-2019, Standard for Verification and Validation in Computational Solid Mechanics",
+    "Roache, P. J., Verification and Validation in Computational Science and Engineering, 1998",
+    "Salari, K. and Knupp, P., Code Verification by the Method of Manufactured Solutions, SAND2000-1444",
+    "OpenFOAM v2512 User Guide, fvOptions & fvModels"
+  ]
+}
