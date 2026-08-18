@@ -1,0 +1,201 @@
+[
+  {
+    "id": "MUT-SP-001",
+    "name": "合并求解器到同一编译单元",
+    "description": "将顶层 CMakeLists.txt 改为单一 add_executable，消除独立模块目标",
+    "target_file": "CMakeLists.txt",
+    "mutations": [
+      {
+        "original": "cmake_minimum_required(VERSION 3.10)\nproject(good_multiphysics)\n\nadd_subdirectory(src/structural)\nadd_subdirectory(src/thermal)\nadd_subdirectory(src/fluid)\nadd_subdirectory(coupling)\nadd_subdirectory(plugin)\n\ntarget_link_libraries(coupling structural thermal fluid)\ntarget_link_libraries(plugin coupling)\n",
+        "mutated": "cmake_minimum_required(VERSION 3.10)\nproject(good_multiphysics)\n\nadd_executable(app src/structural/StructuralSolver.cpp src/thermal/ThermalSolver.cpp src/fluid/FluidSolver.cpp)\n",
+        "action": "replace_block"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-001"],
+      "dimension_change": {"boundary_integrity": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-002",
+    "name": "暴露内部数据结构并膨胀公开API",
+    "description": "将内部数据改为 public 并添加 160 个公开函数，使模块 API 数量超阈值",
+    "target_file": "src/structural/StructuralSolver.h",
+    "mutations": [
+      {
+        "original": "protected:\n    double stiffness;  // internal data, not exposed\n};",
+        "mutated": "public:\n    double stiffness;\n    double api_0(double x) { return x; }\n    double api_1(double x) { return x; }\n    double api_2(double x) { return x; }\n    double api_3(double x) { return x; }\n    double api_4(double x) { return x; }\n    double api_5(double x) { return x; }\n    double api_6(double x) { return x; }\n    double api_7(double x) { return x; }\n    double api_8(double x) { return x; }\n    double api_9(double x) { return x; }\n    double api_10(double x) { return x; }\n    double api_11(double x) { return x; }\n    double api_12(double x) { return x; }\n    double api_13(double x) { return x; }\n    double api_14(double x) { return x; }\n    double api_15(double x) { return x; }\n    double api_16(double x) { return x; }\n    double api_17(double x) { return x; }\n    double api_18(double x) { return x; }\n    double api_19(double x) { return x; }\n    double api_20(double x) { return x; }\n    double api_21(double x) { return x; }\n    double api_22(double x) { return x; }\n    double api_23(double x) { return x; }\n    double api_24(double x) { return x; }\n    double api_25(double x) { return x; }\n    double api_26(double x) { return x; }\n    double api_27(double x) { return x; }\n    double api_28(double x) { return x; }\n    double api_29(double x) { return x; }\n    double api_30(double x) { return x; }\n    double api_31(double x) { return x; }\n    double api_32(double x) { return x; }\n    double api_33(double x) { return x; }\n    double api_34(double x) { return x; }\n    double api_35(double x) { return x; }\n    double api_36(double x) { return x; }\n    double api_37(double x) { return x; }\n    double api_38(double x) { return x; }\n    double api_39(double x) { return x; }\n    double api_40(double x) { return x; }\n    double api_41(double x) { return x; }\n    double api_42(double x) { return x; }\n    double api_43(double x) { return x; }\n    double api_44(double x) { return x; }\n    double api_45(double x) { return x; }\n    double api_46(double x) { return x; }\n    double api_47(double x) { return x; }\n    double api_48(double x) { return x; }\n    double api_49(double x) { return x; }\n    double api_50(double x) { return x; }\n    double api_51(double x) { return x; }\n    double api_52(double x) { return x; }\n    double api_53(double x) { return x; }\n    double api_54(double x) { return x; }\n    double api_55(double x) { return x; }\n    double api_56(double x) { return x; }\n    double api_57(double x) { return x; }\n    double api_58(double x) { return x; }\n    double api_59(double x) { return x; }\n    double api_60(double x) { return x; }\n    double api_61(double x) { return x; }\n    double api_62(double x) { return x; }\n    double api_63(double x) { return x; }\n    double api_64(double x) { return x; }\n    double api_65(double x) { return x; }\n    double api_66(double x) { return x; }\n    double api_67(double x) { return x; }\n    double api_68(double x) { return x; }\n    double api_69(double x) { return x; }\n    double api_70(double x) { return x; }\n    double api_71(double x) { return x; }\n    double api_72(double x) { return x; }\n    double api_73(double x) { return x; }\n    double api_74(double x) { return x; }\n    double api_75(double x) { return x; }\n    double api_76(double x) { return x; }\n    double api_77(double x) { return x; }\n    double api_78(double x) { return x; }\n    double api_79(double x) { return x; }\n    double api_80(double x) { return x; }\n    double api_81(double x) { return x; }\n    double api_82(double x) { return x; }\n    double api_83(double x) { return x; }\n    double api_84(double x) { return x; }\n    double api_85(double x) { return x; }\n    double api_86(double x) { return x; }\n    double api_87(double x) { return x; }\n    double api_88(double x) { return x; }\n    double api_89(double x) { return x; }\n    double api_90(double x) { return x; }\n    double api_91(double x) { return x; }\n    double api_92(double x) { return x; }\n    double api_93(double x) { return x; }\n    double api_94(double x) { return x; }\n    double api_95(double x) { return x; }\n    double api_96(double x) { return x; }\n    double api_97(double x) { return x; }\n    double api_98(double x) { return x; }\n    double api_99(double x) { return x; }\n    double api_100(double x) { return x; }\n    double api_101(double x) { return x; }\n    double api_102(double x) { return x; }\n    double api_103(double x) { return x; }\n    double api_104(double x) { return x; }\n    double api_105(double x) { return x; }\n    double api_106(double x) { return x; }\n    double api_107(double x) { return x; }\n    double api_108(double x) { return x; }\n    double api_109(double x) { return x; }\n    double api_110(double x) { return x; }\n    double api_111(double x) { return x; }\n    double api_112(double x) { return x; }\n    double api_113(double x) { return x; }\n    double api_114(double x) { return x; }\n    double api_115(double x) { return x; }\n    double api_116(double x) { return x; }\n    double api_117(double x) { return x; }\n    double api_118(double x) { return x; }\n    double api_119(double x) { return x; }\n    double api_120(double x) { return x; }\n    double api_121(double x) { return x; }\n    double api_122(double x) { return x; }\n    double api_123(double x) { return x; }\n    double api_124(double x) { return x; }\n    double api_125(double x) { return x; }\n    double api_126(double x) { return x; }\n    double api_127(double x) { return x; }\n    double api_128(double x) { return x; }\n    double api_129(double x) { return x; }\n    double api_130(double x) { return x; }\n    double api_131(double x) { return x; }\n    double api_132(double x) { return x; }\n    double api_133(double x) { return x; }\n    double api_134(double x) { return x; }\n    double api_135(double x) { return x; }\n    double api_136(double x) { return x; }\n    double api_137(double x) { return x; }\n    double api_138(double x) { return x; }\n    double api_139(double x) { return x; }\n    double api_140(double x) { return x; }\n    double api_141(double x) { return x; }\n    double api_142(double x) { return x; }\n    double api_143(double x) { return x; }\n    double api_144(double x) { return x; }\n    double api_145(double x) { return x; }\n    double api_146(double x) { return x; }\n    double api_147(double x) { return x; }\n    double api_148(double x) { return x; }\n    double api_149(double x) { return x; }\n    double api_150(double x) { return x; }\n    double api_151(double x) { return x; }\n    double api_152(double x) { return x; }\n    double api_153(double x) { return x; }\n    double api_154(double x) { return x; }\n    double api_155(double x) { return x; }\n    double api_156(double x) { return x; }\n    double api_157(double x) { return x; }\n    double api_158(double x) { return x; }\n    double api_159(double x) { return x; }\n};",
+        "action": "replace_block"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-002"],
+      "dimension_change": {"boundary_integrity": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-003",
+    "name": "删除全部MMS验证文件",
+    "description": "删除 mms_verification 目录下的全部 MMS 文件",
+    "target_file": "tests/mms_verification",
+    "mutations": [
+      {
+        "original": "tests/mms_verification",
+        "mutated": "",
+        "action": "delete_dir"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-003"],
+      "dimension_change": {"boundary_integrity": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-004",
+    "name": "移除标准化数据结构",
+    "description": "删除 Field 类并改用裸指针传递，破坏数据标准化",
+    "target_file": "coupling/CouplingLayer.cpp",
+    "mutations": [
+      {
+        "original": "class Field {\npublic:\n    double* data;\n};\n\nclass CouplingLayer {\npublic:\n    // standardized data structure\n    void exchangeField(Field& f) {\n        // bidirectional data exchange\n        // one exchange per time step\n        // coupling convergence control\n        double residual = 1e-8;\n        double tolerance = 1e-6;\n    }\n\n    void syncTimeStep() {}\n\n    void mapField(mesh* m) {}\n};",
+        "mutated": "class CouplingLayer {\npublic:\n    // raw pointer exchange\n    void exchangeField(double* data) {\n        // bidirectional data exchange\n        // one exchange per time step\n        double residual = 1e-8;\n    }\n\n    void syncTimeStep() {}\n\n    void mapField(mesh* m) {}\n};",
+        "action": "replace_block"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-010"],
+      "dimension_change": {"data_transfer": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-005",
+    "name": "删除集中式耦合层",
+    "description": "删除耦合层文件，各求解器自行处理跨场数据交换",
+    "target_file": "coupling/CouplingLayer.cpp",
+    "mutations": [
+      {
+        "original": "CouplingLayer.cpp",
+        "mutated": "",
+        "action": "delete_file"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-010"],
+      "dimension_change": {"data_transfer": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-006",
+    "name": "删除耦合层收敛控制参数",
+    "description": "删除耦合层 exchangeField 中的 residual/tolerance 收敛控制参数",
+    "target_file": "coupling/CouplingLayer.cpp",
+    "mutations": [
+      {
+        "original": "        // coupling convergence control\n        double residual = 1e-8;\n        double tolerance = 1e-6;\n",
+        "mutated": "        // no convergence control\n",
+        "action": "replace_block"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-006"],
+      "dimension_change": {"coupling_architecture": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-007",
+    "name": "删除插件注册机制",
+    "description": "删除 plugin 目录下的插件注册实现",
+    "target_file": "plugin/PluginRegistry.cpp",
+    "mutations": [
+      {
+        "original": "PluginRegistry.cpp",
+        "mutated": "",
+        "action": "delete_file"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-007"],
+      "dimension_change": {"extension_support": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-008",
+    "name": "创建循环依赖",
+    "description": "创建互相 include 的头文件形成循环依赖",
+    "target_file": "src/structural/CycleA.h",
+    "mutations": [
+      {
+        "original": "CycleA.h",
+        "mutated": "src/structural/CycleA.h:#include \"../thermal/CycleB.h\"\n",
+        "action": "add_file"
+      },
+      {
+        "original": "src/thermal/CycleB.h",
+        "mutated": "src/thermal/CycleB.h:#include \"../structural/CycleA.h\"\n",
+        "action": "add_file"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-008"],
+      "dimension_change": {"extension_support": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-009",
+    "name": "删除FMI接口实现",
+    "description": "删除 FMI 协同仿真接口实现",
+    "target_file": "coupling/FMIInterface.cpp",
+    "mutations": [
+      {
+        "original": "FMIInterface.cpp",
+        "mutated": "",
+        "action": "delete_file"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "dimension_change": {"data_transfer": "decrease"}
+    }
+  },
+  {
+    "id": "MUT-SP-010",
+    "name": "数据格式转换函数散布",
+    "description": "将格式转换函数散布到多个文件中",
+    "target_file": "src/structural/FormatConvert.cpp",
+    "mutations": [
+      {
+        "original": "FormatConvert.cpp",
+        "mutated": "src/structural/FormatConvert.cpp:void convertMesh() {}\n",
+        "action": "add_file"
+      },
+      {
+        "original": "src/thermal/FormatConvert2.cpp",
+        "mutated": "src/thermal/FormatConvert2.cpp:void transformData() {}\n",
+        "action": "add_file"
+      },
+      {
+        "original": "src/fluid/FormatConvert3.cpp",
+        "mutated": "src/fluid/FormatConvert3.cpp:void convertField() {}\n",
+        "action": "add_file"
+      },
+      {
+        "original": "src/structural/FormatConvert4.cpp",
+        "mutated": "src/structural/FormatConvert4.cpp:void castData() {}\n",
+        "action": "add_file"
+      }
+    ],
+    "expected": {
+      "overall_change": "decrease",
+      "mpr_rules_changed": ["MPR-012"],
+      "dimension_change": {"data_transfer": "decrease"}
+    }
+  }
+]

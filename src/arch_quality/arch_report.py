@@ -23,11 +23,14 @@ from arch_quality.arch_core import (
 from arch_quality.arch_metrics_standard import StandardMetrics
 from arch_quality.arch_metrics_multilang import MultilangMetrics
 from arch_quality.arch_metrics_template import TemplateMetaprogrammingMetrics
+from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetrics
+from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
 from arch_quality.arch_report_generator import ReportGenerator
 
 SKILL_QUALITY = str(Path(__file__).parent / "skills" / "arch-quality.md")
 SKILL_MULTILANG = str(Path(__file__).parent / "skills" / "multilang-dependency.md")
 SKILL_TEMPLATE = str(Path(__file__).parent / "skills" / "template-metaprogramming.md")
+SKILL_SOLVER_PHYSICS = str(Path(__file__).parent / "skills" / "solver-physics-architecture.md")
 
 
 class ComprehensiveReport:
@@ -43,37 +46,99 @@ class ComprehensiveReport:
         self.standard = StandardMetrics(root)
         self.multilang = MultilangMetrics(root, build_dir=build_dir)
         self.template = TemplateMetaprogrammingMetrics(root, build_dir=build_dir)
+        self.numerical = NumericalAccuracyMetrics(root)
+        self.solver_physics = SolverPhysicsMetrics(root)
 
     def generate(self) -> dict:
         std_result = self.standard.all_metrics()
         ml_result = self.multilang.all_metrics()
         tpl_result = self.template.all_metrics()
+        nvr_result = self.numerical.all_metrics()
+        sp_result = self.solver_physics.all_metrics()
 
         struct_score = std_result["structural"]["score"]
 
         is_single = ml_result.get("is_single_language", False)
         has_cpp = tpl_result.get("is_cpp_project", False)
+        has_numerical = nvr_result.get("is_numerical", False)
+        has_multiphysics = sp_result.get("is_multiphysics", False)
 
-        if is_single and not has_cpp:
+        if is_single and not has_cpp and not has_numerical and not has_multiphysics:
             merged_structural = struct_score
             ml_weight_applied = 0.0
             tpl_weight_applied = 0.0
-        elif not is_single and not has_cpp:
-            ml_overall = ml_result["overall"]
-            merged_structural = struct_score * 0.85 + ml_overall * 0.15
-            ml_weight_applied = 0.15
-            tpl_weight_applied = 0.0
-        elif is_single and has_cpp:
-            tpl_overall = tpl_result["overall"]
-            merged_structural = struct_score * 0.85 + tpl_overall * 0.15
-            ml_weight_applied = 0.0
-            tpl_weight_applied = 0.15
+            nvr_weight_applied = 0.0
+            sp_weight_applied = 0.0
         else:
-            ml_overall = ml_result["overall"]
-            tpl_overall = tpl_result["overall"]
-            merged_structural = struct_score * 0.70 + ml_overall * 0.15 + tpl_overall * 0.15
-            ml_weight_applied = 0.15
-            tpl_weight_applied = 0.15
+            base_w = 1.0
+            ml_w = 0.0
+            tpl_w = 0.0
+            nvr_w = 0.0
+            sp_w = 0.0
+            active_count = 0
+            if not is_single:
+                active_count += 1
+                ml_w = 0.15
+            if has_cpp:
+                active_count += 1
+                tpl_w = 0.15
+            if has_numerical:
+                active_count += 1
+                nvr_w = 0.10
+            if has_multiphysics:
+                active_count += 1
+                sp_w = 0.15
+
+            if active_count == 0:
+                merged_structural = struct_score
+            else:
+                # 基础权重按激活数分档（与既有规则一致）
+                base_map = {1: 0.85, 2: 0.70, 3: 0.60, 4: 0.55}
+                base_w = base_map[active_count]
+
+                # 各增强的基础权重（ml/tpl/sp 各 15%，nvr 10%）
+                enh_raw = {}
+                if not is_single:
+                    enh_raw["ml"] = 0.15
+                if has_cpp:
+                    enh_raw["tpl"] = 0.15
+                if has_numerical:
+                    enh_raw["nvr"] = 0.10
+                if has_multiphysics:
+                    enh_raw["sp"] = 0.15
+
+                ml_w = enh_raw.get("ml", 0)
+                tpl_w = enh_raw.get("tpl", 0)
+                nvr_w = enh_raw.get("nvr", 0)
+                sp_w = enh_raw.get("sp", 0)
+
+                # 归一化：当基础+增强权重和 > 1 时等比缩放（如 4 增强 110% → 100%）
+                real_w = base_w + ml_w + tpl_w + nvr_w + sp_w
+                if active_count >= 3 and real_w > 1.0:
+                    scale = 1.0 / real_w
+                    base_w *= scale
+                    ml_w *= scale
+                    tpl_w *= scale
+                    nvr_w *= scale
+                    sp_w *= scale
+
+                ml_weight_applied = ml_w
+                tpl_weight_applied = tpl_w
+                nvr_weight_applied = nvr_w
+                sp_weight_applied = sp_w
+
+                ml_overall = ml_result["overall"] if ml_w > 0 and ml_result["overall"] is not None else 0
+                tpl_overall = tpl_result["overall"] if tpl_w > 0 and tpl_result["overall"] is not None else 0
+                nvr_overall = nvr_result["overall"] if nvr_w > 0 and nvr_result["overall"] is not None else 0
+                sp_overall = sp_result["overall"] if sp_w > 0 and sp_result["overall"] is not None else 0
+
+                merged_structural = (
+                    struct_score * base_w +
+                    ml_overall * ml_w +
+                    tpl_overall * tpl_w +
+                    nvr_overall * nvr_w +
+                    sp_overall * sp_w
+                ) / max(base_w + ml_w + tpl_w + nvr_w + sp_w, 0.01)
 
         w = {k: v for k, v in self.quality_weights.items()}
         overall = (
@@ -118,10 +183,12 @@ class ComprehensiveReport:
             "score_breakdown": {
                 "formula": "overall = structural*30% + design*25% + doc*20% + evolution*25%",
                 "structural_note": (
-                    f"structural = base*{int((1-ml_weight_applied-tpl_weight_applied)*100)}%"
+                    f"structural = base*{int((1-ml_weight_applied-tpl_weight_applied-nvr_weight_applied-sp_weight_applied)*100)}%"
                     f" + multilang*{int(ml_weight_applied*100)}%"
                     f" + template*{int(tpl_weight_applied*100)}%"
-                    if not is_single or has_cpp
+                    f" + numerical*{int(nvr_weight_applied*100)}%"
+                    f" + solver_physics*{int(sp_weight_applied*100)}%"
+                    if not is_single or has_cpp or has_numerical or has_multiphysics
                     else "structural = base_structural*100% (single-language project, no enhancement)"
                 ),
                 "calculated": {
@@ -146,6 +213,20 @@ class ComprehensiveReport:
                 "score": tpl_result["overall"],
                 "weight_applied": tpl_weight_applied,
                 "details": tpl_result["dimensions"],
+            }
+
+        if has_numerical:
+            result["dimensions"]["structural"]["numerical_enhancement"] = {
+                "score": nvr_result["overall"],
+                "weight_applied": nvr_weight_applied,
+                "details": nvr_result["dimensions"],
+            }
+
+        if has_multiphysics:
+            result["dimensions"]["structural"]["solver_physics_enhancement"] = {
+                "score": sp_result["overall"],
+                "weight_applied": sp_weight_applied,
+                "details": sp_result["dimensions"],
             }
 
         tpl_violations = tpl_result.get("mlr_violations", [])
@@ -184,6 +265,16 @@ class ComprehensiveReport:
             if sme_waiver_notes:
                 result["sme_waiver_summary"] = sme_waiver_notes
             result["output_level_summary"] = output_level_summary
+
+        # 合并 solver-physics MPR 违规到报告
+        sp_violations = sp_result.get("mpr_violations", [])
+        for v in sp_violations:
+            result["mlr_violations"].append(v)
+
+        # 合并 NVR 违规到报告
+        nvr_violations = nvr_result.get("nvr_violations", [])
+        for v in nvr_violations:
+            result["mlr_violations"].append(v)
 
         return result
 
