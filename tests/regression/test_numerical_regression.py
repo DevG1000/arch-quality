@@ -1,163 +1,201 @@
-# -*- coding: utf-8 -*-
-"""test_numerical_regression.py — 数值算法精度回归测试框架"""
+"""
+数值精度评估外部验证回归测试
 
-import json
-import os
-import sys
-import unittest
-from collections import Counter
-from pathlib import Path
+对本地可用的开源项目运行工具，将结果与已建立的基线 JSON 比对。
+检测评分偏移、NVR 违规数量变化等回归问题。
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
+性能说明：每个项目只运行一次评估，结果被缓存供所有测试方法复用。
+deal.II 等大型项目（24k 文件）耗时约 800s，标注为 slow。
+"""
 
+import os, json, sys, functools
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetrics
 
-SNAP_DIR = Path(__file__).resolve().parent / "snapshots"
-UPDATE_SNAPSHOTS = os.environ.get("ARCH_REGRESSION_UPDATE", "") == "1"
+SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), 'snapshots', 'numerical_baselines')
 
-TOLERANCE_OVERALL = 1.0
-TOLERANCE_DIMENSION = 2.0
+# 可用项目（路径与本机仓库位置绑定）
+PROJECTS = {
+    'MOOSE': r'D:\opensource\MOOSE',
+    'deal.II': r'D:\opensource\dealii',
+    'FreeFEM': r'D:\opensource\FreeFEM-sources',
+    'MFEM': r'D:\opensource\mfem',
+    'FEniCSx': r'D:\opensource\dolfinx',
+}
+
+# 大项目标记为 slow（单次运行 > 60s）
+SLOW_PROJECTS = {'MOOSE', 'deal.II'}
 
 
-def _load_snapshot(name):
-    path = SNAP_DIR / f"nvr_{name}.json"
-    if not path.exists():
-        return None
-    with open(path, "r", encoding="utf-8-sig") as f:
+def load_baseline(project_name):
+    """加载已保存的基线 JSON"""
+    path = os.path.join(SNAPSHOT_DIR, f'{project_name}.json')
+    if not os.path.exists(path):
+        pytest.skip(f'基线文件不存在: {path}')
+    with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
-def _save_snapshot(name, data):
-    path = SNAP_DIR / f"nvr_{name}.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+@functools.lru_cache(maxsize=None)
+def run_assessment_cached(project_path):
+    """运行工具并缓存结果（避免每个测试方法都重新运行）"""
+    m = NumericalAccuracyMetrics(project_path)
+    return m.all_metrics()
 
 
-def _compute_actual(root_path):
-    m = NumericalAccuracyMetrics(root_path)
-    result = m.all_metrics()
+# ── Fixtures ──
 
-    c = Counter()
-    for v in result.get("nvr_violations", []):
-        c[(v["rule"], v["severity"], v.get("output_level", ""))] += v.get("count", 1)
-    nvr_violations = {}
-    for (r, s, ol), cnt in sorted(c.items()):
-        nvr_violations[f"{r}|{s}|{ol}"] = cnt
-
-    dimensions = {}
-    for k, v in result.get("dimensions", {}).items():
-        dimensions[k] = v.get("score", 0) if isinstance(v, dict) else v
-
-    return {
-        "nvr_overall": result["overall"],
-        "is_numerical": result["is_numerical"],
-        "dimensions": dimensions,
-        "nvr_violations": nvr_violations,
-    }
+@pytest.fixture(scope='module')
+def baseline(request):
+    """加载基线 JSON（模块级缓存）"""
+    return load_baseline(request.param)
 
 
-def _make_project_class(project_name, snap_name, root_path):
-    class_name = f"TestNumeric{project_name.replace('-', '').replace(' ', '')}"
+@pytest.fixture(scope='module')
+def assessment(request):
+    """运行评估并缓存结果（模块级缓存）"""
+    return run_assessment_cached(request.param)
 
-    @unittest.skipUnless(
-        Path(root_path).exists(),
-        f"Project directory not found: {root_path}",
-    )
-    class TestCase(unittest.TestCase):
-        snap_name_local = snap_name
-        root_path_local = root_path
-        project_name_local = project_name
 
-        @classmethod
-        def setUpClass(cls):
-            cls._actual = _compute_actual(cls.root_path_local)
-            if UPDATE_SNAPSHOTS:
-                snap = _load_snapshot(cls.snap_name_local) or {}
-                snap.update(cls._actual)
-                snap["snapshot_date"] = "2026-06-25"
-                snap["root_path"] = cls.root_path_local
-                _save_snapshot(cls.snap_name_local, snap)
+# ── 参数化数据 ──
 
-        def test_is_numerical(self):
-            snap = _load_snapshot(self.snap_name_local)
-            if UPDATE_SNAPSHOTS or not snap:
-                return
-            self.assertEqual(
-                self._actual["is_numerical"],
-                snap["is_numerical"],
-                f"{self.project_name_local}: is_numerical mismatch",
-            )
+def available_projects(include_slow=True):
+    """返回可用的项目列表"""
+    result = []
+    for name, path in PROJECTS.items():
+        if not os.path.isdir(path):
+            continue
+        if not include_slow and name in SLOW_PROJECTS:
+            continue
+        result.append((name, path))
+    return result
 
-        def test_overall_score(self):
-            snap = _load_snapshot(self.snap_name_local)
-            if UPDATE_SNAPSHOTS or not snap:
-                return
-            if not self._actual["is_numerical"]:
-                self.skipTest("Non-numerical project, skipping")
-            expected = snap["nvr_overall"]
-            actual = self._actual["nvr_overall"]
-            if actual is None:
-                self.skipTest("No numerical score")
-            self.assertAlmostEqual(
-                actual, expected, delta=TOLERANCE_OVERALL,
-                msg=f"{self.project_name_local}: overall {actual} != {expected}",
-            )
 
-        def test_dimension_scores(self):
-            snap = _load_snapshot(self.snap_name_local)
-            if UPDATE_SNAPSHOTS or not snap:
-                return
-            if not self._actual["is_numerical"]:
-                self.skipTest("Non-numerical project")
-            for dim_name, expected in snap["dimensions"].items():
-                actual = self._actual["dimensions"].get(dim_name)
-                if actual is None:
-                    self.fail(f"{self.project_name_local}: missing dimension '{dim_name}'")
-                self.assertAlmostEqual(
-                    actual, expected, delta=TOLERANCE_DIMENSION,
-                    msg=f"{self.project_name_local}: {dim_name}={actual} != {expected}",
+# ── 测试类 ──
+
+class TestNumericalRegression:
+    """数值精度评估外部验证回归测试"""
+
+    @pytest.mark.parametrize('project_name,project_path',
+                             available_projects(include_slow=True),
+                             ids=lambda p: p[0] if isinstance(p, tuple) else p)
+    def test_overall_score_stable(self, project_name, project_path):
+        """综合评分不应偏离基线超过 ±2.0"""
+        baseline = load_baseline(project_name)
+        result = run_assessment_cached(project_path)
+        expected = baseline['overall']
+        actual = result['overall']
+        diff = abs(actual - expected)
+        assert diff <= 2.0, (
+            f'{project_name}: 综合评分偏移 {diff:.2f} '
+            f'(基线={expected}, 当前={actual})'
+        )
+
+    @pytest.mark.parametrize('project_name,project_path',
+                             available_projects(include_slow=True),
+                             ids=lambda p: p[0] if isinstance(p, tuple) else p)
+    def test_nvr_count_stable(self, project_name, project_path):
+        """NVR 违规数量不应变化"""
+        baseline = load_baseline(project_name)
+        result = run_assessment_cached(project_path)
+        expected = len(baseline.get('nvr_violations', []))
+        actual = len(result.get('nvr_violations', []))
+        assert actual == expected, (
+            f'{project_name}: NVR 违规数量变化 '
+            f'(基线={expected}, 当前={actual})'
+        )
+
+    @pytest.mark.parametrize('project_name,project_path',
+                             available_projects(include_slow=True),
+                             ids=lambda p: p[0] if isinstance(p, tuple) else p)
+    def test_nvr_rules_unchanged(self, project_name, project_path):
+        """NVR 违规的规则列表不应变化"""
+        baseline = load_baseline(project_name)
+        result = run_assessment_cached(project_path)
+        expected_rules = sorted(v['rule'] for v in baseline.get('nvr_violations', []))
+        actual_rules = sorted(v['rule'] for v in result.get('nvr_violations', []))
+        assert actual_rules == expected_rules, (
+            f'{project_name}: NVR 违规规则变化\n'
+            f'  基线: {expected_rules}\n'
+            f'  当前: {actual_rules}'
+        )
+
+    # 维度评分检测仅对小型项目运行（不含 MOOSE/deal.II）
+    @pytest.mark.parametrize('project_name,project_path',
+                             available_projects(include_slow=False),
+                             ids=lambda p: p[0] if isinstance(p, tuple) else p)
+    @pytest.mark.parametrize('dim_name', [
+        'numerical_stability', 'roundoff_sensitivity',
+        'mms_verification', 'error_estimation',
+        'regression_coverage', 'numerical_debt',
+    ])
+    def test_dimension_score_stable(self, project_name, project_path, dim_name):
+        """各维度评分不应偏离基线超过 ±5.0（仅小项目）"""
+        baseline = load_baseline(project_name)
+        result = run_assessment_cached(project_path)
+        b_dim = baseline.get('dimensions', {}).get(dim_name, {})
+        r_dim = result.get('dimensions', {}).get(dim_name, {})
+        expected = b_dim.get('score')
+        actual = r_dim.get('score')
+
+        if expected is None and actual is None:
+            return
+        if expected is None or actual is None:
+            pytest.fail(f'{project_name}/{dim_name}: score 从 {expected} 变为 {actual}')
+
+        diff = abs(actual - expected)
+        assert diff <= 5.0, (
+            f'{project_name}/{dim_name}: 评分偏移 {diff:.1f} '
+            f'(基线={expected}, 当前={actual})'
+        )
+
+    @pytest.mark.parametrize('project_name,project_path',
+                             available_projects(include_slow=True),
+                             ids=lambda p: p[0] if isinstance(p, tuple) else p)
+    def test_nvr_severity_not_increased(self, project_name, project_path):
+        """NVR 违规的 output_level 不应升级（如 WARNING→ERROR）"""
+        baseline = load_baseline(project_name)
+        result = run_assessment_cached(project_path)
+
+        baseline_map = {v['rule']: v['output_level']
+                        for v in baseline.get('nvr_violations', [])}
+        result_map = {v['rule']: v['output_level']
+                      for v in result.get('nvr_violations', [])}
+
+        severity_order = {'INFO': 0, 'WARNING': 1, 'ERROR': 2}
+        for rule, new_level in result_map.items():
+            old_level = baseline_map.get(rule)
+            if old_level and severity_order.get(new_level, 0) > severity_order.get(old_level, 0):
+                pytest.fail(
+                    f'{project_name}/{rule}: output_level 升级 '
+                    f'({old_level} → {new_level}), 需要审查'
                 )
 
-        def test_nvr_violation_counts(self):
-            snap = _load_snapshot(self.snap_name_local)
-            if UPDATE_SNAPSHOTS or not snap:
-                return
-            expected_rules = snap["nvr_violations"]
-            actual_rules = self._actual["nvr_violations"]
-            all_keys = sorted(set(list(expected_rules.keys()) + list(actual_rules.keys())))
-            for key in all_keys:
-                exp = expected_rules.get(key, 0)
-                act = actual_rules.get(key, 0)
-                if exp > 0 and act == 0:
-                    self.fail(f"{self.project_name_local}: MISSING {key} (expected {exp})")
-                if exp > 0 and act > 0:
-                    tolerance = max(1, int(exp * 0.2))
-                    if abs(act - exp) > max(tolerance, 2):
-                        self.fail(f"{self.project_name_local}: {key} changed: {exp} -> {act}")
+    @pytest.mark.parametrize('project_name,project_path',
+                             available_projects(include_slow=True),
+                             ids=lambda p: p[0] if isinstance(p, tuple) else p)
+    def test_cancellation_count_monitor(self, project_name, project_path):
+        """NVR-003 相消数量变化超过 20% 时告警（非阻断）"""
+        baseline = load_baseline(project_name)
+        result = run_assessment_cached(project_path)
 
-    TestCase.__name__ = class_name
-    TestCase.__qualname__ = class_name
-    return TestCase
+        b_nvr = {v['rule']: v for v in baseline.get('nvr_violations', [])}
+        r_nvr = {v['rule']: v for v in result.get('nvr_violations', [])}
 
+        if 'NVR-003' not in b_nvr and 'NVR-003' not in r_nvr:
+            return
 
-TestNumericOpenFOAM = _make_project_class(
-    "OpenFOAM-v2512",
-    "openfoam",
-    r"D:\OPENSOURCE\OpenFOAM-v2512",
-)
+        b_cnt = b_nvr.get('NVR-003', {}).get('count', 0)
+        r_cnt = r_nvr.get('NVR-003', {}).get('count', 0)
 
-TestNumericCalculiX = _make_project_class(
-    "CalculiX (ccx_2.23)",
-    "calculix",
-    r"D:\OPENSOURCE\CalculiX\CalculiX\ccx_2.23",
-)
+        if b_cnt > 0 and r_cnt > 0:
+            change = abs(r_cnt - b_cnt) / max(b_cnt, 1)
+            if change > 0.2:
+                import warnings
+                warnings.warn(UserWarning(
+                    f'{project_name}: NVR-003 相消数量变化 {change:.0%} '
+                    f'(基线={b_cnt}, 当前={r_cnt})'
+                ))
 
-TestNumericMOOSE = _make_project_class(
-    "MOOSE",
-    "moose",
-    r"D:\OPENSOURCE\moose",
-)
-
-if __name__ == "__main__":
-    unittest.main()

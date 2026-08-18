@@ -1,0 +1,116 @@
+{
+  "project": "MOOSE",
+  "path": "D:\\opensource\\MOOSE",
+  "timestamp": "2026-07-24T13:39:32+0800",
+  "tool_version": "guide=1.8, skill=1.6",
+  "overall": 96.0,
+  "dimensions": {
+    "numerical_stability": {
+      "score": 100.0,
+      "detail": {
+        "score": 100.0,
+        "total_solver_files": 1487,
+        "explicit_scheme_files": 102,
+        "has_cfl_control": true,
+        "has_stability_measures": true,
+        "cfl_ratio": 0.069
+      }
+    },
+    "roundoff_sensitivity": {
+      "score": 80,
+      "detail": {
+        "score": 80,
+        "cancellation_sites": 108,
+        "has_kahan_summation": true,
+        "has_dynamic_tool": true
+      }
+    },
+    "mms_verification": {
+      "score": 100.0,
+      "detail": {
+        "score": 100.0,
+        "mms_file_count": 47,
+        "mms_directory_count": 29,
+        "has_accuracy_order": true
+      }
+    },
+    "error_estimation": {
+      "score": 100,
+      "detail": {
+        "score": 100,
+        "mesh_convergence_count": 37,
+        "dir_refine_count": 0,
+        "has_residual_control": true,
+        "has_reasonable_tolerance": true,
+        "has_solver_code": true
+      }
+    },
+    "regression_coverage": {
+      "score": 100.0,
+      "detail": {
+        "score": 100.0,
+        "has_ci_config": false,
+        "test_file_count": 1321,
+        "has_assertions": true,
+        "has_snapshot_baseline": true,
+        "test_ratio": 0.112,
+        "N_critical": 0,
+        "N_tested": 0
+      }
+    },
+    "numerical_debt": {
+      "score": 100.0,
+      "detail": {
+        "score": 100.0,
+        "debt_ratio": 0.0,
+        "low_score_dimensions": 0
+      }
+    }
+  },
+  "nvr_violations": [
+    {
+      "rule": "NVR-003",
+      "output_level": "WARNING",
+      "count": 108
+    }
+  ],
+  "dimension_details": {
+    "numerical_stability": {
+      "total_solver_files": 1487,
+      "explicit_scheme_files": 102,
+      "has_cfl_control": true,
+      "has_stability_measures": true,
+      "cfl_ratio": 0.069
+    },
+    "roundoff_sensitivity": {
+      "cancellation_sites": 108,
+      "has_kahan_summation": true,
+      "has_dynamic_tool": true
+    },
+    "mms_verification": {
+      "mms_file_count": 47,
+      "mms_directory_count": 29,
+      "has_accuracy_order": true
+    },
+    "error_estimation": {
+      "mesh_convergence_count": 37,
+      "dir_refine_count": 0,
+      "has_residual_control": true,
+      "has_reasonable_tolerance": true,
+      "has_solver_code": true
+    },
+    "regression_coverage": {
+      "has_ci_config": false,
+      "test_file_count": 1321,
+      "has_assertions": true,
+      "has_snapshot_baseline": true,
+      "test_ratio": 0.112,
+      "N_critical": 0,
+      "N_tested": 0
+    },
+    "numerical_debt": {
+      "debt_ratio": 0.0,
+      "low_score_dimensions": 0
+    }
+  }
+}
