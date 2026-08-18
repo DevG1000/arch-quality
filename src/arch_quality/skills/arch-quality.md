@@ -21,6 +21,8 @@
 | 复杂度 | 20% |
 | 可测试性 | 20% |
 
+> **待升级**: "可测试性"（testability）计划升级为"测试覆盖度"（test_coverage）并采用5层评分算法（L1目录覆盖+L2语言覆盖+L3文件比+L4绑定层覆盖）。见 HANDOFF-v1.8.md P0任务。代码中 `calc_testability()` 将重命名为 `calc_test_coverage()`。
+
 ### 设计质量子维度
 
 | 子维度 | 权重 |
