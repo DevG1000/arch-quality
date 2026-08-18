@@ -1,0 +1,37 @@
+{
+  "case_id": "case-3-pure-markdown",
+  "name": "非求解器项目判定",
+  "status": "PASS",
+  "attempts": [
+    {
+      "attempt": 1,
+      "returncode": 0,
+      "event_count": 3,
+      "error": "bash 调用均未命中评估命令白名单（1 条）; agent 未返回任何文本输出; 无文本输出"
+    },
+    {
+      "attempt": 2,
+      "returncode": 0,
+      "event_count": 6
+    }
+  ],
+  "errors": [],
+  "passed": [
+    "全部断言通过"
+  ],
+  "timestamp": "2026-08-07T16:44:22.471545",
+  "tool_calls": [
+    {
+      "tool": "bash",
+      "state": "completed",
+      "input": {
+        "command": "python -m arch_quality.arch_report D:/opensource/knowledge-base --json",
+        "description": "运行求解器物理场架构评估命令",
+        "timeout": 300000
+      },
+      "output": "<unknown>:10: SyntaxWarning: \"\\o\" is an invalid escape sequence. Such sequences will not work in the future. Did you mean \"\\\\o\"? A raw string is also an option.\r\n<unknown>:90: SyntaxWarning: \"\\w\" is an invalid escape sequence. Such sequences will not work in the future. Did you mean \"\\\\w\"? A raw string is also an option.\r\n<unknown>:187: SyntaxWarning: \"\\s\" is an invalid escape sequence. Such sequences will not work in the future. Did you mean \"\\\\s\"? A raw string is also an option.\r\n{\r\n  \"project\": \"knowledge-base\",\r\n  \"assessment_date\": \"2026-08-07 16:45:37\",\r\n  \"overall_score\": 49.9,\r\n  \"is_single_language\": true,\r\n  \"project_languages\": [\r\n    \"python\"\r\n  ],\r\n  \"weights_source_standard\": \"D:\\\\opensource\\\\arch-quality\\\\src\\\\arch_quality\\\\skills\\\\arch-quality.md\",\r\n  \"weights_source_multilang\": \"D:\\\\opensource\\\\arch-quality\\\\src\\\\arch_quality\\\\skills\\\\multilang-dependency.md\",\r\n  \"dimensions\": {\r\n    \"structural\": {\r\n      \"score\": 68.0,\r\n      \"weight\": 0.3,\r\n      \"sub_scores\": {\r\n        \"modularity\": 60.0,\r\n        \"coupling\": 80.0,\r\n        \"cohesion\": 100,\r\n        \"complexity\": 100,\r\n        \"testability\": 0\r\n      }\r\n    },\r\n    \"design\": {\r\n      \"score\": 70.0,\r\n      \"weight\": 0.25,\r\n      \"details\": {\r\n        \"solid\": 70,\r\n        \"patterns\": 65,\r\n        \"style\": 75,\r\n        \"anti_patterns\": 80\r\n      }\r\n    },\r\n    \"documentation\": {\r\n      \"score\": 35.0,\r\n      \"weight\": 0.2,\r\n      \"details\": {\r\n        \"readme\": 40,\r\n        \"changelog\": 30,\r\n        \"adr\": 0,\r\n        \"comments\": 0,\r\n        \"jsdoc\": 0,\r\n        \"arch_doc\": 0\r\n      }\r\n    },\r\n    \"evolution\": {\r\n      \"score\": 20.0,\r\n      \"weight\": 0.25,\r\n      \"details\": {\r\n        \"git_activity\": 20,\r\n        \"debt_trend\": 0,\r\n        \"dep_outdated\": 0,\r\n        \"dead_code\": 0,\r\n        \"incremental\": 0,\r\n        \"problems\": 0\r\n      }\r\n    }\r\n  },\r\n  \"mlr_violations\": [],\r\n  \"files\": {\r\n    \"total\": 1,\r\n    \"by_lang\": {\r\n      \"python\": 1\r\n    },\r\n    \"total_lines\": 301,\r\n    \"files_detail\": [\r\n      {\r\n        \"path\": \"scripts\\\\extract_highlights.py\",\r\n        \"lines\": 301,\r\n        \"lang\": \"python\"\r\n      }\r\n    ]\r\n  },\r\n  \"score_breakdown\": {\r\n    \"formula\": \"overall = structural*30% + design*25% + doc*20% + evolution*25%\",\r\n    \"structural_note\": \"structural = base_structural*100% (single-language project, no enhancement)\",\r\n    \"calculated\": {\r\n      \"merged_structural\": 68.0,\r\n      \"design\": 70.0,\r\n      \"documentation\": 35.0,\r\n      \"evolution\": 20.0,\r\n      \"weighted_sum\": 49.9\r\n    }\r\n  }\r\n}\r\n\r\nJSON report: C:\\Users\\Guo\\.config\\opencode\\arch-reports\\knowledge-base-36d8f6\\2026-08-07\\comprehensive-report.json\r\nStorage mode: central, base: C:\\Users\\Guo\\.config\\opencode\\arch-reports\\knowledge-base-36d8f6\r\n"
+    }
+  ],
+  "final_text": "{\n  \"project\": \"knowledge-base\",\n  \"assessment_date\": \"2026-08-07 16:45:37\",\n  \"overall_score\": 49.9,\n  \"is_single_language\": true,\n  \"project_languages\": [\n    \"python\"\n  ],\n  \"weights_source_standard\": \"D:\\\\opensource\\\\arch-quality\\\\src\\\\arch_quality\\\\skills\\\\arch-quality.md\",\n  \"weights_source_multilang\": \"D:\\\\opensource\\\\arch-quality\\\\src\\\\arch_quality\\\\skills\\\\multilang-dependency.md\",\n  \"dimensions\": {\n    \"structural\": {\n      \"score\": 68.0,\n      \"weight\": 0.3,\n      \"sub_scores\": {\n        \"modularity\": 60.0,\n        \"coupling\": 80.0,\n        \"cohesion\": 100,\n        \"complexity\": 100,\n        \"testability\": 0\n      }\n    },\n    \"design\": {\n      \"score\": 70.0,\n      \"weight\": 0.25,\n      \"details\": {\n        \"solid\": 70,\n        \"patterns\": 65,\n        \"style\": 75,\n        \"anti_patterns\": 80\n      }\n    },\n    \"documentation\": {\n      \"score\": 35.0,\n      \"weight\": 0.2,\n      \"details\": {\n        \"readme\": 40,\n        \"changelog\": 30,\n        \"adr\": 0,\n        \"comments\": 0,\n        \"jsdoc\": 0,\n        \"arch_doc\": 0\n      }\n    },\n    \"evolution\": {\n      \"score\": 20.0,\n      \"weight\": 0.25,\n      \"details\": {\n        \"git_activity\": 20,\n        \"debt_trend\": 0,\n        \"dep_outdated\": 0,\n        \"dead_code\": 0,\n        \"incremental\": 0,\n        \"problems\": 0\n      }\n    }\n  },\n  \"mlr_violations\": [],\n  \"files\": {\n    \"total\": 1,\n    \"by_lang\": {\n      \"python\": 1\n    },\n    \"total_lines\": 301,\n    \"files_detail\": [\n      {\n        \"path\": \"scripts\\\\extract_highlights.py\",\n        \"lines\": 301,\n        \"lang\": \"python\"\n      }\n    ]\n  },\n  \"score_breakdown\": {\n    \"formula\": \"overall = structural*30% + design*25% + doc*20% + evolution*25%\",\n    \"structural_note\": \"structural = base_structural*100% (single-language project, no enhancement)\",\n    \"calculated\": {\n      \"merged_structural\": 68.0,\n      \"design\": 70.0,\n      \"documentation\": 35.0,\n      \"evolution\": 20.0,\n      \"weighted_sum\": 49.9\n    }\n  }\n}\n\nJSON report: C:\\Users\\Guo\\.config\\opencode\\arch-r",
+  "retries_used": 1
+}

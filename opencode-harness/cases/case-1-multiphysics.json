@@ -1,0 +1,13 @@
+{
+  "id": "case-1-multiphysics",
+  "name": "多物理场项目评估",
+  "description": "验证 agent 对 good_multiphysics 合成项目正确识别为多物理场并给出合理评分",
+  "project_dir": "D:/opensource/arch-quality/tests/mutation/projects/good_multiphysics",
+  "prompt": "请对 D:/opensource/arch-quality/tests/mutation/projects/good_multiphysics 目录直接运行求解器物理场模块化架构评估命令：python -m arch_quality.arch_report D:/opensource/arch-quality/tests/mutation/projects/good_multiphysics --json，然后汇报该命令输出的 overall 评分和各维度评分。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_multiphysics": true,
+    "overall_range": [60, 95],
+    "dimension_fields": ["boundary_integrity", "coupling_architecture", "extension_support", "data_transfer"],
+    "max_retries": 2
+  }
+}

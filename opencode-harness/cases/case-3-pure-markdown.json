@@ -1,0 +1,13 @@
+{
+  "id": "case-3-pure-markdown",
+  "name": "非求解器项目判定",
+  "description": "验证 agent 对纯 Markdown 知识库正确判定为非多物理场（无求解器特征）",
+  "project_dir": "D:/opensource/knowledge-base",
+  "prompt": "请对 D:/opensource/knowledge-base 目录直接运行求解器物理场模块化架构评估命令：python -m arch_quality.arch_report D:/opensource/knowledge-base --json，然后汇报该命令输出的 overall 评分和 is_multiphysics 判断。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_multiphysics": false,
+    "overall_range": null,
+    "dimension_fields": [],
+    "max_retries": 2
+  }
+}

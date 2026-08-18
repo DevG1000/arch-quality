@@ -1,0 +1,27 @@
+{
+  "$comment": "agent harness 断言规则单一事实源。Python 断言器与 opencode 插件 hook 共享，修改需同时保证两者读取一致。",
+  "eval_bash_prefixes": ["arch-quality", "python -m arch_quality"],
+  "readonly_bash_prefixes": [
+    "Test-Path", "Get-ChildItem", "Get-Content",
+    "git status", "git log", "git diff",
+    "Select-String", "where.exe"
+  ],
+  "forbidden_tools": ["edit", "write", "apply_patch"],
+  "forbidden_bash_patterns": ["^\\s*rm\\s"],
+  "overall_range": [0, 100],
+  "required_solver_fields": ["solver_physics_enhancement"],
+  "non_multiphysics_markers": [
+    "非多物理场", "不是多物理场", "未识别为多物理场",
+    "未启用", "未激活", "not a multiphysics"
+  ],
+  "hallucinated_patterns": [
+    "(?i)approval\\s+number", "(?i)patent", "(?i)invoice",
+    "(?i)refund", "(?i)transaction\\s+id"
+  ],
+  "dimension_fields": [
+    "boundary_integrity", "coupling_architecture",
+    "extension_support", "data_transfer"
+  ],
+  "assert_mode": "log",
+  "version": "1.0"
+}

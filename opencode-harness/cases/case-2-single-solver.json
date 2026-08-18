@@ -1,0 +1,13 @@
+{
+  "id": "case-2-single-solver",
+  "name": "单求解器项目判定",
+  "description": "验证 agent 对 good_project（含求解器关键词但非多物理场）正确判定为非多物理场",
+  "project_dir": "D:/opensource/arch-quality/tests/mutation/projects/good_project",
+  "prompt": "请对 D:/opensource/arch-quality/tests/mutation/projects/good_project 目录直接运行求解器物理场模块化架构评估命令：python -m arch_quality.arch_report D:/opensource/arch-quality/tests/mutation/projects/good_project --json，然后汇报该命令输出的 overall 评分和 is_multiphysics 判断。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_multiphysics": false,
+    "overall_range": null,
+    "dimension_fields": [],
+    "max_retries": 2
+  }
+}
