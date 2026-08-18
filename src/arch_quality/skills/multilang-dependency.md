@@ -121,14 +121,16 @@ score = max(0, 100 - severity)
 | 规则ID | 名称 | 严重级别 |
 |--------|------|---------|
 | MLR-001 | 跨语言循环依赖检测 | HIGH |
+| MLR-001b | 同语言模块级循环检测 | MEDIUM/INFO |
 | MLR-002 | 绑定层接口缺失 | HIGH |
 | MLR-003 | 绑定层签名不匹配 | HIGH |
 | MLR-004 | 脚本直接访问内部 | HIGH |
+| MLR-004b | Tcl命名空间违规 | MEDIUM/INFO |
 | MLR-005 | 跨语言回调深度超标 | MEDIUM |
 | MLR-006 | 热点模块（高频调用） | MEDIUM |
 | MLR-007 | TNT模块（影响半径超标） | MEDIUM |
 | MLR-008 | GIL死锁风险 | HIGH |
 | MLR-009 | 绑定层使用通用类型 | MEDIUM |
-| MLR-010 | FFI内存所有权混乱 | HIGH |
+| MLR-010 | FFI内存所有权混乱 (v2: 5层过滤+3级严重度+C/C++ malloc) | HIGH/MEDIUM/LOW |
 | MLR-011 | 小数据频繁跨语言传输 | LOW |
-| MLR-012 | Fortran缺少ISO_C_BINDING | MEDIUM |
+| MLR-012 | Fortran缺少ISO_C_BINDING (v3: 跨语言边感知+@allowed_coupling+F77降级) | MEDIUM/INFO |
