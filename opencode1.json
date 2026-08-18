@@ -1,0 +1,10 @@
+{
+  "agents": {
+    "architecture-quality": {
+      "file": ".opencode/agents/architecture-quality.md",
+      "description": "架构质量评估智能体 — 系统性分析、评估和改进软件系统架构质量，支持多语言混合依赖评估和 C++ 模板元编程专项分析",
+      "tools": {"bash":"allow","read":"allow", "write":"allow", "edit":"allow", "glob":"allow", "grep":"allow", "task":"allow"}
+    }
+  }
+}
+

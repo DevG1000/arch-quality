@@ -1,0 +1,36 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "plugin": [],
+  "agent": {
+    "architecture-quality": {
+      "description": "架构质量评估智能体 — 系统性分析、评估和改进软件系统架构质量，支持标准架构评估、多语言混合依赖评估、模板元编程专项分析和求解器物理场模块化架构评估",
+      "mode": "primary",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "skill": "allow",
+        "task": "allow",
+        "bash": {
+          "*": "ask",
+          "arch-quality*": "allow",
+          "arch-quality *": "allow",
+          "python -m arch_quality*": "allow",
+          "Test-Path*": "allow",
+          "Get-ChildItem*": "allow",
+          "Get-Content*": "allow",
+          "git status*": "allow",
+          "git log*": "allow",
+          "git diff*": "allow",
+          "Select-String*": "allow",
+          "where.exe*": "allow"
+        },
+        "edit": "deny",
+        "write": "deny"
+      }
+    }
+  }
+}
