@@ -36,14 +36,15 @@ SKILL_SOLVER_PHYSICS = str(Path(__file__).parent / "skills" / "solver-physics-ar
 class ComprehensiveReport:
     """综合报告数据生成器"""
 
-    def __init__(self, root: str, build_dir: str = ""):
+    def __init__(self, root: str, build_dir: str = "", test_dirs: list = None):
         self.root = root
         self.build_dir = build_dir
+        self.test_dirs = test_dirs or []
         self.quality_weights = load_weights_from_skill(SKILL_QUALITY)
         self.multilang_weights = load_weights_from_skill(SKILL_MULTILANG)
         self.template_weights = load_weights_from_skill(SKILL_TEMPLATE)
 
-        self.standard = StandardMetrics(root)
+        self.standard = StandardMetrics(root, build_dir=build_dir, test_dirs=self.test_dirs)
         self.multilang = MultilangMetrics(root, build_dir=build_dir)
         self.template = TemplateMetaprogrammingMetrics(root, build_dir=build_dir)
         self.numerical = NumericalAccuracyMetrics(root)
@@ -276,6 +277,11 @@ class ComprehensiveReport:
         for v in nvr_violations:
             result["mlr_violations"].append(v)
 
+        # 合并标准架构质量 SAR 违规到报告
+        sar_violations = std_result.get("sar_violations", [])
+        for v in sar_violations:
+            result["mlr_violations"].append(v)
+
         return result
 
 
@@ -283,6 +289,8 @@ def main():
     parser = argparse.ArgumentParser(description="架构质量综合评估报告")
     parser.add_argument("root", nargs="?", default=".", help="项目根目录")
     parser.add_argument("--build-dir", default="", help="构建目录（包含 SWIG 生成文件的目录，如 build/）")
+    parser.add_argument("--test-dirs", default="", nargs="*",
+                        help="out-of-tree 测试根目录（相对于项目根，如 tutorials tests-external）")
     parser.add_argument("--json", action="store_true", help="输出 JSON 格式报告")
     parser.add_argument("--md", action="store_true", help="输出 Markdown 格式报告")
     parser.add_argument("--report-mode", choices=["local", "central"], default="central",
@@ -292,7 +300,8 @@ def main():
 
     args = parser.parse_args()
 
-    reporter = ComprehensiveReport(args.root, build_dir=args.build_dir)
+    test_dirs = list(args.test_dirs) if args.test_dirs else []
+    reporter = ComprehensiveReport(args.root, build_dir=args.build_dir, test_dirs=test_dirs)
     data = reporter.generate()
 
     # 加载历史

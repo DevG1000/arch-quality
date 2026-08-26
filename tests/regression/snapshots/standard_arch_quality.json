@@ -1,0 +1,13 @@
+{
+  "snapshot_date": "2026-08-21",
+  "root_path": "D:\\opensource\\arch-quality",
+  "standard_overall": 54.46,
+  "dimensions": {},
+  "file_count": 218,
+  "sar_violations": {
+    "SAR-002": 1,
+    "SAR-004": 1,
+    "SAR-006": 7,
+    "SAR-010": 1
+  }
+}

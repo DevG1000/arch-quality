@@ -1,0 +1,120 @@
+**$)AF@IsHK#:H}N;9z<JHm<~<\99SkVJA?F@9@AlSr6%<6W(<R**
+
+---
+
+## F@IsW(<R<r=i
+
+| W(<R | Im7] | W(3$AlSr |
+|------|------|----------|
+| **Prof. Hironori Washizaki** | Tg5>Lo4sQ'=LJZ#,IEEE/IPSJ/IEICE8_<6;aT1#,ISO/IEC 25010O5AP1jW<VF6(2NSkU_#,IEEE QUORS'253LPrN/T1;a3IT1 | Hm<~VJA?D#PM#(ISO 25010#)!"2zF7O_9$3L!"VJA?6HA?1jW< |
+| **Dr. Robert C. Martin#(!0Uncle Bob!1#)** | !6Clean Architecture!7WwU_#,SOLIDT-Tr44A"U_#,30S`Dj<\99WIQ/>-Qi | <\99Ih<FT-Tr#(SOLID#)!"Clean Architecture!"?IN,;$PT<\99 |
+| **Dr. Rick Kazman** | ODM~RD4sQ'=LJZ#,SEI#(?(DZ;yC7B!Hm<~9$3LQP>?Ky#)WJInQP>?T1#,ATAM#(<\99H(:b7VNv7=7(#)A*:O44J<HK | ATAM!"<\99?IN,;$PTF@9@!"VJA?JtPT7VNv |
+
+
+## W\LeF@<[
+
+H}N;W(<RR;VBHON*#:**!6Hm<~<\99VJA?F@9@V8DO#(2.20f#)!7JGR;7]=a99QO=w!"@mB[TzJ5!">_188_6H?IJ5J)PT5D<\99F@9@9f76**!#ND55TZISO/IEC 250101jW<?r<\!"SOLIDT-Tr!"ATAM7=7(B[:MDORAV81jV.<d=(A"AKGeNz5DS3Id9XO5#,KD4s7V@`#(=a99/Ih<F/ND55/Q]=x#)5D;.7VB_<-7{:OPPR5Wn<QJ5<y!#
+
+H}N;W(<R7V1p4S1jW<VF6(!"<\99Ih<F:M<\99F@9@7=7(B[5DJS=G#,La3vAKRTOB293dRb<{!#
+
+
+## W(<RR;#:Hironori Washizaki#(1jW<VF6(W(<R#)
+
+### W\LeF@<[
+
+2.20f6TND55VJA?9iJtISO/IEC 25010J9SCVJA?D#PM#(BzRb6H/Iz2zBJ#)5D1mJvW<H7#,74S3AK20230fSQuaREO5AP1jW<6T2zF7VJA?D#PM:MJ9SCVJA?D#PM5DCwH7Gx7V!#=a99VJA?6TS&?IN,;$PT#(Maintainability#)Ne8vWSLXPT5DS3IdU}H7!#RTOB=(RiSPVzSZ=xR;2=LaI}SkISO1jW<5D6TFk6H!#
+
+### =(RiR;#:=a99VJA??IN,;$PTNe8vWSLXPT5DS3Id9XO5S&293d@4T4K5Cw
+
+2.20f=+=a99VJA?5DNe8vWSN,6H#(D#?i;/!"qn:O6H!"DZ>[6H!"84TS6H!"2bJT828G6H#)7V1pS3Id5=ISO/IEC 250105DNe8v?IN,;$PTWSLXPT#(D#?i;/!"?IP^8DPT!"D#?i;/5DG0LaLu<~!"?I7VNvPT!"?I2bJTPT#)!#UbR;S3IdTZB_<-IOJG:O@m5D#,5+ISO 250105D?IN,;$PTWSLXPTVP2"N4V1=S0|:,!0DZ>[6H!1WwN*6@A"WSLXPT!#DZ>[6HJGM(9}!0D#?i;/!1<d=SLeOV5D!#=(RiTZND55VPCwH7K5CwUbR;S3Id5DMF5<B_<-#,6x7G=+DZ>[6HV1=S6TS&N*ISO 250105DWSLXPT!#
+
+**=(Ri**#:TZ3.3=ZVPTv<SK5Cw??!0DZ>[6HJGD#?i;/5DG0LaLu<~#(Yourdon & Constantine#,1979#)#,ISO 25010KdN4=+FdAPN*6@A"WSLXPT#,5+K|JGJ5OV8_D#?i;/5D;y4!#,Rr4KDIHk1>F@9@LeO5WwN*293dV81j!#!1
+
+### =(Ri6~#:Q]=xVJA?VP!0NJLb?[7V!1SkISO 250105D9XO5?I=xR;2=CwH7
+
+2.20fPBTvAK!0NJLb?[7V!1WwN*Q]=xVJA?5DWSN,6H#,2"TZ8=B<AVP1jW"Fd@4T4N*!0ISO/IEC 25010!1!#5+ISO 25010N46(Re!0NJLb?[7V!1UbR;8EDn!#=(RiCwH7K5Cw!0NJLb?[7V!1JG6TISO 25010VJA?D#PMVP8wLXPTH1O]5D;cW\6HA?#,6x7G1jW<1>Im5DV1=SS3Id!#
+
+### =(RiH}#:?ISCPT#(Usability#)N41;828G
+
+ISO 250102zF7VJA?D#PM0|:,0K8vLXPT#:9&D\JJ:OPT!"PTD\P'BJ!"<fH]PT!"?ISCPT!"?I??PT!"02H+PT!"?IN,;$PT!"?IRFV2PT!#1>LeO5828GAK?IN,;$PT#(=a99VJA?#):M2?7V02H+PT#(R@@502H+B)64<l2b#)#,5+**?ISCPT#(Usability#)N41;DIHkHN:NN,6H**!#TZ9$R5Hm<~?*7"VP#,<\996T?ISCPT5DS0Ol#(HgAPIIh<FR;VBPT!"4mNsPEO"?I@m=bPT#)2;H]:vJS!#
+
+**=(Ri**#:TZQ]=xVJA?;rIh<FVJA?VPTv<SR;8vGaA?<65D!0?ISCPT>MPw6H!1<l2iOn#,<l2bAPIND55!"4mNs4&@mR;VBPT5H!#
+
+
+## W(<R6~#:Robert C. Martin#(<\99Ih<FW(<R#)
+
+### W\LeF@<[
+
+2.20f6TSOLIDT-Tr5D<l2bKc7(ChJvW<H7#,NeOnT-Tr#(S/O/L/I/D#)5D<l2b9fTrSkNRTZ!6Agile Software Development!7:M!6Clean Architecture!7VP5D6(ReR;VB!#Ih<FD#J=5DFt7"J=<l2bK5Cw#(!05MVCPE6H#,PhHK9$84:K!1#)JG3OJ55D9$3LJ5<y!#RTOB=(Ri>[=9SZSOLIDT-Tr<l2b5D>+6HLaI}!#
+
+### =(RiR;#:?*1UT-Tr#(O#)5D<l2bS&Tv<S!0=S?ZNH6(PT!1N,6H
+
+2.20fVP?*1UT-Tr5D<l2b0|:,NeOn#:=S?Z/3iOs@`J9SC!"2_BT/:/J}W"Hk!"PB9&D\JG7qPhR*P^8D4KND<~!"EdVC/W"2a1mJ9SC!"<L3P/Wi:O@)U9!#=(RiTv<S5ZAyOn<l2b#:**=S?Z5D1d8|F5BJ**!#Hg9{R;8v=S?ZF5711;P^8D#(HgC?8v0f1>6<SPPBTv7=7(#)#,K5Cw8C=S?Z5DIh<F2;NH6(#,N%13AK?*1UT-Tr5D!06TP^8D7b1U!1>+Iq!#?IM(9}Git@zJ7M3<F=S?Z5D1d8|4NJ}!#
+
+### =(Ri6~#:R@@559VCT-Tr#(D#)5D!0new>_Le@`!1<l2bS&?<BG9$3'D#J=@}Mb
+
+2.20fVPR@@559VCT-Tr5D<l2b=+!0new>_Le@`!1WwN*?[7VOn!#5+TZ9$3'D#J=VP#,`new`>_Le@`JG:O7(5D??9$3'5DV0Tp>MJG44=(>_Le6TOs!#=(RiTv<S<l2bB_<-#:Hg9{`new`>_Le@`3vOVTZ1j<GN*Factory5D@`;r7=7(VP#,Tr2;?[7V!#8C@}Mb?IM(9}@`C{/7=7(C{U}TrF%Ed#(Hg`*Factory`!"`*Builder`!"`create*`#)J5OV!#
+
+### =(RiH}#:<\997g8q<l2bS&828G!0U{=`<\99!17g8q
+
+2.20f<l2bNeVV<\997g8q#(7V2c!"D#?i;/!"JB<~G}6/!"MVC!"N"DZ:K#)!#=(RiTv<S**U{=`<\99#(Clean Architecture#)** 7g8q5D<l2b??<l2bJG7q4fTZJ5Le#(Entities#)!"SC@}#(Use Cases#)!"=S?ZJJEdFw#(Interface Adapters#)!"?r<\SkG}6/#(Frameworks & Drivers#)KD2c7V@k5DD?B<=a99!#
+
+
+## W(<RH}#:Rick Kazman#(<\99F@9@7=7(B[W(<R#)
+
+### W\LeF@<[
+
+2.20fPBTv5D1.3=Z!0WT6/;/F@9@5D1_=g!1??CwH7V83vWT6/;/V81jN^7(Lf4zHK9$<\99F@Is??7G3#9X<|!#UbSkATAM5D:KPDK<OkR;VB#:<\99F@9@PhR*=a:O**VJA?JtPT3!>0#(Quality Attribute Scenarios#)** :M**H(:b7VNv#(Tradeoff Analysis#)** !#RTOB=(Ri>[=9SZ=+1>V8DOSkATAM7=7(B[8|:C5XON=S!#
+
+### =(RiR;#:Tv<SATAMGaA?<6Lf4z7=085DV8R}
+
+1>V8DOMjH+R@@5WT6/;/>2L,7VNv!#ATAMKdH;H+Cf5+3I1>8_0:#(M(3#PhR*J}V\#)!#=(RiTZJ5J)=(RiVPTv<S**GaA?<6ATAM**5DV8R}??TZWT6/;/F@9@5C7V5MSZcPV55DD#?iIO#,=vUk6T8CD#?i=xPP**VJA?JtPT3!>07VNv**#(Hg!0Hg9{8CD#?i5Dqn:O6H=55M50%#,?IN,;$PT=+LaI}6`IY#?!1#)#,6x7GV4PPMjU{ATAM!#
+
+### =(Ri6~#:VJA?JtPT3!>0#(Quality Attribute Scenarios#)S&WwN*F@9@5D293dJdHk
+
+ATAM5D:KPD9$>_JGVJA?JtPT3!>0??ChJvO5M3TZLX6(Lu<~OBHg:NOlS&LX6(4L<$!#@}Hg#,!051R5Nq9fTr1d8|J1#,?*7"U_S&TZ2P!J1DZMj3IP^8D2"2?Jp!1!#1>V8DO5DWT6/;/F@9@?IRT**74MF**UbP)3!>0JG7q?IBzWc#:Hg9{qn:O6H5C7VN*40#,Tr8C3!>0:\?ID\N^7(BzWc!#=(RiTZUo6O=W6NTv<S!03!>0?IBzWcPTMF6O!19&D\!#
+
+### =(RiH}#:9XW"<\99?IN,;$PT5D!0?IP^8DPT!1Sk!0?I7VNvPT!15DH(:b
+
+ISO 250105D?IP^8DPT#(Modifiability#):M?I7VNvPT#(Analysability#)V.<d4fTZ5dPMH(:b#:9}6HW7Gs?IP^8DPT#(Hg9}6H3iOs!"9}6HIh<FD#J=#)?ID\Kp:&?I7VNvPT#(Tv<S@m=bDQ6H#)!#1>V8DO5D=a99VJA?=+A=U_7V1p6TS&qn:O6H:M84TS6H#,5+N4LVB[A=U_V.<d5DH(:b9XO5!#=(RiTZUo6O1(8fVPTv<S!0H(:b>/J>!1#:51qn:O6H5C7V8_#(?IP^8DPT:C#)5+84TS6H5C7V5M#(?I7VNvPT2n#)J1#,LaJ>!09}6H3iOs7gOU!1!#
+
+
+## W[:OF@Is=aB[
+
+| F@9@N,6H | Washizaki | R.C. Martin | Kazman | W[:O |
+|----------|-----------|-------------|--------|------|
+| 1jW<6TFk6H | ????? | ???? | ???? | **4.3/5** |
+| <\99T-Tr828G | ???? | ????? | ???? | **4.3/5** |
+| F@9@7=7(B[ | ???? | ???? | ????? | **4.3/5** |
+| ?IJ5J)PT | ????? | ???? | ???? | **4.3/5** |
+| **W[:OF@<6** | | | | **A#(SEPc#)** |
+
+### :KPDSEJF
+
+1. **1jW<6TFkW<H7**#:=a99VJA?SkISO 25010?IN,;$PTNe8vWSLXPT5DS3Id9XO5GeNz
+2. **1U;7;zVFMjU{**#:2.5=Z!0F@9@=a9{S&SC!16(ReAKF@7V!zUo6O!z8D=x!z84F@5D1U;7
+3. **WT6/;/1_=gCwH7**#:1.3=ZCwH7V83vWT6/;/F@9@N^7(Lf4zHK9$<\99F@Is
+4. **VCPE6H1jW"J5SC**#:C?8vV81j1jW"<l2bVCPE6H#(8_/VP/5M#)#,Gx7V>+H72bA?SkFt7"J=9@Kc
+
+### 9X<|H1O]
+
+1. **?ISCPTN4828G**#:ISO 250102zF7VJA?D#PM0|:,5D0K8vLXPTVP#,?ISCPT#(Usability#)N41;DIHk#(Washizaki#)
+2. **H1IYSkATAM5DON=SV8R}**#:N4La9)GaA?<6ATAMSkWT6/;/F@9@5D=a:O7=08#(Kazman#)
+3. **Ih<FD#J=<l2bHTR@@5U}TrF%Ed**#:KdRQ1jW"!05MVCPE6H!1#,5+N4La9)AST7VNvTvG?5DB7O_M<#(R.C. Martin#)
+
+### SEOH<68D=x=(Ri
+
+| SEOH<6 | 8D=xOn | =(Ri@4T4 | 9$WwA?9@Kc |
+|--------|--------|---------|-----------|
+| **P0** | SOLIDT-Tr<l2b>+6HLaI}#(9$3'D#J=@}Mb!"=S?ZNH6(PT#) | R.C. Martin | 3-5HKHU |
+| **P1** | Tv<S!0?ISCPT>MPw6H!1GaA?<6<l2iOn | Washizaki | 2-3HKHU |
+| **P1** | Tv<S!0U{=`<\99!17g8q<l2b | R.C. Martin | 1-2HKHU |
+| **P2** | Tv<SGaA?<6ATAMON=SV8R}SkVJA?JtPT3!>0MF6O | Kazman | 5-8HKHU |
+| **P2** | 293d?IP^8DPTSk?I7VNvPT5DH(:b>/J> | Kazman | 2-3HKHU |
+
+
+## WnVUF@<6
+
+**A#(SEPc#)** ??ND55RQ4o5=U}J=7"2<1jW<!#H}N;W(<RR;VBHON*#,2.20fTZ1jW<6TFk!"<\99T-Tr828G!"?IJ5J)PTH}8vN,6H>y4o5=SEPcK.F=!#IOJv8D=x=(Ri>yN***TvG?PT**6x7G**P^U}PT**#,?ITZ:sPx0f1>VPVp2=BdJ5!#
+
+H}N;W(<RH7HO#:1>V8DO?IWwN*9$R5Hm<~<\99VJA?F@9@5D**U}J=;yO_9f76**!#

@@ -80,10 +80,10 @@ SUGGESTION_TEMPLATES = {
         "工时:XS(<1h)",
         "按 keepachangelog 格式维护，挽回文档质量 15 分",
     ),
-    "low_testability": (
+    "low_test_coverage": (
         "增加测试覆盖率",
         "工时:XL(>1w)",
-        "优先覆盖核心模块，目标 50% 测试比",
+        "优先覆盖核心模块，目标测试文件达源码 30%",
     ),
     "mlr_binding_drift": (
         "修复绑定层接口漂移",
@@ -244,13 +244,13 @@ class ReportGenerator:
             ("coupling", "耦合度", 0.20),
             ("cohesion", "内聚度", 0.20),
             ("complexity", "复杂度", 0.20),
-            ("testability", "可测试性", 0.20),
+            ("test_coverage", "测试覆盖度", 0.20),
         ], {
             "modularity": lambda s: f"平均每目录文件数得分 {s:.1f}",
             "coupling": lambda s: f"平均导入数得分 {s:.1f}",
             "cohesion": lambda s: f"超大文件(>1000行)占比得分 {s:.1f}",
             "complexity": lambda s: f"大文件(>200行)占比得分 {s:.1f}",
-            "testability": lambda s: f"测试文件占比得分 {s:.1f}",
+            "test_coverage": lambda s: f"4层测试覆盖度得分 {s:.1f}",
         })
 
     def _design_quality(self) -> str:
@@ -450,11 +450,11 @@ class ReportGenerator:
                 issues.append((2, f"🔴 P0 | {os.path.basename(fpath)} God Object",
                                f"{int(lines)} 行，超过 1000 行阈值"))
 
-        # 4. 可测试性
-        test = std.get("testability", 100)
+        # 4. 测试覆盖度
+        test = std.get("test_coverage", 100)
         if isinstance(test, (int, float)) and test < 50:
-            issues.append((3, "🟠 P1 | 可测试性不足",
-                           f"测试文件占比得分 {test:.1f}/100，远低于 50% 目标"))
+            issues.append((3, "🟠 P1 | 测试覆盖度不足",
+                           f"4层测试覆盖度得分 {test:.1f}/100，远低于 50% 目标"))
 
         # 5. MLR 高频违规
         for v in violations[:3]:
@@ -522,10 +522,10 @@ class ReportGenerator:
             tmpl = SUGGESTION_TEMPLATES["missing_changelog"]
             recs.append(("CHANGELOG", tmpl[0], tmpl[1], tmpl[2]))
 
-        # 4. 可测试性
-        test = std.get("testability", 100)
+        # 4. 测试覆盖度
+        test = std.get("test_coverage", 100)
         if isinstance(test, (int, float)) and test < 40:
-            tmpl = SUGGESTION_TEMPLATES["low_testability"]
+            tmpl = SUGGESTION_TEMPLATES.get("low_test_coverage")
             recs.append(("测试", tmpl[0], tmpl[1], tmpl[2]))
 
         # 5. MLR 建议

@@ -1,0 +1,14 @@
+{
+  "snapshot_date": "2026-08-21",
+  "root_path": "D:\\OPENSOURCE\\ElmerFEM",
+  "standard_overall": 39.56,
+  "dimensions": {},
+  "file_count": 3234,
+  "sar_violations": {
+    "SAR-004": 1,
+    "SAR-005": 1,
+    "SAR-006": 25,
+    "SAR-007": 503,
+    "SAR-010": 1
+  }
+}

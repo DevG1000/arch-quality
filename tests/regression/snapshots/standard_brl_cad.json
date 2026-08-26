@@ -1,0 +1,15 @@
+{
+  "snapshot_date": "2026-08-21",
+  "root_path": "D:\\OPENSOURCE\\BRL-CAD",
+  "standard_overall": 38.54,
+  "dimensions": {},
+  "file_count": 3513,
+  "sar_violations": {
+    "SAR-002": 1,
+    "SAR-004": 1,
+    "SAR-005": 1,
+    "SAR-006": 74,
+    "SAR-007": 89,
+    "SAR-010": 1
+  }
+}
