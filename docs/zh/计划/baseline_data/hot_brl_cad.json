@@ -1,0 +1,41 @@
+{
+  "slug": "brl_cad",
+  "root": "D:\\OPENSOURCE\\BRL-CAD",
+  "tag": "hot",
+  "runs": [
+    {
+      "init_s": 56.98,
+      "generate_s": 229.22,
+      "total_s": 286.21,
+      "file_count": 3513,
+      "overall": 53.93,
+      "wall_s": 286.26
+    },
+    {
+      "init_s": 43.94,
+      "generate_s": 188.97,
+      "total_s": 232.9,
+      "file_count": 3513,
+      "overall": 53.93,
+      "wall_s": 232.95
+    }
+  ],
+  "p50_total_s": 259.56,
+  "p90_total_s": 280.88,
+  "min_total_s": 232.9,
+  "max_total_s": 286.21,
+  "mean_total_s": 259.56,
+  "machine": {
+    "platform": "Windows-10-10.0.18363-SP0",
+    "python": "3.14.3",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "machine": "AMD64",
+    "node": "LAPTOP-3E0A702H",
+    "cpu_physical": 2,
+    "cpu_logical": 4,
+    "mem_gb": 11.8,
+    "mem_available_gb": 2.8,
+    "cpu_freq_mhz": 2201.0
+  },
+  "measured_at": "2026-08-20T14:14:18"
+}

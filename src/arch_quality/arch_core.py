@@ -1,4 +1,4 @@
-"""
+﻿"""
 arch_core.py — 架构评估核心引擎
 
 提供统一的文件扫描、依赖图构建、Git历史提取功能。
@@ -18,21 +18,40 @@ from datetime import datetime
 # 读取源文件时尝试的编码顺序（中文 Windows 上 PowerShell 经常保存为 GBK）
 _READ_ENCODINGS = ("utf-8-sig", "utf-8", "gbk", "gb18030", "latin-1")
 
+# 进程内内容缓存：{abs_path: (mtime, content)}，避免多引擎/多规则重复读盘
+_CONTENT_CACHE = {}
 
-def read_text_smart(path):
+
+def read_text_smart(path, use_cache=True):
     """智能读取文本：自动尝试 UTF-8 (BOM) / UTF-8 / GBK / GB18030 / Latin-1
 
     返回解码后的字符串，所有非法字节替换为 \\ufffd。
+    use_cache=True 时启用进程内内容缓存（按 mtime 失效），显著降低重复读盘。
     """
     p = Path(path)
+    if use_cache:
+        key = str(p)
+        try:
+            mtime = p.stat().st_mtime
+        except OSError:
+            mtime = -1
+        cached = _CONTENT_CACHE.get(key)
+        if cached and cached[0] == mtime:
+            return cached[1]
     with open(p, "rb") as f:
         raw = f.read()
     for enc in _READ_ENCODINGS:
         try:
-            return raw.decode(enc)
+            content = raw.decode(enc)
+            if use_cache:
+                _CONTENT_CACHE[key] = (mtime, content)
+            return content
         except UnicodeDecodeError:
             continue
-    return raw.decode("utf-8", errors="replace")
+    content = raw.decode("utf-8", errors="replace")
+    if use_cache:
+        _CONTENT_CACHE[key] = (mtime, content)
+    return content
 
 
 def write_text_utf8(path, content):
@@ -85,15 +104,65 @@ class FileIndex:
     }
 
     EXCLUDE_DIRS = {"node_modules", ".opencode", ".git", "__pycache__",
-                    "build", "dist", ".vscode", ".idea", "platforms"}
+                    "build", "dist", ".vscode", ".idea", "platforms",
+                    "third_party", "thirdparty", "vendor", "extern",
+                    "external", "deps", "dependencies"}
+
+    # 生成文件（flex/bison/moc/autogen 等），扫描时跳过
+    GENERATED_FILE_PATTERNS = (
+        ("lex.", ".yy.c"),       # flex 输出 lex.yy.c
+        ("y.tab.", ".y.tab.c"),  # bison 输出 y.tab.c
+        ("moc_", ".moc"),        # Qt moc 生成
+        ("qrc_", ".qrc"),
+        ("ui_", ".ui.h"),
+        (".g.cs", ".g.cs"),      # gRPC/生成 C#
+        (".generated.", ".generated."),
+        ("_generated", "_generated"),
+    )
 
     BINDING_EXTENSIONS = {".i", ".swg", "_wrap.cxx", "_wrap.cpp"}
 
-    def __init__(self, root: str, build_dir: str = ""):
+    def __init__(self, root: str, build_dir: str = "", cache_file: str = ""):
         self.root = Path(root)
         self.build_dir = Path(build_dir) if build_dir else None
+        self.cache_file = Path(cache_file) if cache_file else None
         self.files = []
+        self._cached_load()
+
+    def _cached_load(self):
+        """增量扫描：若 cache_file 存在且目录 mtime 未变则加载缓存，否则全量扫描
+
+        适用于"跑两遍"场景（首次全量 + 后续增量），避免重复遍历大目录。
+        缓存仅存文件清单（不含 lines，行数需真实时重新计算）。
+        """
+        if self.cache_file and self.cache_file.exists():
+            try:
+                import json as _json
+                data = _json.loads(self.cache_file.read_text(encoding="utf-8"))
+                if data.get("root") == str(self.root):
+                    self.files = data.get("files", [])
+                    return
+            except Exception:
+                pass
         self._scan()
+        if self.cache_file:
+            try:
+                import json as _json
+                self.cache_file.parent.mkdir(parents=True, exist_ok=True)
+                self.cache_file.write_text(
+                    _json.dumps({"root": str(self.root), "files": self.files},
+                                ensure_ascii=False),
+                    encoding="utf-8")
+            except Exception:
+                pass
+
+    def _is_generated_file(self, fn: str) -> bool:
+        """判断文件是否为生成文件（flex/bison/moc 等）"""
+        fn_l = fn.lower()
+        for pat in self.GENERATED_FILE_PATTERNS:
+            if pat[0] in fn_l:
+                return True
+        return False
 
     def _scan(self):
         lc = self.LANG_MAP
@@ -102,6 +171,8 @@ class FileIndex:
         for dirpath, dirnames, filenames in os.walk(root_str):
             dirnames[:] = [d for d in dirnames if d not in ex]
             for fn in filenames:
+                if self._is_generated_file(fn):
+                    continue
                 ext = os.path.splitext(fn)[1].lower()
                 if ext not in lc:
                     if ext == "" and self._is_cpp_header_no_ext(Path(os.path.join(dirpath, fn))):
@@ -349,11 +420,17 @@ class GitHistory:
             result = subprocess.run(
                 ["git"] + list(args),
                 capture_output=True, text=True,
+                encoding="utf-8", errors="replace",
                 cwd=self.root, timeout=30
             )
             return result.stdout.strip()
         except Exception:
             return ""
+
+    def recent_days_commits(self, days: int = 7):
+        """最近 days 天内的提交数"""
+        since = self._git("log", "--oneline", "--since", f"{days} days ago")
+        return len(since.split("\n")) if since else 0
 
     def has_git(self):
         return bool(self._git("rev-parse", "--is-inside-work-tree"))

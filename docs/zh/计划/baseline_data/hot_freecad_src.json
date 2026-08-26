@@ -1,0 +1,41 @@
+{
+  "slug": "freecad_src",
+  "root": "D:\\OPENSOURCE\\FreeCAD\\src",
+  "tag": "hot",
+  "runs": [
+    {
+      "init_s": 102.38,
+      "generate_s": 14346.74,
+      "total_s": 14449.12,
+      "file_count": 7590,
+      "overall": 50.87,
+      "wall_s": 14449.19
+    },
+    {
+      "init_s": 92.49,
+      "generate_s": 14484.99,
+      "total_s": 14577.48,
+      "file_count": 7590,
+      "overall": 50.87,
+      "wall_s": 14577.55
+    }
+  ],
+  "p50_total_s": 14513.3,
+  "p90_total_s": 14564.64,
+  "min_total_s": 14449.12,
+  "max_total_s": 14577.48,
+  "mean_total_s": 14513.3,
+  "machine": {
+    "platform": "Windows-10-10.0.18363-SP0",
+    "python": "3.14.3",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "machine": "AMD64",
+    "node": "LAPTOP-3E0A702H",
+    "cpu_physical": 2,
+    "cpu_logical": 4,
+    "mem_gb": 11.8,
+    "mem_available_gb": 2.9,
+    "cpu_freq_mhz": 2201.0
+  },
+  "measured_at": "2026-08-20T03:20:26"
+}

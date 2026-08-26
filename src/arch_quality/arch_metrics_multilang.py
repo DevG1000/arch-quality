@@ -9,8 +9,12 @@ import os
 import re
 import json
 import argparse
+import warnings
 from pathlib import Path
 from collections import defaultdict
+
+# DEBT-1: 抑制 Fortran 内容触发正则 SyntaxWarning 污染 stdout（agent harness 依赖干净输出）
+warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 from arch_quality.arch_core import (
     FileIndex, DepGraph, GitHistory,
@@ -343,6 +347,12 @@ class MultilangMetrics:
                     continue
                 header_functions[f["path"]].add(func_name)
 
+        # 反向索引：函数名 → [头文件路径]（消除 O(func×header) 线性遍历）
+        func_to_headers = defaultdict(list)
+        for hdr_path, funcs in header_functions.items():
+            for fn in funcs:
+                func_to_headers[fn].append(hdr_path)
+
         # ── 第 1 步: 构建依赖图节点和边 ──
         for f in self.index.files:
             node_id = f["path"]
@@ -369,27 +379,21 @@ class MultilangMetrics:
                     content
                 ):
                     c_func = m.group(1)
-                    for hdr_path, funcs in header_functions.items():
-                        if c_func in funcs:
-                            self.graph.add_edge(node_id, hdr_path)
-                            break
+                    for hdr_path in func_to_headers.get(c_func, []):
+                        self.graph.add_edge(node_id, hdr_path)
 
                 # 增强: 解析 dll_var.funcName(...) 调用 (前一行的 CDLL 赋值)
                 for var_name, _ in dll_assignments.items():
                     for m in re.finditer(rf"{re.escape(var_name)}\.(\w+)\s*\(", content):
                         c_func = m.group(1)
-                        for hdr_path, funcs in header_functions.items():
-                            if c_func in funcs:
-                                self.graph.add_edge(node_id, hdr_path)
-                                break
+                        for hdr_path in func_to_headers.get(c_func, []):
+                            self.graph.add_edge(node_id, hdr_path)
 
                 # 增强: 解析 from _lib import funcName (ctypes 风格的函数导入)
                 for m in re.finditer(r"from\s+(\S+)\s+import\s+(\w+)", content):
                     imported = m.group(2)
-                    for hdr_path, funcs in header_functions.items():
-                        if imported in funcs:
-                            self.graph.add_edge(node_id, hdr_path)
-                            break
+                    for hdr_path in func_to_headers.get(imported, []):
+                        self.graph.add_edge(node_id, hdr_path)
 
                 # ctypes.CDLL / ctypes.c_void_p (原有 MLR 标记)
                 if re.search(r"ctypes\.(CDLL|c_void_p|c_char_p)", content):
@@ -407,12 +411,10 @@ class MultilangMetrics:
                     for m in re.finditer(r'\.def\s*\(\s*["\x27](.+?)["\x27]', content):
                         bound_func = m.group(1)
                         # 增强: 将 .def("name") 关联到头文件中同名函数声明
-                        matched = False
-                        for hdr_path, funcs in header_functions.items():
-                            if bound_func in funcs:
-                                self.graph.add_edge(node_id, hdr_path)
-                                matched = True
-                                break
+                        matched_headers = func_to_headers.get(bound_func, [])
+                        for hdr_path in matched_headers:
+                            self.graph.add_edge(node_id, hdr_path)
+                        matched = bool(matched_headers)
                         if not matched:
                             self.graph.add_edge(node_id, f"pybind:{bound_func}")
 
@@ -806,20 +808,38 @@ class MultilangMetrics:
         max_depth_path = []
         callback_chains = []
         py_files = {f["path"]: f for f in self.index.by_lang("python")}
-        all_cpp_exts = (".cpp", ".cxx", ".cc", ".h", ".hpp")
-        cpp_files = {f["path"]: f for f in self.index.files if f["ext"] in all_cpp_exts}
+        all_cpp_exts = (".cpp", ".cxx", ".cc", ".h", ".hpp")        cpp_files = {f["path"]: f for f in self.index.files if f["ext"] in all_cpp_exts}
+        # 预构建 C++ 文件 basename → [paths] 哈希索引（消除 O(py×cpp) 线性遍历）
+        cpp_base_lookup = defaultdict(list)
+        for cpp_path in cpp_files:
+            cpp_base_lookup[os.path.splitext(os.path.basename(cpp_path))[0]].append(cpp_path)
 
         def _py_imports_cpp(py_path, py_content):
             """检测 Python 文件是否 import 了某个 C++ 模块，返回匹配的 cpp 路径列表"""
             result = []
+            seen = set()
             for m in re.finditer(r"^(?:from|import)\s+(\S+)", py_content, re.MULTILINE):
                 mod = m.group(1).split(".")[0]
-                for cpp_path in cpp_files:
-                    cpp_base = os.path.splitext(os.path.basename(cpp_path))[0]
-                    if cpp_base == mod:
+                for cpp_path in cpp_base_lookup.get(mod, []):
+                    if cpp_path not in seen:
+                        seen.add(cpp_path)
                         result.append(cpp_path)
-                        break
             return result
+
+        # 预构建 py 文件 basename → [paths] 索引（PyImport 解析用）
+        py_base_lookup = defaultdict(list)
+        for py_path in py_files:
+            py_base_lookup[os.path.splitext(os.path.basename(py_path))[0]].append(py_path)
+        # 内容缓存（避免 _resolve_pyimport_module 对每模块重复读盘）
+        _py_content_cache = {}
+
+        def _get_py_content(py_path):
+            if py_path not in _py_content_cache:
+                try:
+                    _py_content_cache[py_path] = read_text_smart(py_files[py_path]["abs_path"])
+                except Exception:
+                    _py_content_cache[py_path] = ""
+            return _py_content_cache[py_path]
 
         def _resolve_pyimport_module(mod_name, exclude_paths=None):
             """将 PyImport_ImportModule("module.name") 解析为项目内 Python 文件路径"""
@@ -832,22 +852,27 @@ class MultilangMetrics:
                 mod_parts + "/__init__.py",
                 mod_parts.rsplit("/", 1)[-1] + ".py",
             ]
-            for py_path, py_info in py_files.items():
+            # 路径精确匹配（哈希索引，O(1)）
+            for candidate in mod_path_candidates:
+                c = candidate.replace("/", os.sep)
+                if c in py_files and c not in exclude_paths:
+                    resolved.append(c)
+            if resolved:
+                return resolved
+            # basename 匹配（哈希索引）
+            cand_base = os.path.splitext(os.path.basename(mod_parts))[0]
+            for py_path in py_base_lookup.get(cand_base, []):
+                if py_path not in exclude_paths and py_path not in resolved:
+                    resolved.append(py_path)
+            if resolved:
+                return resolved
+            # 兜底：内容匹配（用缓存避免重复读盘）
+            for py_path in py_files:
                 if py_path in exclude_paths:
                     continue
-                py_basename = os.path.basename(py_path)
-                for candidate in mod_path_candidates:
-                    candidate_base = os.path.basename(candidate)
-                    if py_path.endswith(candidate) or py_basename == candidate_base:
-                        resolved.append(py_path)
-                        break
-                else:
-                    try:
-                        py_content = read_text_smart(py_info["abs_path"])
-                    except Exception:
-                        py_content = ""
-                    if mod_name in py_content or mod_name.rsplit(".", 1)[-1] in py_content:
-                        resolved.append(py_path)
+                py_content = _get_py_content(py_path)
+                if mod_name in py_content or mod_name.rsplit(".", 1)[-1] in py_content:
+                    resolved.append(py_path)
             return resolved
 
         has_cross_edges = bool(self.graph.cross_edges)
@@ -1264,7 +1289,8 @@ class MultilangMetrics:
         """检测 12 条 MLR 规则，返回违反列表"""
 
         mlr_results = []
-        self.mlr_hits = defaultdict(list)
+        if not hasattr(self, "mlr_hits"):
+            self.mlr_hits = defaultdict(list)
 
         # MLR-001: 跨语言循环依赖检测
         cycles = self.graph.detect_cross_lang_cycles()

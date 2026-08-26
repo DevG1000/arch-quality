@@ -1,0 +1,41 @@
+{
+  "slug": "elmerfem",
+  "root": "D:\\OPENSOURCE\\ElmerFEM",
+  "tag": "hot",
+  "runs": [
+    {
+      "init_s": 72.49,
+      "generate_s": 269.68,
+      "total_s": 342.17,
+      "file_count": 3234,
+      "overall": 54.12,
+      "wall_s": 342.21
+    },
+    {
+      "init_s": 36.51,
+      "generate_s": 249.42,
+      "total_s": 285.93,
+      "file_count": 3234,
+      "overall": 54.12,
+      "wall_s": 285.97
+    }
+  ],
+  "p50_total_s": 314.05,
+  "p90_total_s": 336.55,
+  "min_total_s": 285.93,
+  "max_total_s": 342.17,
+  "mean_total_s": 314.05,
+  "machine": {
+    "platform": "Windows-10-10.0.18363-SP0",
+    "python": "3.14.3",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "machine": "AMD64",
+    "node": "LAPTOP-3E0A702H",
+    "cpu_physical": 2,
+    "cpu_logical": 4,
+    "mem_gb": 11.8,
+    "mem_available_gb": 3.2,
+    "cpu_freq_mhz": 2201.0
+  },
+  "measured_at": "2026-08-20T14:31:07"
+}

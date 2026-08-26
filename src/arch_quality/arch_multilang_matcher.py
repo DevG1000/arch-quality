@@ -105,6 +105,7 @@ def _build_ctype_edges(file_index) -> list:
 
     # 预扫描所有 C/C++ 头文件函数名
     header_funcs = defaultdict(set)  # {cpp_file: {func_names}}
+    func_to_files = defaultdict(list)  # {func_name: [cpp_file, ...]} 反向索引
     for f in file_index.files:
         if f["ext"] not in (".h", ".hpp", ".c", ".cpp", ".cxx", ".cc"):
             continue
@@ -123,6 +124,7 @@ def _build_ctype_edges(file_index) -> list:
             if func.startswith("_") or func in ("if", "for", "while", "switch"):
                 continue
             header_funcs[f["path"]].add(func)
+            func_to_files[func].append(f["path"])
 
     # 扫描 Python 文件
     for f in file_index.files:
@@ -153,12 +155,10 @@ def _build_ctype_edges(file_index) -> list:
         for m in FROM_IMPORT_RE.finditer(content):
             called_funcs.add(m.group(2))
 
-        # 关联到 C 头
+        # 关联到 C 头（用反向索引，消除 O(func×header) 线性遍历）
         for func in called_funcs:
-            for cpp_file, funcs in header_funcs.items():
-                if func in funcs:
-                    edges.append((py_path, cpp_file))
-                    break
+            for cpp_file in func_to_files.get(func, ()):
+                edges.append((py_path, cpp_file))
 
     return edges
 

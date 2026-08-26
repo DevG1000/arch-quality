@@ -1,0 +1,33 @@
+{
+  "slug": "brl_cad",
+  "root": "D:\\OPENSOURCE\\BRL-CAD",
+  "tag": "opt2",
+  "runs": [
+    {
+      "init_s": 42.2,
+      "generate_s": 243.63,
+      "total_s": 285.83,
+      "file_count": 3455,
+      "overall": 41.11,
+      "wall_s": 285.86
+    }
+  ],
+  "p50_total_s": 285.83,
+  "p90_total_s": 285.83,
+  "min_total_s": 285.83,
+  "max_total_s": 285.83,
+  "mean_total_s": 285.83,
+  "machine": {
+    "platform": "Windows-10-10.0.18363-SP0",
+    "python": "3.14.3",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "machine": "AMD64",
+    "node": "LAPTOP-3E0A702H",
+    "cpu_physical": 2,
+    "cpu_logical": 4,
+    "mem_gb": 11.8,
+    "mem_available_gb": 1.0,
+    "cpu_freq_mhz": 2201.0
+  },
+  "measured_at": "2026-08-26T15:29:25"
+}

@@ -1,0 +1,41 @@
+{
+  "slug": "freecad_fem",
+  "root": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\Fem",
+  "tag": "hot",
+  "runs": [
+    {
+      "init_s": 38.18,
+      "generate_s": 91.32,
+      "total_s": 129.5,
+      "file_count": 749,
+      "overall": 50.53,
+      "wall_s": 129.51
+    },
+    {
+      "init_s": 39.47,
+      "generate_s": 98.18,
+      "total_s": 137.65,
+      "file_count": 749,
+      "overall": 50.53,
+      "wall_s": 137.67
+    }
+  ],
+  "p50_total_s": 133.57,
+  "p90_total_s": 136.84,
+  "min_total_s": 129.5,
+  "max_total_s": 137.65,
+  "mean_total_s": 133.57,
+  "machine": {
+    "platform": "Windows-10-10.0.18363-SP0",
+    "python": "3.14.3",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "machine": "AMD64",
+    "node": "LAPTOP-3E0A702H",
+    "cpu_physical": 2,
+    "cpu_logical": 4,
+    "mem_gb": 11.8,
+    "mem_available_gb": 2.8,
+    "cpu_freq_mhz": 2201.0
+  },
+  "measured_at": "2026-08-20T14:20:38"
+}

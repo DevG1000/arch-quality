@@ -1,0 +1,41 @@
+{
+  "slug": "freecad_cam",
+  "root": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\CAM",
+  "tag": "hot",
+  "runs": [
+    {
+      "init_s": 13.44,
+      "generate_s": 39.81,
+      "total_s": 53.24,
+      "file_count": 600,
+      "overall": 51.71,
+      "wall_s": 53.26
+    },
+    {
+      "init_s": 14.74,
+      "generate_s": 44.54,
+      "total_s": 59.28,
+      "file_count": 600,
+      "overall": 51.71,
+      "wall_s": 59.29
+    }
+  ],
+  "p50_total_s": 56.26,
+  "p90_total_s": 58.68,
+  "min_total_s": 53.24,
+  "max_total_s": 59.28,
+  "mean_total_s": 56.26,
+  "machine": {
+    "platform": "Windows-10-10.0.18363-SP0",
+    "python": "3.14.3",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "machine": "AMD64",
+    "node": "LAPTOP-3E0A702H",
+    "cpu_physical": 2,
+    "cpu_logical": 4,
+    "mem_gb": 11.8,
+    "mem_available_gb": 2.9,
+    "cpu_freq_mhz": 2201.0
+  },
+  "measured_at": "2026-08-20T14:16:11"
+}
