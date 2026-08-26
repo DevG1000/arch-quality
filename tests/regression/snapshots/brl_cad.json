@@ -2,22 +2,22 @@
   "project": "BRL-CAD",
   "snapshot_date": "2026-06-08",
   "root_path": "D:\\OPENSOURCE\\BRL-CAD",
-  "multilang_overall": 82.21,
+  "multilang_overall": 82.2,
   "is_single_language": false,
   "languages": [
-    "swig",
-    "c",
     "tcl",
     "cpp",
-    "python",
-    "fortran"
+    "fortran",
+    "swig",
+    "c",
+    "python"
   ],
-  "file_count": 3513,
+  "file_count": 3455,
   "files_by_lang": {
-    "c": 2387,
-    "cpp": 904,
-    "tcl": 215,
-    "fortran": 4,
+    "c": 2367,
+    "cpp": 869,
+    "tcl": 214,
+    "fortran": 2,
     "python": 2,
     "swig": 1
   },
@@ -26,28 +26,26 @@
     "impact_radius": 99.99,
     "call_depth": 100,
     "binding_consistency": 30.0,
-    "script_boundary": 98.07,
+    "script_boundary": 98.05,
     "cross_lang_cycles": 100
   },
   "mlr_violations": {
-    "MLR-004|MEDIUM": 7752,
+    "MLR-004|MEDIUM": 7751,
     "MLR-010|LOW": 186,
-    "MLR-010|MEDIUM": 63,
-    "MLR-012|INFO": 2
+    "MLR-010|MEDIUM": 63
   },
   "fortran_mapping": {
     "module_map_size": 0,
-    "subroutine_map_size": 6,
+    "subroutine_map_size": 0,
     "use_total": 0,
     "use_resolved": 0,
     "use_hit_rate": 1.0,
-    "call_total": 11,
-    "call_resolved": 6,
-    "call_hit_rate": 0.5455
+    "call_total": 5,
+    "call_resolved": 0,
+    "call_hit_rate": 0.0
   },
   "required_mlr_rules": [
     "MLR-004",
-    "MLR-010",
-    "MLR-012"
+    "MLR-010"
   ]
 }

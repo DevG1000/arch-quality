@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_solver_physics_integration.py — SolverPhysicsMetrics 集成测试
 
 验证组件间交互：
@@ -255,7 +255,7 @@ class TestAssemblyMergeIntegration(unittest.TestCase):
             "structural": {
                 "score": 60.0,
                 "details": {"modularity": 60, "coupling": 60, "cohesion": 60,
-                            "complexity": 60, "testability": 60},
+                            "complexity": 60, "test_coverage": 60},
             },
             "design": {"score": 70.0, "details": {"solid": 70, "patterns": 70,
                                                   "style": 70, "anti_patterns": 70}},

@@ -2,12 +2,12 @@
   "project": "FreeCAD-CAM",
   "snapshot_date": "2026-06-08",
   "root_path": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\CAM",
-  "multilang_overall": 65.39,
+  "multilang_overall": 65.34,
   "is_single_language": false,
   "languages": [
     "typescript",
-    "python",
     "cpp",
+    "python",
     "c"
   ],
   "file_count": 600,
@@ -18,8 +18,8 @@
     "typescript": 39
   },
   "dimensions": {
-    "coupling_intensity": 98.18,
-    "impact_radius": 99.5,
+    "coupling_intensity": 97.88,
+    "impact_radius": 99.45,
     "call_depth": 100,
     "binding_consistency": 23.06,
     "script_boundary": 0,
@@ -28,7 +28,7 @@
   "mlr_violations": {
     "MLR-001|MEDIUM": 1,
     "MLR-003|HIGH": 20,
-    "MLR-006|MEDIUM": 5,
+    "MLR-006|MEDIUM": 7,
     "MLR-008|HIGH": 1,
     "MLR-010|LOW": 1
   },
