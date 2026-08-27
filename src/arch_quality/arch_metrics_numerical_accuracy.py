@@ -61,9 +61,15 @@ def _grep_file(content: str, pattern: re.Pattern) -> list:
     return pattern.findall(content)
 
 
+# 模块级 content→lower 缓存（避免同一文件内容多次 lower() 复制）
+_lower_cache = {}
+
+
 def _has_keyword(content: str, keywords: set) -> bool:
-    """检查文件内容是否包含任一关键词"""
-    lower = content.lower()
+    """检查文件内容是否包含任一关键词（lower 结果缓存，性能优化）"""
+    if content not in _lower_cache:
+        _lower_cache[content] = content.lower()
+    lower = _lower_cache[content]
     return any(kw.lower() in lower for kw in keywords)
 
 

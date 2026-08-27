@@ -50,6 +50,13 @@ SKIP_METHODS = frozenset([
     "__class_getitem__", "__call__", "__new__",
 ])
 
+# pybind11 调用预筛正则（无匹配则跳过 AST 遍历，性能优化）
+# 覆盖：.def() 绑定 / py:: 命名空间 / 模块实例化调用 / import/from-import
+_PYBIND11_PRELIM_RE = re.compile(
+    r'\.def\s*\(|py::|\bimport\s+[\w.]*module\b|\bfrom\s+[\w.]+\s+import|'
+    r'\b[A-Za-z_]\w*\s*=\s*[\w.]+\.[A-Za-z_]\w*\s*\('
+)
+
 
 def extract_pybind11_calls(py_file_path: str) -> list:
     """从 Python 文件提取所有 pybind11 调用
@@ -68,6 +75,10 @@ def extract_pybind11_calls(py_file_path: str) -> list:
     try:
         content = read_text_smart(py_file_path)
     except Exception:
+        return []
+    # 预筛：无 pybind11 调用信号则跳过 AST 遍历（性能优化）
+    # 信号：.def() / py:: 命名空间 / 模块实例化调用 / from-import
+    if not _PYBIND11_PRELIM_RE.search(content):
         return []
     return _parse_content(content, py_file_path)
 

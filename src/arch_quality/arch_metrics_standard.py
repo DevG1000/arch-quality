@@ -571,19 +571,6 @@ class StandardMetrics:
 
     def _has_long_method(self, lines) -> bool:
         """启发式：文件中存在 >100 行的连续缩进块（疑似长函数）"""
-        indent_stack = []
-        block_start = 0
-        block_indent = -1
-        for i, line in enumerate(lines):
-            if not line.strip():
-                continue
-            indent = len(line) - len(line.lstrip())
-            if line.rstrip().endswith(":") or "{" in line:
-                # 函数/控制块开始（缩进增加）
-                indent_stack.append((indent, block_start, i))
-            # 检测连续同缩进块长度（简化：跟踪当前缩进层级连续行数）
-        # 简化实现：统计最长连续非空且同缩进行数
-        max_run = 0
         run = 0
         prev_indent = None
         for line in lines:
@@ -594,11 +581,12 @@ class StandardMetrics:
                 run = 1
             elif indent == prev_indent:
                 run += 1
+                if run > 100:  # 提前返回，避免全量遍历
+                    return True
             else:
                 run = 1
             prev_indent = indent
-            max_run = max(max_run, run)
-        return max_run > 100
+        return False
 
     def calc_design_score(self):
         """设计质量综合分（4 子维度加权合成）"""

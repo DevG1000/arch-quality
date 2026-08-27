@@ -11,15 +11,15 @@
 
 | 指标 | WP-0 基线 | WP-3 优化后 | 提升 |
 |:-----|:---------:|:-----------:|:----:|
-| FreeCAD src multilang 引擎 | ~4h（14400s）| **578.6s** | **~25x** |
-| FreeCAD src ComprehensiveReport 全量 | ~4h | **692s（11.5min）** | **~21x** |
-| FreeCAD Fem multilang | 125s | **48.6s** | **2.6x** |
+| FreeCAD src multilang 引擎 | ~4h（14400s）| **336s** | **~43x** |
+| FreeCAD src ComprehensiveReport 全量 | ~4h | **646s（10.8min）** | **~22x** |
+| FreeCAD Fem multilang | 125s | **23s** | **5.4x** |
 | OpenFOAM-apps multilang | ~31s | **19s** | **1.6x** |
 | FreeCAD-CAM multilang | ~50s | **19s** | **2.6x** |
 
 **评分一致性**：优化前后 overall 一致（FreeCAD src 58.25、FreeCAD Fem 62.13），无功能回归。
 
-> **注**：全量从 v1 报告的 1030s 进一步降至 692s——因 WP-3i 定位并修复了标准引擎 `check_sar_rules()` 重复计算所有维度的缺陷（见 §五）。
+> **优化链**：v1 1030s → v2 692s（SAR 缓存）→ **v3 646s**（pybind11/malloc 预筛 + lower 缓存 + 长方法短路）。
 
 ## 二、优化内容
 
@@ -55,6 +55,18 @@ WP-0 定位的 4 处超线性热点全部修复：
 
 **修复**：`all_metrics` 将维度结果存 `_dim_cache`，`check_sar_rules` 从缓存复用（structural 立即缓存供 `calc_problem_deduction` 用）。CAM standard 88s → 31.8s（-64%）。
 
+### 6. AST/tokenize 预筛（KPI2 完全优化）
+
+**问题**：multilang 引擎对每个 Python 文件做完整 AST 遍历（`extract_pybind11_calls`）和全量 tokenize（`find_malloc_tokens_in_py`），多数文件无 pybind11/malloc 信号却仍全量解析。
+
+**修复**：
+- `extract_pybind11_calls`：加 `_PYBIND11_PRELIM_RE` 预筛，无 `.def(`/`py::`/模块实例化信号则跳过 AST
+- MLR-010：加 malloc 预筛，无 malloc/calloc/realloc 则跳过 tokenize
+- `_has_keyword`（numerical）：lower() 结果缓存，避免同一内容多次复制
+- `_has_long_method`（standard）：连续同缩进 >100 提前短路返回
+
+**效果**：multilang FreeCAD src 578→336s；standard src 171→147s；numerical src 204→196s；FreeCAD Fem multilang 48.6→23s。
+
 ## 三、回归验证（无副作用）
 
 | 套件 | 结果 |
@@ -74,11 +86,13 @@ WP-0 定位的 4 处超线性热点全部修复：
 
 | 项 | 值 | 判定 |
 |:---|:---|:-----|
-| 全量 ComprehensiveReport | 692s（11.5min）| ⚠️ 接近但未达 P90<10min |
-| 其中 multilang 引擎 | 578.6s（9.6min）| ✅ 单引擎已达标 |
-| 其他 4 引擎合计 | ~250s（含 numerical 204s）| 需进一步优化 |
+| 全量 ComprehensiveReport | 646s（10.8min）| ⚠️ 接近达标（差 8%）|
+| 其中 multilang 引擎 | 336s（5.6min）| ✅ 单引擎达标 |
+| 其他 4 引擎合计 | ~310s（standard 147 + numerical 196）| 固有扫描成本 |
 
-**结论**：KPI2 **接近达标**（4h → 11.5min，21x）。剩余 ~92s 瓶颈：multilang AST 解析 + numerical 204s。三增强引擎（numerical/template/solver_physics）在 FreeCAD src 均激活（无法跳过），需引擎内优化。
+**结论**：KPI2 **接近完全达标**（4h → 10.8min，22x）。multilang 单引擎 336s 显著达标；全量 646s 距 600s 目标差 46s（8%）。剩余差距在 numerical（196s）和 standard（147s）——这两引擎对 FreeCAD src 的 4600+ 数值/源码文件做真实正则扫描，属固有成本，需引擎级重构（正则合并/并行）或显式 profile 才可进一步压缩。
+
+**P90 说明**：本机（2 核 i3）运行时稳定（WP-0 hot 缓存两轮几乎无波动），单次 646s 可视为 P90 近似值。
 
 ## 五、5 回归项目性能对比（WP-3h）
 
@@ -94,12 +108,12 @@ WP-0 定位的 4 处超线性热点全部修复：
 
 ## 六、后续建议
 
-- **multilang AST 解析优化**（FreeCAD src 578s 内）：`extract_pybind11_calls`/`find_malloc_tokens` 对每文件 AST 遍历 ~200s，可 AST 结果缓存或限制解析范围
-- **numerical 204s**：扫描可复用 FileIndex 缓存 / 过滤
-- **WP-5 门禁**：将 `gen_rule_coverage_matrix.py --check` + 回归快照校验纳入 CI
-- **H2**：显式 profile（见 `docs/zh/计划/显式Profile方案评估.md`）——FreeCAD src 三增强引擎全激活无法跳过，但对多数项目可省非适用引擎
+- **numerical 196s**：正则扫描合并（多组正则一次遍历）/ 保守预筛，可省 30-50s
+- **standard 147s**：design 的 anti_pattern（45s）SOLID 检测正则优化
+- **multiprocessing**：Windows spawn 开销大（实测 1.1x），不推荐；Linux fork 可尝试并行
+- **H2 显式 profile**：FreeCAD src 三增强引擎全激活无法跳过；对多数项目可省非适用引擎（见 `显式Profile方案评估.md`）
 
-**预期**：AST 缓存 + numerical 优化后，全量可进 10min（KPI2 完全达标）。
+**预期**：numerical + standard 引擎级优化后，全量可进 10min（KPI2 完全达标）。
 
 ---
 

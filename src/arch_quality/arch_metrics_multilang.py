@@ -1632,6 +1632,10 @@ class MultilangMetrics:
                 if is_codegen_template(content):
                     continue
 
+                # L0: malloc 预筛（避免对无 malloc 的文件做全量 tokenize）
+                if not re.search(r'\b(?:malloc|calloc|realloc)\b', content):
+                    continue
+
                 # L1: tokenize 精确提取（排除字符串/注释中的匹配）
                 hits = find_malloc_tokens_in_py(content)
 
