@@ -7,6 +7,7 @@ arch_report_generator.py — 按《架构质量评估报告-temp》模板格式�
 import os
 import re
 import math
+import json
 from pathlib import Path
 from datetime import datetime
 
@@ -136,6 +137,53 @@ class ReportGenerator:
                 god[path] = lines
         return god
 
+    # ── WP-4: 规则覆盖矩阵（动态生成，与 WP-2 对齐）──
+
+    def _rule_coverage_matrix(self) -> str:
+        """从 rule_coverage_matrix.json 生成规则覆盖矩阵表
+
+        按引擎分组（MLR/NVR/MPR/TPL/SAR），展示每条规则的覆盖来源。
+        口径与 WP-2 的 docs/zh/计划/规则覆盖矩阵.md 一致。
+        """
+        matrix_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "docs", "zh", "计划", "rule_coverage_matrix.json",
+        )
+        if not os.path.exists(matrix_path):
+            return ""
+        try:
+            with open(matrix_path, encoding="utf-8-sig") as f:
+                matrix = json.load(f)
+        except Exception:
+            return ""
+
+        # 按规则前缀分组
+        groups = {}
+        for rule, info in matrix.items():
+            prefix = rule.split("-")[0]
+            groups.setdefault(prefix, []).append((rule, info))
+
+        icon = {"回归": "✅", "合成": "🧪", "单元": "📝", "未覆盖": "❌"}
+        lines = ["## 规则覆盖矩阵", "",
+                 "| 规则 | 覆盖来源 | 回归 | 合成 | 单元 |", 
+                 "|:-----|:--------|:----:|:----:|:----:|"]
+        total = len(matrix)
+        covered = sum(1 for v in matrix.values() if v["覆盖来源"] != "未覆盖")
+        for prefix in ["MLR", "NVR", "MPR", "TPL", "SAR"]:
+            rules = sorted(groups.get(prefix, []))
+            if not rules:
+                continue
+            for rule, info in rules:
+                lines.append(
+                    f"| {rule} | {info['覆盖来源']} "
+                    f"| {'✅' if info['回归覆盖'] else ''} "
+                    f"| {'✅' if info['合成覆盖'] else ''} "
+                    f"| {'✅' if info['单元覆盖'] else ''} |"
+                )
+        lines.append("")
+        lines.append(f"**覆盖率**：{covered}/{total} = {covered/total*100:.0f}%（WP-2 KPI1）")
+        return "\n".join(lines)
+
     # ── 章节 1: 页头 ──
 
     def _header(self) -> str:
@@ -239,7 +287,7 @@ class ReportGenerator:
         )
 
     def _structural_quality(self) -> str:
-        return self._dimension_table("一、结构质量", "structural", [
+        base = self._dimension_table("一、结构质量", "structural", [
             ("modularity", "模块化", 0.20),
             ("coupling", "耦合度", 0.20),
             ("cohesion", "内聚度", 0.20),
@@ -252,6 +300,28 @@ class ReportGenerator:
             "complexity": lambda s: f"大文件(>200行)占比得分 {s:.1f}",
             "test_coverage": lambda s: f"4层测试覆盖度得分 {s:.1f}",
         })
+        # WP-4: 测试覆盖度 4 层明细
+        sub = self.m.get("dimensions", {}).get("structural", {}).get("sub_scores", {})
+        tc = sub.get("test_coverage_detail", {})
+        if not isinstance(tc, dict) or not tc:
+            return base
+        rows = [
+            f"| L1 目录覆盖 | {tc.get('dir_score', 0):.1f} | {tc.get('dir_coverage', 0)*100:.1f}%（有测试的源码目录占比）|",
+            f"| L2 语言覆盖 | {tc.get('lang_score', 0):.1f} | {tc.get('lang_coverage', 0)*100:.1f}%（有测试文件的语言占比）|",
+            f"| L3 文件比 | {tc.get('file_score', 0):.1f} | {tc.get('file_ratio', 0)*100:.1f}%（测试文件/源码×0.3）|",
+            f"| L4 绑定层覆盖 | {tc.get('binding_score', 0):.1f} | {tc.get('binding_coverage', 0)*100:.1f}%（有测试的绑定函数占比）|",
+        ]
+        detail = base + (
+            "\n\n**测试覆盖度 4 层明细**\n\n"
+            "| 层 | 得分 | 覆盖值 |\n"
+            "|:---|:----:|:------|\n"
+            + "\n".join(rows)
+        )
+        tfb = tc.get("test_files_by_lang", {})
+        if tfb:
+            lang_str = ", ".join(f"{k}={v}" for k, v in sorted(tfb.items()))
+            detail += f"\n\n测试文件分布：{lang_str}"
+        return detail
 
     def _design_quality(self) -> str:
         return self._dimension_table("二、设计质量", "design", [
@@ -636,6 +706,7 @@ class ReportGenerator:
             self._evolution_quality(),
             self._multilang_section(),
             self._mlr_violations(),
+            self._rule_coverage_matrix(),
             self._scissors_gap_risk(),
             self._key_file_trend(),
             self._top_issues_section(),

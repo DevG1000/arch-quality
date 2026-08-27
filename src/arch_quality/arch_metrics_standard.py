@@ -96,7 +96,8 @@ class StandardMetrics:
         """判断文件是否属于测试文件（路径含 test/spec/tests 目录或文件名含 test/spec）"""
         path_l = f["path"].lower().replace("\\", "/")
         name = os.path.basename(path_l)
-        if "/test" in path_l or path_l.startswith("test/"):
+        if "/test" in path_l or path_l.startswith("test/") \
+                or path_l.startswith("tests/") or "/tests/" in path_l:
             return True
         if "/spec" in path_l or path_l.startswith("spec/"):
             return True
@@ -124,6 +125,8 @@ class StandardMetrics:
     def _has_binding_layer(self) -> bool:
         """检测项目是否存在绑定层（pybind11 .def / SWIG）"""
         for f in self.index.files:
+            if self._is_test_file(f):
+                continue  # 排除测试/合成项目文件
             ext = f["ext"]
             if ext in (".i", ".swg"):
                 return True
@@ -252,6 +255,8 @@ class StandardMetrics:
         """收集绑定层导出的函数名（pybind11 .def() 与 SWIG %extend/%inline）"""
         bound = set()
         for f in self.index.files:
+            if self._is_test_file(f):
+                continue  # 排除测试/合成项目文件（避免污染绑定层检测）
             try:
                 content = read_text_smart(f["abs_path"])
             except Exception:
