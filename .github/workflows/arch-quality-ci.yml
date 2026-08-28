@@ -1,0 +1,86 @@
+name: Architecture Quality CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 快速单元测试（PR 每轮）──
+  unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . pytest
+      - name: Run unit tests
+        run: |
+          python -m pytest tests/ \
+            -k "not regression and not solver_physics_e2e and not kahan_summation" \
+            -q --disable-warnings
+
+  # ── 门禁（主分支/发布）──
+  gate:
+    name: Quality Gate
+    needs: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . pytest
+      - name: Three-way consistency check
+        run: python scripts/consistency_check_standard.py
+      - name: Rule coverage matrix check
+        run: python scripts/gen_rule_coverage_matrix.py --check
+      - name: Snapshot validation (self-bootstrap regression)
+        run: |
+          python -m pytest tests/regression/test_standard_regression.py::TestArchQuality -q
+
+  # ── 性能基线对比（定时/手动）──
+  perf:
+    name: Performance Baseline
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e . pytest
+      - name: Run performance baseline
+        run: |
+          python scripts/benchmark_h1_baseline.py --project . --runs 3 --tag ci | tee perf_baseline.json
+      - name: Check KPI2 threshold (informational)
+        run: |
+          python -c "
+          import json
+          data = json.load(open('perf_baseline.json', encoding='utf-8'))
+          for slug, proj in data.get('projects', {}).items():
+              p90 = proj.get('p90_total_s', 0)
+              print(f'{slug}: P90={p90:.1f}s', 'PASS' if p90 < 600 else 'NEAR')
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: perf-baseline
+          path: perf_baseline.json

@@ -1,0 +1,184 @@
+# projects.yaml — H1 WP-5 回归项目清单（相对路径，CI 可复现）
+#
+# 结构：项目名 → { desc, fetch(获取方式), eval(评估配置), note }
+# - fetch.repo: 第三方源码仓库 URL（CI 通过 git clone 获取）
+# - fetch.dir: 相对源码根目录的评估子目录（可空）
+# - eval.engine: 使用的评估引擎
+# - eval.snapshot: 对应回归快照
+# - 校验和：由 scripts/ci_gate_roadmap 在首次获取后生成（WP-5e）
+
+projects:
+  # ── 本仓库自举（始终可用）──
+  arch-quality:
+    desc: arch-quality 自身（自举回归）
+    fetch:
+      repo: local
+      dir: ""
+    eval:
+      engine: standard
+      snapshot: standard_arch_quality
+    note: 本仓库无需获取
+
+  # ── 多语言 + 标准引擎回归项目 ──
+  openfoam:
+    desc: OpenFOAM CFD 求解器（多语言/标准/物理场）
+    fetch:
+      repo: https://github.com/OpenFOAM/OpenFOAM-dev.git
+      dir: ""
+    eval:
+      engine: [multilang, standard, solver_physics, template]
+      snapshot: [openfoam_v2512, standard_openfoam_apps, sp_openfoam, tpl_openfoam_v2512]
+    note: MLR 用全库；SAR 用 applications/ 子目录
+  brl-cad:
+    desc: BRL-CAD 实体建模（多语言/标准/模板）
+    fetch:
+      repo: https://github.com/BRL-CAD/brlcad.git
+      dir: ""
+    eval:
+      engine: [multilang, standard, template]
+      snapshot: [brl_cad, standard_brl_cad, tpl_brl_cad]
+    note: ""
+  freecad:
+    desc: FreeCAD CAD（多语言/标准/模板）
+    fetch:
+      repo: https://github.com/FreeCAD/FreeCAD.git
+      dir: src
+    eval:
+      engine: [multilang, standard, template]
+      snapshot: [freecad_cam, freecad_fem, standard_freecad_cam, tpl_freecad]
+    note: CAM/Fem 子模块在 src/Mod/
+  elmerfem:
+    desc: ElmerFEM 多物理场有限元（多语言/标准/模板/物理场）
+    fetch:
+      repo: https://github.com/ElmerCSC/elmerfem.git
+      dir: ""
+    eval:
+      engine: [multilang, standard, solver_physics, template]
+      snapshot: [elmerfem, standard_elmerfem, sp_elmerfem, tpl_elmerfem]
+    note: ""
+
+  # ── 数值引擎回归项目 ──
+  moose:
+    desc: MOOSE 多物理场框架（数值/物理场）
+    fetch:
+      repo: https://github.com/idaholab/moose.git
+      dir: ""
+    eval:
+      engine: [numerical, solver_physics]
+      snapshot: [MOOSE, sp_moose]
+    note: 大项目（45k 文件），CI 标注 slow
+  dealii:
+    desc: deal.II 有限元库（数值/物理场）
+    fetch:
+      repo: https://github.com/dealii/dealii.git
+      dir: ""
+    eval:
+      engine: [numerical, solver_physics]
+      snapshot: [deal.II, sp_dealii]
+    note: 大项目（34k 文件），slow
+  freefem:
+    desc: FreeFEM 有限元（数值/物理场）
+    fetch:
+      repo: https://github.com/FreeFem/FreeFem-sources.git
+      dir: ""
+    eval:
+      engine: [numerical, solver_physics]
+      snapshot: [FreeFEM, sp_freefem]
+    note: ""
+  mfem:
+    desc: MFEM 有限元库（数值/物理场）
+    fetch:
+      repo: https://github.com/mfem/mfem.git
+      dir: ""
+    eval:
+      engine: [numerical, solver_physics]
+      snapshot: [MFEM, sp_mfem]
+    note: ""
+  fenicsx:
+    desc: FEniCSx 有限元（数值/物理场）
+    fetch:
+      repo: https://github.com/FEniCS/dolfinx.git
+      dir: ""
+    eval:
+      engine: [numerical, solver_physics]
+      snapshot: [FEniCSx, sp_fenicsx]
+    note: 识别为非多物理场（sp 跳过）
+  kratos:
+    desc: Kratos 多物理场框架（物理场）
+    fetch:
+      repo: https://github.com/KratosMultiphysics/Kratos.git
+      dir: ""
+    eval:
+      engine: [solver_physics]
+      snapshot: [sp_kratos]
+    note: ""
+  su2:
+    desc: SU2 航空求解器（物理场）
+    fetch:
+      repo: https://github.com/su2code/SU2.git
+      dir: ""
+    eval:
+      engine: [solver_physics]
+      snapshot: [sp_su2]
+    note: ""
+  precice:
+    desc: preCICE 耦合库（物理场）
+    fetch:
+      repo: https://github.com/precice/precice.git
+      dir: ""
+    eval:
+      engine: [solver_physics]
+      snapshot: [sp_precice]
+    note: ""
+
+  # ── 模板引擎回归项目 ──
+  eigen:
+    desc: Eigen 模板库（模板）
+    fetch:
+      repo: https://gitlab.com/libeigen/eigen.git
+      dir: ""
+    eval:
+      engine: [template]
+      snapshot: [tpl_eigen]
+    note: ""
+  boost:
+    desc: Boost 库（模板，mpl/gil/hana 子库）
+    fetch:
+      repo: https://github.com/boostorg/boost.git
+      dir: ""
+    eval:
+      engine: [template]
+      snapshot: [tpl_boost_mpl, tpl_boost_gil, tpl_hana]
+    note: 子目录 libs/{mpl,gil,hana}
+  folly:
+    desc: Facebook Folly（模板）
+    fetch:
+      repo: https://github.com/facebook/folly.git
+      dir: ""
+    eval:
+      engine: [template]
+      snapshot: [tpl_folly]
+    note: ""
+  abseil:
+    desc: Google Abseil（模板）
+    fetch:
+      repo: https://github.com/abseil/abseil-cpp.git
+      dir: ""
+    eval:
+      engine: [template]
+      snapshot: [tpl_abseil]
+    note: ""
+  range-v3:
+    desc: range-v3（模板）
+    fetch:
+      repo: https://github.com/ericniebler/range-v3.git
+      dir: ""
+    eval:
+      engine: [template]
+      snapshot: [tpl_range_v3]
+    note: ""
+
+# 校验和：首次获取后由脚本生成（`arch-quality` 用 git 分支 commit 作为参考基准）
+checksums:
+  generated_by: scripts/gen_checksums.py (WP-5e 生成)
+  format: "git_ref:<repo>:<commit_sha>"
