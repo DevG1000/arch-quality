@@ -927,7 +927,14 @@ class StandardMetrics:
         """解析 pyproject.toml 的 [project.dependencies] / [project.optional-dependencies]"""
         deps = []
         content = read_text_smart(pyproject_path)
-        import tomllib
+        # tomllib 为 Python 3.11+ 标准库；3.10 回退到 tomli（若安装）
+        try:
+            import tomllib
+        except ImportError:
+            try:
+                import tomli as tomllib
+            except ImportError:
+                return deps
         try:
             data = tomllib.loads(content)
         except Exception:
