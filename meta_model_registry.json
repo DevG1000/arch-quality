@@ -1,0 +1,662 @@
+{
+  "schema_version": "1.0",
+  "engines": [
+    "standard",
+    "multilang",
+    "template",
+    "numerical",
+    "solver_physics"
+  ],
+  "dimensions": [
+    {
+      "id": "dim.structural",
+      "name": "结构质量",
+      "engine": "standard",
+      "weight": 0.3
+    },
+    {
+      "id": "dim.design",
+      "name": "设计质量",
+      "engine": "standard",
+      "weight": 0.25
+    },
+    {
+      "id": "dim.documentation",
+      "name": "文档质量",
+      "engine": "standard",
+      "weight": 0.2
+    },
+    {
+      "id": "dim.evolution",
+      "name": "演进质量",
+      "engine": "standard",
+      "weight": 0.25
+    },
+    {
+      "id": "dim.multilang",
+      "name": "多语言混合依赖",
+      "engine": "multilang",
+      "weight": 0.15
+    },
+    {
+      "id": "dim.template",
+      "name": "模板元编程",
+      "engine": "template",
+      "weight": 0.15
+    },
+    {
+      "id": "dim.numerical",
+      "name": "数值算法精度",
+      "engine": "numerical",
+      "weight": 0.1
+    },
+    {
+      "id": "dim.solver_physics",
+      "name": "求解器/物理场",
+      "engine": "solver_physics",
+      "weight": 0.15
+    }
+  ],
+  "rules": [
+    {
+      "id": "SAR-001",
+      "name": "模块化缺陷",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-002",
+      "name": "耦合度过高",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-003",
+      "name": "内聚度不足",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-004",
+      "name": "复杂度超标",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-005",
+      "name": "测试覆盖不足",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-006",
+      "name": "SOLID违反",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-007",
+      "name": "设计模式缺失",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-008",
+      "name": "反模式",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-009",
+      "name": "文档缺失",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-010",
+      "name": "ADR覆盖率不足",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "LOW",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-011",
+      "name": "演进债务",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "SAR-012",
+      "name": "废弃代码",
+      "engine": "standard",
+      "dimension": "dim.structural",
+      "severity": "LOW",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-001",
+      "name": "跨语言循环依赖",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-002",
+      "name": "绑定层接口缺失",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-003",
+      "name": "绑定层签名不匹配",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-004",
+      "name": "脚本直接访问内部",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-005",
+      "name": "跨语言回调深度超标",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-006",
+      "name": "热点模块",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-007",
+      "name": "TNT模块",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-008",
+      "name": "GIL死锁风险",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-009",
+      "name": "绑定层通用类型",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-010",
+      "name": "FFI内存所有权混乱",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-011",
+      "name": "小数据频繁跨语言传输",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MLR-012",
+      "name": "Fortran缺少ISO_C_BINDING",
+      "engine": "multilang",
+      "dimension": "dim.multilang",
+      "severity": "MEDIUM",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-001",
+      "name": "热模板头文件",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-002",
+      "name": "模板重复实例化",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "TPL-003",
+      "name": "头文件传染链过长",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-004",
+      "name": "模板嵌套深度过高",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-005",
+      "name": "二进制膨胀超标",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "TPL-006",
+      "name": "虚泛型（镀金模板）",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "TPL-007",
+      "name": "未使用extern template",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-008",
+      "name": "头文件含不必要模板定义",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-009",
+      "name": "模板特化放错命名空间",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-010",
+      "name": "递归模板实例化爆炸",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-011",
+      "name": "同一模板多处重复实例化",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "TPL-012",
+      "name": "头文件循环依赖",
+      "engine": "template",
+      "dimension": "dim.template",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-001",
+      "name": "数值稳定性溢出",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-002",
+      "name": "条件数超限",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-003",
+      "name": "相消性损失",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-004",
+      "name": "累积误差失控",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-005",
+      "name": "MMS验证缺失",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "NVR-006",
+      "name": "观察阶偏差",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "NVR-007",
+      "name": "离散误差未控",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-008",
+      "name": "迭代误差未控",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-009",
+      "name": "确认就绪度检查",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-010",
+      "name": "回归测试缺失",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-011",
+      "name": "回归允许值缺失",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "NVR-012",
+      "name": "数值债务密度",
+      "engine": "numerical",
+      "dimension": "dim.numerical",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-001",
+      "name": "物理场模块边界识别",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-002",
+      "name": "模块公开接口精简度",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-003",
+      "name": "模块数值验证基准完备性",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-004",
+      "name": "耦合架构模式判定",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-005",
+      "name": "耦合逻辑集中度",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-006",
+      "name": "迭代收敛稳定性",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-007",
+      "name": "插件扩展完整性",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-008",
+      "name": "跨模块依赖关系",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "MEDIUM",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-009",
+      "name": "接口版本管理",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-010",
+      "name": "跨场数据传递标准化",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "MPR-011",
+      "name": "跨场时间同步协调",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "MPR-012",
+      "name": "数据格式转换统一性",
+      "engine": "solver_physics",
+      "dimension": "dim.solver_physics",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  \: https://json-schema.org/draft/2020-12/schema,
+  "title": "Standard Meta Model Registry",
+  "description": "arch-quality 标准元模型 v1.0 注册表 schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "engines",
+    "dimensions",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "engines": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "engine",
+          "weight"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^dim\\.[a-z_]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "engine",
+          "dimension",
+          "severity",
+          "output_level",
+          "waivable"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^(SAR|MLR|TPL|NVR|MPR)-[0-9]{3}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "dimension": {
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ]
+          },
+          "output_level": {
+            "enum": [
+              "ERROR",
+              "WARNING",
+              "INFO"
+            ]
+          },
+          "waivable": {
+            "type": "boolean"
+          },
+          "waived_output_level": {
+            "enum": [
+              "ERROR",
+              "WARNING",
+              "INFO"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
