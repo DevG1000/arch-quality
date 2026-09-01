@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_tcl_deps.py — Tcl 依赖解析和 DepGraph 集成测试
 
 测试场景:
@@ -251,10 +251,10 @@ class TestTclMLR004(unittest.TestCase):
             f.write('::engine::internal_var set 42\n::myapp::data_handler process\n')
         m = MultilangMetrics(self.tmpdir)
         results = m.check_mlr_rules()
-        mlr004 = [r for r in results if r["rule"] == "MLR-004"]
-        tcl_violations = [r for r in mlr004 if "Tcl" in r.get("name", "")]
+        mlr004b = [r for r in results if r["rule"] == "MLR-004b"]
+        tcl_violations = [r for r in mlr004b if "Tcl" in r.get("name", "")]
         self.assertTrue(len(tcl_violations) > 0,
-                        f"Expected MLR-004 Tcl violation, got: {mlr004}")
+                        f"Expected MLR-004b Tcl violation, got: {results}")
 
     def test_tcl_allowed_namespace_not_flagged(self):
         tcl = os.path.join(self.tmpdir, "test.tcl")
@@ -262,8 +262,8 @@ class TestTclMLR004(unittest.TestCase):
             f.write('::string::length $var\n::tk::button .b\n')
         m = MultilangMetrics(self.tmpdir)
         results = m.check_mlr_rules()
-        mlr004 = [r for r in results if r["rule"] == "MLR-004"]
-        tcl_violations = [r for r in mlr004 if "Tcl" in r.get("name", "")]
+        mlr004b = [r for r in results if r["rule"] == "MLR-004b"]
+        tcl_violations = [r for r in mlr004b if "Tcl" in r.get("name", "")]
         self.assertEqual(len(tcl_violations), 0,
                          f"Standard Tcl namespaces should not be flagged, got: {tcl_violations}")
 

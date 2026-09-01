@@ -808,7 +808,8 @@ class MultilangMetrics:
         max_depth_path = []
         callback_chains = []
         py_files = {f["path"]: f for f in self.index.by_lang("python")}
-        all_cpp_exts = (".cpp", ".cxx", ".cc", ".h", ".hpp")        cpp_files = {f["path"]: f for f in self.index.files if f["ext"] in all_cpp_exts}
+        all_cpp_exts = (".cpp", ".cxx", ".cc", ".h", ".hpp")
+        cpp_files = {f["path"]: f for f in self.index.files if f["ext"] in all_cpp_exts}
         # 预构建 C++ 文件 basename → [paths] 哈希索引（消除 O(py×cpp) 线性遍历）
         cpp_base_lookup = defaultdict(list)
         for cpp_path in cpp_files:
@@ -1459,6 +1460,7 @@ class MultilangMetrics:
             mlr_results.append({
                 "rule": "MLR-004", "name": "脚本直接访问内部",
                 "severity": "HIGH",
+                "output_level": "WARNING",
                 "count": 1,
                 "detail": f"{fpath}: 使用了 ctypes.CDLL 直接访问内部符号",
             })
@@ -1490,9 +1492,13 @@ class MultilangMetrics:
                 from arch_quality.arch_python_ast import is_third_party_path
                 is_tp = is_third_party_path(f["path"])
                 unique_ns = list(dict.fromkeys(ns for ns, _, _ in violations))[:5]
+                _tp = is_tp
+                _sev = "LOW" if _tp else "MEDIUM"
+                _ol = "INFO" if _tp else "WARNING"
                 mlr_results.append({
-                    "rule": "MLR-004", "name": "Tcl脚本直接访问内部",
-                    "severity": "INFO" if is_tp else "MEDIUM",
+                    "rule": "MLR-004b", "name": "Tcl命名空间违规",
+                    "severity": _sev,
+                    "output_level": _ol,
                     "count": len(violations),
                     "detail": f"{f['path']}: {len(violations)} 处直接访问 Tcl 命名空间内部变量: {unique_ns}",
                 })
