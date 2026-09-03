@@ -1264,6 +1264,61 @@ permission:
 
 ---
 
+### 提示词 C1.5：同步 Agent 定义文件与项目 README
+
+**适用阶段**：部署  
+**调用时机**：新 Skill 注册到 OpenCode（C1）后，作为 arch-quality 项目自身的开发节点  
+**发送给**：architecture-quality 智能体
+
+#### 问题背景
+
+新增/更新评估 Skill 后，若智能体定义与项目 README 不随 Skill 演进同步，会产生**双源漂移**：
+
+- **Agent 定义漂移**：Core Skills 板块数 ≠ 引擎数；Rules 权重与 `skills/*.md` 运行时解析不一致；Related Resources 缺失新引擎路径
+- **README 漂移**：核心能力表、评估维度、项目结构、文档索引未反映新引擎
+- **集成文件漂移**：`integrations/opencode/architecture-quality.md`（对外安装副本）与 `.opencode/agents/architecture-quality.md`（实际运行源）内容分叉
+
+实例：solver_physics 引擎曾缺 Core Skills 板块；multilang/template 曾无 opencode 入口 SKILL.md；`integrations/opencode/` 旧版仅描述多语言（4851B），与新版 5 引擎（12485B）不一致。
+
+#### 提示词正文
+
+> 请同步更新 arch-quality 项目的 Agent 定义文件与 README，使新 Skill 在智能体行为说明书与项目对外文档中一致呈现。
+>
+> **输入**：
+> - Skill 名称：[名称]
+> - 评估维度与权重：[维度表]
+> - 规则前缀与数量：[SAR/MLR/NVR/MPR]-[N]
+> - CLI 入口：[arch-quality-xxx / python -m arch_quality.xxx]
+>
+> **任务 A — 更新 `.opencode/agents/architecture-quality.md`**：
+> 1. Core Skills：新增/更新该引擎板块（维度表+权重+规则数），板块数必须 == 引擎数
+> 2. Rules：更新增强权重声明（原始/归一后）与合并规则（base = 100% − Σ active 增强原始权重）
+> 3. Related Resources：补齐 src skill、opencode 入口 SKILL.md、评分算法、指南、案例库路径
+>
+> **任务 B — 更新 `README.md`**：
+> 1. 核心能力表：新增引擎行
+> 2. "评估维度与规则"：新增引擎小节
+> 3. 项目结构：更新 skills/ 与 .opencode/ 说明
+> 4. 文档索引表：新增指南/案例库链接
+>
+> **任务 C — 同步 `integrations/opencode/architecture-quality.md`**：
+> 与 `.opencode/agents/architecture-quality.md` 内容一致（单一事实源），消除双源漂移
+
+#### 用户输入表
+
+| 参数 | 示例值 | 说明 |
+|:-----|:-------|:------|
+| Skill 名称 | solver-physics-architecture | 对应 `.opencode/skills/<name>/` |
+| 增强权重 | 15%（原始）/ 13.64%（归一后） | 与 `skills/*.md` 一致 |
+| 规则前缀 | MPR-001~012 | 与 skill 规则表一致 |
+| 引擎数 | 5 | Core Skills 板块数 == README 核心能力表行数 == 引擎数 |
+
+#### 参考实例
+
+2026-09-03 实践：新增 multilang-dependency / template-metaprogramming 入口 SKILL.md（补齐 5 引擎 opencode 入口）；更新 agent 定义（Core Skills 增加求解器物理场板块、Rules 增加权重合并规则、Related Resources 补齐 5 引擎路径）；5 引擎权重 base 50% + ml 13.64% + tpl 13.64% + num 9.09% + sp 13.64%。
+
+---
+
 ### 提示词 C2：配置 CI/CD 门禁
 
 **适用阶段**：部署  
@@ -1440,6 +1495,9 @@ jobs:
 | 15 | CI/CD 配置已添加 | git diff |
 | 16 | 用户交互提示词已生成 | 文档验收 |
 | 17 | 报告模板可用 | 执行验收 |
+| 18 | Agent 定义文件 Core Skills 板块数 == 引擎数 | 人工比对 |
+| 19 | Agent 定义 Rules 权重与 `skills/*.md` 运行时解析一致 | 人工比对 + consistency_check |
+| 20 | README 核心能力表行数 == 引擎数；集成文件与 agent 定义一致 | 人工比对 |
 
 ---
 
@@ -1707,6 +1765,7 @@ LLM 行为不稳定（同 prompt 不同工具序列），需重试 + 断言兜�
 | Agent Harness | Agent Harness | 验证 agent 编排工具行为的测试基架（约束/验证/纠正三层），区别于 pytest（验证工具代码），见 §B2.6 |
 | LLM 编排工具 | LLM Orchestration Tool | 模型在 ReAct 循环中可选用的工具集；模型负责"选"，框架负责"跑+拦+纠" |
 | 验证独立性 | Verification Independence | 断言必须由看得到事件流的一方（插件 hook/外部 runner）执行，不能交给 LLM 自证 |
+| Agent 定义文件 | Agent Definition File | 描述智能体行为与能力边界的 `.md` 文件（arch-quality 为 `.opencode/agents/architecture-quality.md`），新增 Skill 后须同步更新，见 §C1.5 |
 
 ### 参考资源
 

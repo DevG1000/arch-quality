@@ -68,14 +68,14 @@ data = reporter.generate()   # 返回综合评估 dict（overall_score / dimensi
 
 两步：复制智能体定义 + 注册 `opencode.jsonc`。
 
-**步骤 1**：复制 `integrations/opencode/architecture-quality.md` 到全局 agents 目录：
+**步骤 1**：复制智能体定义到全局 agents 目录（权威源为 `.opencode/agents/architecture-quality.md`，`integrations/opencode/architecture-quality.md` 为其对外安装副本，保持同步）：
 
 ```bash
 # Windows
-copy integrations\opencode\architecture-quality.md %USERPROFILE%\.config\opencode\agents\
+copy .opencode\agents\architecture-quality.md %USERPROFILE%\.config\opencode\agents\architecture-quality.md
 
 # Linux/macOS
-cp integrations/opencode/architecture-quality.md ~/.config/opencode/agents/
+cp .opencode/agents/architecture-quality.md ~/.config/opencode/agents/architecture-quality.md
 ```
 
 **步骤 2**：在 `~/.config/opencode/opencode.jsonc` 注册：
@@ -168,7 +168,7 @@ arch-quality/
 ├── tests/                            # 单元 + 回归（snapshots/）
 ├── scripts/                          # 一致性检查 / 覆盖矩阵 / 性能基线 / CI 门禁
 ├── docs/zh/                          # 中文指南与验证案例库
-├── integrations/opencode/            # OpenCode 智能体定义
+├── integrations/opencode/            # OpenCode 智能体定义（对外副本，与 .opencode/agents/ 同步）
 ├── .github/workflows/               # CI
 └── projects.yaml                     # 回归项目清单
 ```
@@ -187,6 +187,7 @@ arch-quality/
 | [模板元编程与编译时依赖膨胀验证案例库](docs/zh/模板元编程与编译时依赖膨胀验证案例库.md) | 模板验证场景 |
 | [求解器和物理场模块化架构模式识别评估指南](docs/zh/求解器和物理场模块化架构模式识别评估/求解器与物理场模块化架构模式识别评估指南.md) | MPR-001~012 |
 | [OpenCode 智能体开发指南](docs/zh/OpenCode 智能体开发指南.md) | 智能体集成 |
+| [基于 OPENCODE 的架构质量评估 SKILL 开发指南](docs/zh/基于OPENCODE的架构质量评估SKILL开发指南.md) | Skill 开发流程（A/B/C 三阶段 + 部署同步 C1.5）|
 | [门禁治理准则](docs/zh/计划/门禁治理准则.md) | CI 升级/回滚/豁免 |
 
 ## 许可证
