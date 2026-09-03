@@ -1,4 +1,4 @@
-# WP-3 性能优化报告
+﻿# WP-3 性能优化报告
 
 > **版本**：v1.0
 > **日期**：2026-08-25
@@ -118,3 +118,50 @@ WP-0 定位的 4 处超线性热点全部修复：
 ---
 
 *本报告基于 Windows（Intel i3-8130U 2C/4T，12GB RAM），与 WP-0 同机型，可直接对比。*
+## 七、KPI2 收尾 — numerical 引擎双重计算消除（2026-09-03）
+
+### 7.1 问题定位（cProfile）
+
+H1 收尾阶段 FreeCAD src 全量仍为 659.5s（11.0min），未达 KPI2 <600s。cProfile 定位 numerical 引擎热点：
+
+`
+235415 calls re.Pattern.search → 146s（占引擎总时间 90%）
+check_nvr_rules  87s
+calc_numerical_debt 79s
+calc_regression_coverage 51s
+calc_mms_verification 49s
+`
+
+### 7.2 双重计算根因
+
+ll_metrics() 先调用 6 个 calc_* 算 6 维评分，**随后** check_nvr_rules() **内部又独立调用这 6 个 calc_***，导致每个维度被计算 2 次。同时 NVR-002 在方法体内每次调用重新编译 PRECONDITIONER/COND_MONITOR 正则，并对 _all_contents 做 3 次独立遍历。
+
+### 7.3 修复方案
+
+1. **_calc_cached 缓存**：新增 _calc_cached(name, fn) 方法，ll_metrics 计算后缓存，check_nvr_rules 复用（消除双重计算）。独立调用 check_nvr_rules（如 --nvr-only）时无缓存则回退重新计算，兼容性完好。
+2. **NVR-002 正则提升为模块级常量**：避免方法内每次调用重新编译。
+3. **NVR-002 三正则合并单次遍历**：LINEAR_SOLVER/PRECONDITIONER/COND_MONITOR 一次 _all_contents 遍历内独立判定（保持原始检测语义不变——三个正则均检查全部文件，非仅求解器文件）。
+
+### 7.4 效果
+
+| 版本 | numerical 引擎 | 全量总耗时 |
+|:-----|:--------------:|:----------:|
+| 优化前 | 166s | 652.7s（10.9min）|
+| 优化后 | **101s** | **560.0s（9.3min）** |
+
+**KPI2 达标**：560.0s < 600s，留 ~40s 余量（跨天/跨机型方差缓冲）。
+
+### 7.5 回归验证
+
+- 22 单元测试全部通过
+- 外部回归（FreeFEM/MFEM/FEniCSx）33 项通过；FEniCSx 基线比对 NVR 规则与 6 维分、overall(46.33) 完全一致
+- **语义回归警示**：初版合并遍历把 preconditioner/cond_monitor 限定在求解器文件内判断，导致 FEniCSx NVR-002 新增违规（6→7）——回归测试捕获，修复为全文件独立判定后基线完全复现。证明外部回归基线的价值。
+- consistency_check 5 引擎全 PASS
+- 全量核心测试 95 项通过
+
+### 7.6 后续
+
+- standard 引擎（~145s）anti_pattern SOLID 正则仍可优化 ~10s（report 六节建议），但 KPI2 已达标，非阻塞。
+- H2 显式 profile 仍可跳过非适用引擎进一步加速。
+
+---

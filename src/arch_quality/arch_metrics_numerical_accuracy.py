@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 arch_metrics_numerical_accuracy.py — 数值算法正确性与精度保障评估
 
@@ -97,6 +97,17 @@ LINEAR_SOLVER_PATTERN = re.compile(
     r'conjugate.gradient|preconditioner|ilu|jacobi|amg|'
     r'condition.number|condest|rcond)\b',
     re.MULTILINE | re.IGNORECASE
+)
+
+# NVR-002: 预处理器 + 条件数监控（模块级常量，避免循环内重新编译）
+PRECONDITIONER_PATTERN = re.compile(
+    r'\b(GAMG|DIC|DILU|FDIC|smoothSolver|symGaussSeidel|'
+    r'GaussSeidel|PCG|PBiCG|PBiCGStab)\b',
+    re.MULTILINE
+)
+COND_MONITOR_PATTERN = re.compile(
+    r'\b(condition\.number|condest|rcond|cond\b)',
+    re.MULTILINE
 )
 
 # NVR-003: 浮点相消 (a - b 模式) + 动态检测工具
@@ -618,6 +629,15 @@ class NumericalAccuracyMetrics:
 
     # ── NVR 规则检查 ──
 
+    def _calc_cached(self, name, fn):
+        """计算并缓存 6 维结果，供 check_nvr_rules 复用（避免双重计算）"""
+        cache = getattr(self, '_dims_cache', None)
+        if cache is None:
+            cache = self._dims_cache = {}
+        if name not in cache:
+            cache[name] = fn()
+        return cache[name]
+
     def check_nvr_rules(self) -> list:
         """执行全部 12 条 NVR 规则检测"""
         if not self._has_numerical:
@@ -626,7 +646,7 @@ class NumericalAccuracyMetrics:
         results = []
 
         # NVR-001: 数值稳定性溢出
-        _, stab_detail = self.calc_numerical_stability()
+        _, stab_detail = self._calc_cached("numerical_stability", self.calc_numerical_stability)
         if stab_detail.get("score", 100) < 50 or (
                 stab_detail.get("explicit_scheme_files", 0) > 0
                 and not stab_detail.get("has_cfl_control")):
@@ -639,26 +659,18 @@ class NumericalAccuracyMetrics:
                            f"{'未' if not stab_detail.get('has_cfl_control') else '已'}配置 CFL 控制"),
             })
 
-        # NVR-002: 条件数超限
-        PRECONDITIONER_PATTERN = re.compile(
-        r'\b(GAMG|DIC|DILU|FDIC|smoothSolver|symGaussSeidel|'
-        r'GaussSeidel|PCG|PBiCG|PBiCGStab)\b',
-        re.MULTILINE
-        )
-        COND_MONITOR_PATTERN = re.compile(
-        r'\b(condition\.number|condest|rcond|cond\b)',
-        re.MULTILINE
-        )
-        solver_count = sum(1 for c in self._all_contents.values()
-        if LINEAR_SOLVER_PATTERN.search(c))
-        has_preconditioner = any(
-        PRECONDITIONER_PATTERN.search(c)
-        for c in self._all_contents.values()
-        )
-        has_cond_monitoring = any(
-        COND_MONITOR_PATTERN.search(c)
-        for c in self._all_contents.values()
-        )
+        # NVR-002: 条件数超限（一次遍历合并 3 正则，避免重复 search）
+        solver_count = 0
+        has_preconditioner = False
+        has_cond_monitoring = False
+        for _c in self._all_contents.values():
+            # 与原始语义一致：三个正则独立检查全部文件
+            if LINEAR_SOLVER_PATTERN.search(_c):
+                solver_count += 1
+            if PRECONDITIONER_PATTERN.search(_c):
+                has_preconditioner = True
+            if COND_MONITOR_PATTERN.search(_c):
+                has_cond_monitoring = True
         # 条件数超限判定：使用了线性求解器，但没有使用预处理器，且没有条件数监控
         if solver_count > 0 and not has_preconditioner and not has_cond_monitoring:
             results.append({
@@ -670,7 +682,7 @@ class NumericalAccuracyMetrics:
             })
     
         # NVR-003: 相消性损失
-        _, roundoff = self.calc_roundoff_sensitivity()
+        _, roundoff = self._calc_cached("roundoff", self.calc_roundoff_sensitivity)
         if roundoff.get("cancellation_sites", 0) > 0:
             sev = "HIGH"
             ol = "ERROR" if not roundoff.get("has_dynamic_tool") else "WARNING"
@@ -695,7 +707,7 @@ class NumericalAccuracyMetrics:
             })
 
         # NVR-005: MMS 验证缺失
-        _, mms = self.calc_mms_verification()
+        _, mms = self._calc_cached("mms", self.calc_mms_verification)
         if mms.get("score", 0) == 0:
             results.append({
                 "rule": "NVR-005", "name": "MMS 验证缺失",
@@ -716,7 +728,7 @@ class NumericalAccuracyMetrics:
             })
 
         # NVR-007: 离散误差未控
-        err_score, err = self.calc_error_estimation()
+        err_score, err = self._calc_cached("error_estimation", self.calc_error_estimation)
         if err is None:
             err = {}
         # 无求解器代码时不触发 NVR-007/NVR-008
@@ -752,7 +764,7 @@ class NumericalAccuracyMetrics:
             })
 
         # NVR-010: 回归测试缺失
-        _, regr = self.calc_regression_coverage()
+        _, regr = self._calc_cached("regression", self.calc_regression_coverage)
         n_crit = regr.get("N_critical", 0)
         n_tested = regr.get("N_tested", 0)
         has_snap = regr.get("has_snapshot_baseline", False)
@@ -778,7 +790,7 @@ class NumericalAccuracyMetrics:
             })
 
         # NVR-012: 数值债务密度
-        _, debt = self.calc_numerical_debt()
+        _, debt = self._calc_cached("debt", self.calc_numerical_debt)
         if debt.get("debt_ratio", 0) > 0.3:
             results.append({
                 "rule": "NVR-012", "name": "数值债务密度",
@@ -807,12 +819,14 @@ class NumericalAccuracyMetrics:
                 "nvr_violations": [],
             }
 
-        dim1, d1 = self.calc_numerical_stability()
-        dim2, d2 = self.calc_roundoff_sensitivity()
-        dim3, d3 = self.calc_mms_verification()
-        dim4, d4 = self.calc_error_estimation()
-        dim5, d5 = self.calc_regression_coverage()
-        dim6, d6 = self.calc_numerical_debt()
+        # 计算 6 维并缓存，供 check_nvr_rules 复用（避免双重计算）
+        self._dims_cache = {}
+        dim1, d1 = self._calc_cached('numerical_stability', self.calc_numerical_stability)
+        dim2, d2 = self._calc_cached('roundoff', self.calc_roundoff_sensitivity)
+        dim3, d3 = self._calc_cached('mms', self.calc_mms_verification)
+        dim4, d4 = self._calc_cached('error_estimation', self.calc_error_estimation)
+        dim5, d5 = self._calc_cached('regression', self.calc_regression_coverage)
+        dim6, d6 = self._calc_cached('debt', self.calc_numerical_debt)
 
         weights = [0.25, 0.20, 0.20, 0.15, 0.10, 0.10]
         scores = [dim1 or 0, dim2 or 0, dim3 or 0, dim4 or 0, dim5 or 0, dim6 or 0]
