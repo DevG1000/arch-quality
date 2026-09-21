@@ -606,7 +606,8 @@ function extractReports() {
   if (jsonMatch) reports.json = jsonMatch[1];
   // 单命令输出用 "Report saved:" 标记（如 standard-metrics.json / numerical-accuracy.json）
   if (!reports.json && savedMatch) reports.json = savedMatch[1];
-  if (reports.md || reports.json) showPreview('md');
+  if (reports.md) showPreview('md');
+  else if (reports.json) showPreview('json');
   else {
     // 尝试从当前目录常规路径探测
     document.getElementById('previewMeta').textContent = '未在日志中定位到报告路径（可手动粘贴路径到预览）';
