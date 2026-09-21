@@ -29,6 +29,7 @@ arch-quality = "arch_quality.arch_report:main"
 arch-quality-standard = "arch_quality.arch_metrics_standard:main"
 arch-quality-multilang = "arch_quality.arch_metrics_multilang:main"
 arch-quality-template = "arch_quality.arch_metrics_template:main"
+arch-quality-ui = "arch_quality.ui.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

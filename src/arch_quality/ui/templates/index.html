@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arch-quality 操作面板</title>
+<style>
+  :root {
+    --bg: #1e1e2e; --panel: #27273a; --panel2: #31314a;
+    --text: #e6e6f0; --muted: #9aa0b4; --accent: #7aa2f7;
+    --green: #9ece6a; --red: #f7768e; --border: #3b3b52;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    padding: 16px;
+  }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+  .panel h2 { font-size: 14px; margin-bottom: 10px; color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 12px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .cmd-list button {
+    display: block; width: 100%; text-align: left; padding: 10px 12px;
+    background: transparent; color: var(--text); border: 1px solid transparent;
+    border-radius: 6px; cursor: pointer; margin-bottom: 4px; font-size: 13px;
+  }
+  .cmd-list button.active { background: var(--panel2); border-color: var(--accent); }
+  .cmd-list button small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .cmd-desc { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+  .form-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .form-row label { width: 170px; font-size: 13px; color: var(--muted); }
+  .form-row label.req::after { content: " *"; color: var(--red); }
+  .form-row input[type=text], .form-row select {
+    flex: 1; min-width: 200px; padding: 7px 10px; background: var(--panel2);
+    border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 13px;
+  }
+  .form-row .help { width: 100%; font-size: 11px; color: var(--muted); padding-left: 180px; }
+  .form-row.checkbox { padding-left: 180px; }
+  .form-row.checkbox label { width: auto; cursor: pointer; }
+  .btn {
+    padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;
+    font-size: 13px; background: var(--panel2); color: var(--text);
+  }
+  .btn.primary { background: var(--accent); color: #101014; font-weight: 600; }
+  .btn.danger { background: var(--red); color: #fff; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cmdline {
+    background: var(--panel2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px; font-family: Consolas, monospace; font-size: 12px;
+    color: var(--green); margin-top: 12px; word-break: break-all;
+  }
+  .log {
+    background: #10101a; border: 1px solid var(--border); border-radius: 6px;
+    height: 260px; overflow-y: auto; padding: 10px; font-family: Consolas, monospace;
+    font-size: 12px; white-space: pre-wrap; word-break: break-all;
+  }
+  .log .stderr { color: var(--red); }
+  .statusbar { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+  .statusbar .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .statusbar .dot.running { background: var(--accent); animation: blink 1s infinite; }
+  .statusbar .dot.done { background: var(--green); }
+  .statusbar .dot.err { background: var(--red); }
+  @keyframes blink { 50% { opacity: 0.2; } }
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tabs button {
+    padding: 6px 12px; background: var(--panel2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 12px;
+  }
+  .tabs button.active { border-color: var(--accent); }
+  .preview-md { border: 1px solid var(--border); border-radius: 6px; padding: 14px; background: #fff; color: #222; max-height: 420px; overflow-y: auto; font-size: 13px; }
+  .preview-md table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  .preview-md th, .preview-md td { border: 1px solid #ccc; padding: 5px 8px; }
+  .preview-md h1, .preview-md h2, .preview-md h3 { margin: 10px 0 6px; }
+  .preview-md pre { background: #f4f4f4; padding: 8px; border-radius: 4px; overflow-x: auto; }
+  .preview-json { font-family: Consolas, monospace; font-size: 12px; white-space: pre-wrap; background: #10101a; color: #9ece6a; padding: 10px; border-radius: 6px; max-height: 420px; overflow-y: auto; }
+  .hist-list { display: flex; gap: 8px; flex-wrap: wrap; }
+  .hist-item { background: var(--panel2); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+  .hist-item .del { color: var(--red); margin-left: 8px; cursor: pointer; }
+  .history-menu { position: relative; display: inline-block; }
+  .history-menu { position: relative; display: inline-block; }
+  .history-menu .dropdown {
+    position: fixed; background: var(--panel2);
+    border: 1px solid var(--border); border-radius: 6px; z-index: 1000;
+    max-height: 60vh; overflow-y: auto; min-width: 360px; padding: 8px; display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .history-menu.open .dropdown { display: block; }
+  .dropdown .item { padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; color: #ffffff; }
+  .dropdown .item:hover { background: var(--panel); color: #ffffff; }
+  .dropdown .item .meta { color: #c9d1e0; font-size: 11px; }
+  .dropdown .item .del { color: #f7768e; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    width: 560px; max-width: 92vw; max-height: 80vh; display: flex; flex-direction: column;
+  }
+  .modal header {
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .modal header .title { font-size: 13px; color: var(--muted); flex: 1; }
+  .modal .path-bar {
+    padding: 8px 16px; font-family: Consolas, monospace; font-size: 12px;
+    color: var(--green); word-break: break-all; border-bottom: 1px solid var(--border);
+  }
+  .modal .dir-list { overflow-y: auto; padding: 8px; flex: 1; }
+  .modal .dir-item {
+    display: flex; align-items: center; gap: 8px; padding: 7px 10px;
+    border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .modal .dir-item:hover { background: var(--panel2); }
+  .modal .dir-item .icon { width: 18px; text-align: center; color: var(--accent); }
+  .modal .dir-item.file .icon { color: var(--muted); }
+  .modal .dir-item .nm { flex: 1; word-break: break-all; }
+  .modal .dir-item .sz { color: var(--muted); font-size: 11px; }
+  .modal footer {
+    padding: 10px 16px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+</style>
+</head>
+<body>
+<h1>arch-quality 操作面板</h1>
+<div class="sub">选择命令 → 配置参数 → 运行 → 实时日志 → 报告预览。界面仅调起现有命令行，不修改评估逻辑。</div>
+
+<div class="layout">
+  <div>
+    <div class="panel">
+      <h2>① 命令选择</h2>
+      <div class="cmd-list" id="cmdList"></div>
+    </div>
+    <div class="panel">
+      <h2>收藏组合</h2>
+      <div class="history-menu" id="historyMenu">
+        <button class="btn" onclick="toggleHistory()">历史/收藏</button>
+        <div class="dropdown" id="historyDropdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>② 参数配置</h2>
+      <div class="cmd-desc" id="cmdDesc"></div>
+      <div id="formContainer"></div>
+      <div class="cmdline" id="cmdline"></div>
+      <div class="row" style="margin-top: 12px;">
+        <button class="btn primary" id="btnRun" onclick="runCommand()">▶ 运行</button>
+        <button class="btn" id="btnCancel" onclick="cancelRun()" disabled>■ 取消</button>
+        <button class="btn" onclick="saveHistory()">★ 保存此组合</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>③ 实时日志</h2>
+      <div class="log" id="log"></div>
+      <div class="statusbar">
+        <div class="dot" id="statusDot"></div>
+        <span id="statusText">空闲</span>
+        <span id="runSummary"></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>④ 报告预览</h2>
+      <div class="tabs">
+        <button id="tabMd" onclick="showPreview('md')" class="active">Markdown</button>
+        <button id="tabJson" onclick="showPreview('json')">JSON</button>
+      </div>
+      <div id="previewMd" class="preview-md"></div>
+      <div id="previewJson" class="preview-json" style="display:none;"></div>
+      <div class="muted" id="previewMeta" style="margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+// ---------------------------------------------------------------------------
+// 全局状态
+// ---------------------------------------------------------------------------
+let META = { order: [], commands: {} };
+let currentCommand = null;       // 命令 id
+let formValues = {};            // { 参数名: 值 }
+let currentRunId = null;
+let eventSource = null;
+let reports = { md: null, json: null };
+
+// ---------------------------------------------------------------------------
+// 初始化
+// ---------------------------------------------------------------------------
+async function init() {
+  const res = await fetch('/api/commands');
+  META = await res.json();
+  renderCommandList();
+  if (META.order.length) selectCommand(META.order[0]);
+  loadHistory();
+}
+
+// ---------------------------------------------------------------------------
+// 命令列表
+// ---------------------------------------------------------------------------
+function renderCommandList() {
+  const el = document.getElementById('cmdList');
+  el.innerHTML = '';
+  META.order.forEach(id => {
+    const cmd = META.commands[id];
+    const b = document.createElement('button');
+    b.dataset.id = id;
+    b.innerHTML = `${cmd.label}<small>${cmd.description}</small>`;
+    b.onclick = () => selectCommand(id);
+    el.appendChild(b);
+  });
+}
+
+function selectCommand(id, opts) {
+  const skipCwd = opts && opts.skipCwd;
+  currentCommand = id;
+  document.querySelectorAll('#cmdList button').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === id);
+  });
+  const cmd = META.commands[id];
+  document.getElementById('cmdDesc').textContent = cmd.description;
+  // 重置表单值
+  formValues = {};
+  cmd.params.forEach(p => {
+    formValues[p.name] = p.type === 'multicheck' ? (Array.isArray(p.default) ? [...p.default] : [])
+      : (p.type === 'bool' ? false : (p.default ?? ''));
+  });
+  renderForm();
+  updateCmdline();
+  clearRun();
+  // root 默认值 "." 时，填入服务的绝对工作目录，便于操作（加载收藏时跳过，避免竞态覆盖）
+  const rootParam = cmd.params.find(p => p.name === 'root');
+  if (!skipCwd && rootParam && (!formValues.root || formValues.root === '.')) {
+    fillRootWithCwd();
+  }
+}
+
+// 请求服务端当前工作目录（绝对路径）填入 root
+async function fillRootWithCwd() {
+  try {
+    const res = await fetch('/api/browse', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ path: '.' })
+    });
+    const data = await res.json();
+    if (res.ok && data.path) {
+      formValues.root = data.path;
+      renderForm();
+      updateCmdline();
+    }
+  } catch (e) { /* 忽略：默认 . 仍可用 */ }
+}
+
+// ---------------------------------------------------------------------------
+// 参数表单渲染（数据驱动 + 联动规则）
+// ---------------------------------------------------------------------------
+function renderForm() {
+  const cmd = META.commands[currentCommand];
+  const el = document.getElementById('formContainer');
+  el.innerHTML = '';
+  cmd.params.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'form-row' + (p.type === 'bool' ? ' checkbox' : '');
+    const visible = isVisible(p);
+    row.style.display = visible ? '' : 'none';
+    row.id = 'row-' + p.name;
+
+    if (p.type === 'bool') {
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.id = 'f-' + p.name;
+      cb.checked = !!formValues[p.name];
+      cb.onchange = () => { formValues[p.name] = cb.checked; updateCmdline(); };
+      const lb = document.createElement('label');
+      lb.htmlFor = 'f-' + p.name;
+      lb.textContent = (p.flag || p.name) + (p.help ? ' — ' + p.help : '');
+      row.appendChild(cb); row.appendChild(lb);
+    } else if (p.type === 'multicheck') {
+      // 复选框组：值为数组
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;';
+      const lb = document.createElement('label');
+      lb.textContent = (p.flag || p.name) + (p.required ? ' *' : '');
+      wrap.appendChild(lb);
+      const cur = Array.isArray(formValues[p.name]) ? formValues[p.name] : [];
+      (p.choices || []).forEach(c => {
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.id = 'f-' + p.name + '-' + c; cb.value = c;
+        cb.checked = cur.includes(c);
+        cb.onchange = () => {
+          const arr = Array.isArray(formValues[p.name]) ? formValues[p.name] : [];
+          if (cb.checked) { if (!arr.includes(c)) formValues[p.name] = [...arr, c]; }
+          else formValues[p.name] = arr.filter(x => x !== c);
+          updateCmdline();
+        };
+        const cl = document.createElement('label');
+        cl.htmlFor = cb.id; cl.style.cssText = 'font-size:13px;color:var(--muted);cursor:pointer;';
+        cl.textContent = c;
+        const g = document.createElement('span');
+        g.style.cssText = 'display:flex;align-items:center;gap:4px;';
+        g.appendChild(cb); g.appendChild(cl);
+        wrap.appendChild(g);
+      });
+      row.appendChild(wrap);
+      if (p.help) {
+        const h = document.createElement('div');
+        h.className = 'help'; h.textContent = p.help;
+        row.appendChild(h);
+      }
+    } else if (p.type === 'choice') {
+      const sel = document.createElement('select');
+      sel.id = 'f-' + p.name;
+      (p.choices || []).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        sel.appendChild(opt);
+      });
+      sel.value = formValues[p.name] ?? '';
+      sel.onchange = () => {
+        formValues[p.name] = sel.value;
+        renderForm();   // 联动：visible_when 依赖此值
+        updateCmdline();
+      };
+      const lb = document.createElement('label');
+      lb.textContent = (p.flag || p.name) + (p.required ? ' *' : '');
+      row.appendChild(lb); row.appendChild(sel);
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.id = 'f-' + p.name;
+      inp.placeholder = p.help || '';
+      inp.value = formValues[p.name] ?? '';
+      inp.oninput = () => { formValues[p.name] = inp.value; updateCmdline(); };
+      const lb = document.createElement('label');
+      lb.className = p.required ? 'req' : '';
+      lb.textContent = (p.flag || p.name) + (p.required ? '' : '');
+      row.appendChild(lb); row.appendChild(inp);
+      if (p.type === 'path') {
+        const btn = document.createElement('button');
+        btn.className = 'btn'; btn.textContent = '浏览…';
+        btn.onclick = () => browseDialog(p.name, inp.value);
+        row.appendChild(btn);
+      }
+      if (p.help) {
+        const h = document.createElement('div');
+        h.className = 'help'; h.textContent = p.help;
+        row.appendChild(h);
+      }
+    }
+    el.appendChild(row);
+  });
+}
+
+function isVisible(p) {
+  const rule = p.visible_when;
+  if (!rule) return true;
+  return Object.entries(rule).every(([k, v]) => String(formValues[k]) === String(v));
+}
+
+function currentValues() {
+  const out = {};
+  META.commands[currentCommand].params.forEach(p => {
+    out[p.name] = formValues[p.name];
+  });
+  return out;
+}
+
+function updateCmdline() {
+  // 前端预览命令字符串：直接调用后端拼接（与后端一致）
+  fetch('/api/commands').then(() => {});
+  const cmd = META.commands[currentCommand];
+  const parts = [cmd.entry];
+  cmd.params.forEach(p => {
+    const v = formValues[p.name];
+    const flag = p.flag;
+    if (p.name === 'root') { parts.push(String(v) || '.'); return; }
+    if (!flag) return;
+    if (p.type === 'bool') { if (v) parts.push(flag); }
+    else if (p.type === 'multicheck') {
+      if (Array.isArray(v)) v.forEach(item => { parts.push(flag, String(item)); });
+    }
+    else if (v && v !== p.default) {
+      if (p.type === 'multi') parts.push(flag, ...String(v).split(/\s+/).filter(Boolean));
+      else parts.push(flag, String(v));
+    }
+  });
+  document.getElementById('cmdline').textContent = '$ ' + parts.join(' ');
+}
+
+// ---------------------------------------------------------------------------
+// 目录浏览（模态框：列出条目，点击进入子目录，可向上/返回首页）
+// ---------------------------------------------------------------------------
+let browseParam = null;
+let browseCurrent = '.';
+
+async function browseDialog(paramName, startPath) {
+  browseParam = paramName;
+  browseCurrent = startPath || '.';
+  document.getElementById('browseOverlay').classList.add('open');
+  // 规范化起始路径为绝对路径（如 "." -> 服务工作目录绝对路径）
+  const res = await fetch('/api/browse', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ path: browseCurrent })
+  });
+  const data = await res.json();
+  if (res.ok && data.path) browseCurrent = data.path;
+  await browseLoad();
+}
+
+function closeBrowse() {
+  document.getElementById('browseOverlay').classList.remove('open');
+}
+
+async function browseLoad() {
+  const res = await fetch('/api/browse', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ path: browseCurrent })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  document.getElementById('browsePath').textContent = data.path;
+  document.getElementById('browseTitle').textContent =
+    browseParam ? `选择目录（${META.commands[currentCommand].label}）` : '选择目录';
+  const list = document.getElementById('browseList');
+  list.innerHTML = '';
+  if (!data.entries.length) {
+    list.innerHTML = '<div class="muted" style="padding:10px;">（空目录）</div>';
+    return;
+  }
+  data.entries.forEach(e => {
+    const item = document.createElement('div');
+    item.className = 'dir-item' + (e.is_dir ? '' : ' file');
+    item.innerHTML = `<span class="icon">${e.is_dir ? '📁' : '📄'}</span>
+      <span class="nm"></span><span class="sz">${e.is_dir ? '目录' : ''}</span>`;
+    item.querySelector('.nm').textContent = e.name;
+    if (e.is_dir) {
+      item.onclick = () => {
+        browseCurrent = e.path;
+        browseLoad();
+      };
+    }
+    list.appendChild(item);
+  });
+}
+
+// 计算当前路径的父目录（真正的"上级"，非历史栈）
+function parentDir(path) {
+  if (!path) return null;
+  const p = path.replace(/[\\/]+$/, '');   // 去掉尾部分隔符
+  if (!p) return null;
+  // Windows 盘符根：D: / D:/ -> 不可再上
+  if (/^[A-Za-z]:$/.test(p)) return null;
+  // 去掉最后一个分隔符及之后的部分
+  const idx = Math.max(p.lastIndexOf('/'), p.lastIndexOf('\\'));
+  if (idx <= 0) return null;               // 已是根（如 / 或 C:\ 尾部剥掉后）
+  return p.slice(0, idx);
+}
+
+function browseGoUp() {
+  const parent = parentDir(browseCurrent);
+  if (parent === null || parent === browseCurrent) return;
+  browseCurrent = parent;
+  browseLoad();
+}
+
+function browseGoHome() {
+  browseCurrent = 'C:/';
+  browseLoad();
+}
+
+function browseSelect() {
+  if (!browseParam) return;
+  formValues[browseParam] = browseCurrent;
+  renderForm();
+  updateCmdline();
+  closeBrowse();
+}
+
+// ---------------------------------------------------------------------------
+// 运行
+// ---------------------------------------------------------------------------
+async function runCommand() {
+  const values = currentValues();
+  if (!values.root) { alert('请填写项目根目录'); return; }
+  clearRun();
+  const res = await fetch('/api/run', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ command: currentCommand, values })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error || '启动失败'); return; }
+  currentRunId = data.run_id;
+  setStatus('running');
+  document.getElementById('btnRun').disabled = true;
+  document.getElementById('btnCancel').disabled = false;
+  // SSE 日志流
+  eventSource = new EventSource(`/api/stream/${currentRunId}`);
+  eventSource.onmessage = (ev) => {
+    const msg = JSON.parse(ev.data);
+    if (msg.run_id !== undefined) {
+      appendLog('stdout', `$ ${msg.command}\n`);
+      return;
+    }
+    if (msg.done) {
+      eventSource.close(); eventSource = null;
+      finalizeRun(msg.summary);
+      return;
+    }
+    appendLog(msg.channel, msg.text);
+  };
+}
+
+// 日志缓冲：批量渲染 + 滚动节流 + 上限截断（防止大 JSON 输出冻结 DOM）
+let _logBuf = [];
+let _logTimer = null;
+let _logScrollPending = false;
+
+function appendLog(channel, text) {
+  _logBuf.push({ channel, text });
+  if (!_logTimer) {
+    _logTimer = setTimeout(flushLog, 80);
+  }
+}
+
+function flushLog() {
+  _logTimer = null;
+  if (_logBuf.length === 0) return;
+  const log = document.getElementById('log');
+  const frag = document.createDocumentFragment();
+  for (const item of _logBuf) {
+    const span = document.createElement('span');
+    if (item.channel === 'stderr') span.className = 'stderr';
+    span.textContent = item.text;
+    frag.appendChild(span);
+  }
+  _logBuf = [];
+  log.appendChild(frag);
+  // 日志上限：超过 20000 个节点时裁剪前一半，防止 DOM 爆炸
+  while (log.childNodes.length > 20000) {
+    log.removeChild(log.firstChild);
+  }
+  if (!_logScrollPending) {
+    _logScrollPending = true;
+    requestAnimationFrame(() => {
+      log.scrollTop = log.scrollHeight;
+      _logScrollPending = false;
+    });
+  }
+}
+
+function setStatus(state) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'dot ' + (state === 'running' ? 'running' : state === 'done' ? 'done' : state === 'err' ? 'err' : '');
+  txt.textContent = state === 'running' ? '运行中…' : state === 'done' ? '完成' : state === 'err' ? '失败/已取消' : '空闲';
+}
+
+function finalizeRun(summary) {
+  // 先刷新日志缓冲，确保最后一批日志渲染完成
+  flushLog();
+  currentRunId = null;
+  document.getElementById('btnRun').disabled = false;
+  document.getElementById('btnCancel').disabled = true;
+  const ok = summary.exit_code === 0;
+  setStatus(ok ? 'done' : 'err');
+  document.getElementById('runSummary').textContent = `退出码=${summary.exit_code}  状态=${summary.status}`;
+  // 从日志提取报告路径
+  extractReports();
+}
+
+async function cancelRun() {
+  if (!currentRunId) return;
+  await fetch(`/api/runs/${currentRunId}/cancel`, { method: 'POST' });
+  document.getElementById('btnCancel').disabled = true;
+}
+
+function clearRun() {
+  _logBuf = [];
+  if (_logTimer) { clearTimeout(_logTimer); _logTimer = null; }
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('runSummary').textContent = '';
+  reports = { md: null, json: null };
+  document.getElementById('previewMd').innerHTML = '';
+  document.getElementById('previewJson').textContent = '';
+  document.getElementById('previewMeta').textContent = '';
+}
+
+// ---------------------------------------------------------------------------
+// 报告预览
+// ---------------------------------------------------------------------------
+function extractReports() {
+  const logText = document.getElementById('log').textContent || '';
+  const mdMatch = logText.match(/Markdown report:\s*(\S+)/);
+  const jsonMatch = logText.match(/JSON report:\s*(\S+)/);
+  const savedMatch = logText.match(/Report saved:\s*(\S+)/);
+  if (mdMatch) reports.md = mdMatch[1];
+  if (jsonMatch) reports.json = jsonMatch[1];
+  // 单命令输出用 "Report saved:" 标记（如 standard-metrics.json / numerical-accuracy.json）
+  if (!reports.json && savedMatch) reports.json = savedMatch[1];
+  if (reports.md || reports.json) showPreview('md');
+  else {
+    // 尝试从当前目录常规路径探测
+    document.getElementById('previewMeta').textContent = '未在日志中定位到报告路径（可手动粘贴路径到预览）';
+  }
+}
+
+function showPreview(kind) {
+  document.getElementById('tabMd').classList.toggle('active', kind === 'md');
+  document.getElementById('tabJson').classList.toggle('active', kind === 'json');
+  const mdEl = document.getElementById('previewMd');
+  const jsonEl = document.getElementById('previewJson');
+  mdEl.style.display = kind === 'md' ? '' : 'none';
+  jsonEl.style.display = kind === 'json' ? '' : 'none';
+  const path = kind === 'md' ? reports.md : reports.json;
+  if (!path) {
+    const el = kind === 'md' ? mdEl : jsonEl;
+    el.innerHTML = '<span class="muted">无报告路径。请输入文件路径：</span>';
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.placeholder = '粘贴报告文件绝对路径';
+    inp.style.cssText = 'width:60%;padding:6px;margin-top:6px;';
+    inp.onchange = () => loadPreview(kind, inp.value);
+    el.appendChild(document.createElement('br'));
+    el.appendChild(inp);
+    return;
+  }
+  loadPreview(kind, path);
+}
+
+async function loadPreview(kind, path) {
+  const res = await fetch('/api/preview', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ path })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  document.getElementById('previewMeta').textContent = `文件: ${data.path} (${data.ext})`;
+  if (kind === 'md') {
+    const el = document.getElementById('previewMd');
+    if (window.marked) el.innerHTML = marked.parse(data.content);
+    else { el.textContent = data.content; el.style.whiteSpace = 'pre-wrap'; }
+  } else {
+    try {
+      document.getElementById('previewJson').textContent =
+        JSON.stringify(JSON.parse(data.content), null, 2);
+    } catch {
+      document.getElementById('previewJson').textContent = data.content;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 历史 / 收藏
+// ---------------------------------------------------------------------------
+function toggleHistory() {
+  const menu = document.getElementById('historyMenu');
+  const dd = document.getElementById('historyDropdown');
+  const willOpen = !menu.classList.contains('open');
+  if (willOpen) {
+    // 相对按钮定位：按钮下方，右对齐按钮右缘，保证不超出视口
+    const btn = menu.querySelector('button');
+    const br = btn.getBoundingClientRect();
+    const ddW = dd.offsetWidth || 360;
+    let left = br.right - ddW;
+    if (left < 8) left = 8;                       // 不超出左侧
+    const top = br.bottom + 6;
+    const maxTop = window.innerHeight - (dd.offsetHeight || 200) - 8;
+    dd.style.left = left + 'px';
+    dd.style.top = Math.min(top, Math.max(8, maxTop)) + 'px';
+  }
+  menu.classList.toggle('open');
+}
+
+async function loadHistory() {
+  const res = await fetch('/api/history');
+  const items = await res.json();
+  const dd = document.getElementById('historyDropdown');
+  dd.innerHTML = '';
+  if (!items.length) { dd.innerHTML = '<div class="muted" style="padding:6px;">暂无收藏</div>'; return; }
+  items.slice().reverse().forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `<div><b>${item.label}</b> <span class="meta">(${META.commands[item.command]?.label || item.command})</span></div>
+      <div class="meta" title="保存时间: ${item.created_at}">${(item.values.root || '')}
+        <span class="del" onclick="event.stopPropagation(); deleteHistory(${item.id})">✕</span>
+      </div>`;
+    div.onclick = () => {
+      document.getElementById('historyMenu').classList.remove('open');
+      selectCommand(item.command, { skipCwd: true });
+      // 应用保存的值
+      Object.entries(item.values || {}).forEach(([k, v]) => { formValues[k] = v; });
+      renderForm(); updateCmdline();
+    };
+    dd.appendChild(div);
+  });
+}
+
+// 保存收藏：用内联名称输入（避免浏览器拦截 prompt/alert）
+function saveHistory() {
+  const name = window.prompt ? prompt('收藏名称（留空自动命名）：') : '';
+  if (name === null) return; // 用户取消
+  fetch('/api/history', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ command: currentCommand, values: currentValues(), name: name || '' })
+  }).then(r => r.json()).then(data => {
+    if (data.ok) { loadHistory(); } else alert(data.error);
+  });
+}
+
+function deleteHistory(id) {
+  fetch('/api/history/' + id, { method: 'DELETE' }).then(() => loadHistory());
+}
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('historyMenu');
+  if (!menu.contains(e.target)) menu.classList.remove('open');
+});
+
+init();
+</script>
+
+<div class="modal-overlay" id="browseOverlay">
+  <div class="modal">
+    <header>
+      <button class="btn" onclick="browseGoUp()">⬆ 上级</button>
+      <button class="btn" onclick="browseGoHome()">🏠 首页</button>
+      <span class="title" id="browseTitle">选择目录</span>
+      <button class="btn" onclick="closeBrowse()">✕</button>
+    </header>
+    <div class="path-bar" id="browsePath"></div>
+    <div class="dir-list" id="browseList"></div>
+    <footer>
+      <button class="btn" onclick="closeBrowse()">取消</button>
+      <button class="btn primary" onclick="browseSelect()">选择此目录</button>
+    </footer>
+  </div>
+</div>
+</body>
+</html>
