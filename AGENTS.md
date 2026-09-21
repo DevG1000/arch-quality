@@ -15,7 +15,9 @@ python -m arch_quality --help     # entry if arch-quality not on PATH
 | `arch-quality-standard` | `arch_metrics_standard.py:main` | Standard 4-dimension metrics only |
 | `arch-quality-multilang` | `arch_metrics_multilang.py:main` | Multilang 6-dim + MLR rules only |
 | `arch-quality-template` | `arch_metrics_template.py:main` | Template metaprogramming only |
+| `arch-quality-ui` | `arch_quality.ui.server:main` | Web operation panel (browser UI for all CLI entries) |
 | via `-m` | `arch_metrics_numerical_accuracy.py:main` | Numerical accuracy (no CLI entry in pyproject) |
+| via `-m` | `arch_metrics_geometry_consistency.py:main` | Geometry consistency (no CLI entry in pyproject) |
 
 ## Architecture
 
@@ -26,6 +28,8 @@ src/arch_quality/
   arch_metrics_multilang.py     # MultilangMetrics — 6 dims + 12 MLR rules
   arch_metrics_template.py      # TemplateMetaprogrammingMetrics — 6 dims + 12 MLR
   arch_metrics_numerical_accuracy.py  # NumericalAccuracyMetrics — 6 dims + 12 NVR
+arch_metrics_geometry_consistency.py # GeometryConsistencyMetrics — 4 dims + 12 GCS
+ui/                            # Web panel (Flask): commands_meta + runner + server
   arch_report.py                # ComprehensiveReport — merges all above
   arch_report_generator.py      # Markdown report template (16 sections)
   arch_bindings_parser.py       # pybind11 binding extraction (C++ side)
@@ -96,6 +100,8 @@ python scripts\run_agent_harness.py --case case-1-multiphysics --timeout 600 --v
 ## Things to Keep in Mind
 
 - `opencode.json` defines skill paths, the `architecture-quality` agent (`mode: primary`), and `plugin` (npm plugins only; local plugins auto-load from `.opencode/plugins/`). `opencode1.json` is legacy/unmerged.
+- The geometry kernel & scientific data consistency assessment (`docs/zh/几何内核与科学数据结构一致性评估/`) is **fully implemented** — `arch_metrics_geometry_consistency.py` (GeometryConsistencyMetrics, 4 dims + 12 GCS), tests (18 unit + 7 mutation + 12 integration + 12 regression), 3 regression baselines (occt/salome-geom/freecad), agent harness (3 cases: good/flawed/non-geometry), rules.json v1.1 (gcs_dimension_fields + single_engine_prefixes). C-stage deliverables: `scripts/ci_gate_geometry_consistency.bat` (CI gate), user prompt template (`...用户交互提示词模板.md`), report template (`...报告模板.md`).
+
 - The solver/physics field modular architecture assessment (`docs/zh/求解器和物理场模块化架构模式识别评估/`) is **fully implemented** — `arch_metrics_solver_physics.py` (SolverPhysicsMetrics, 4 dims + 12 MPR), tests (97 unit/integration/e2e/mutation), 9 regression baselines, k-fold cross-validation, agent harness. B3.5 enhancements: OpenFOAM config-dict scan, preCICE multi-mode arch detection, FreeFEM src-subdir solver-unit fallback. C-stage deliverables: `scripts/ci_gate_solver_physics.bat` (CI gate), user prompt template (`...用户交互提示词模板.md`), report template (`...报告模板.md`).
 - `package.json` in `.opencode/` is for OpenCode plugin dependency (`@opencode-ai/plugin@1.2.24`), not the project itself.
 - **`.opencode/plugins/`**: Project-level OpenCode plugins (auto-loaded). `agent-assert.js` hooks `tool.execute.before/after` to auto-assert eval-command outputs at the framework level (independent of the external Python harness). Rules shared via `opencode-harness/rules.json`.
