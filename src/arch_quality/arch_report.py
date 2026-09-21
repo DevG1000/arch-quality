@@ -8,6 +8,7 @@ arch_report.py — 综合架构质量报告生成
 
 import os
 import json
+import sys
 import argparse
 from pathlib import Path
 from datetime import datetime
@@ -17,7 +18,9 @@ from arch_quality.arch_core import (
     load_weights_from_skill, ensure_output_dir,
     load_history, save_history,
     get_report_base,
-    write_report, write_markdown
+    write_report, write_markdown,
+    load_profile_config, resolve_enabled_engines,
+    PROFILE_ENGINE_MAP, ENHANCEMENT_ENGINES,
 )
 
 from arch_quality.arch_metrics_standard import StandardMetrics
@@ -25,6 +28,7 @@ from arch_quality.arch_metrics_multilang import MultilangMetrics
 from arch_quality.arch_metrics_template import TemplateMetaprogrammingMetrics
 from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetrics
 from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
+from arch_quality.arch_metrics_geometry_consistency import GeometryConsistencyMetrics
 from arch_quality.arch_report_generator import ReportGenerator
 
 SKILL_QUALITY = str(Path(__file__).parent / "skills" / "arch-quality.md")
@@ -36,10 +40,13 @@ SKILL_SOLVER_PHYSICS = str(Path(__file__).parent / "skills" / "solver-physics-ar
 class ComprehensiveReport:
     """综合报告数据生成器"""
 
-    def __init__(self, root: str, build_dir: str = "", test_dirs: list = None):
+    def __init__(self, root: str, build_dir: str = "", test_dirs: list = None,
+                 profile: dict = None):
         self.root = root
         self.build_dir = build_dir
         self.test_dirs = test_dirs or []
+        # profile: load_profile_config 返回的配置 dict（含 enabled_engines）或 None
+        self.profile = profile
         self.quality_weights = load_weights_from_skill(SKILL_QUALITY)
         self.multilang_weights = load_weights_from_skill(SKILL_MULTILANG)
         self.template_weights = load_weights_from_skill(SKILL_TEMPLATE)
@@ -49,97 +56,99 @@ class ComprehensiveReport:
         self.template = TemplateMetaprogrammingMetrics(root, build_dir=build_dir)
         self.numerical = NumericalAccuracyMetrics(root)
         self.solver_physics = SolverPhysicsMetrics(root)
+        self.geometry = GeometryConsistencyMetrics(root)
+
+    def _enabled_enhancement_keys(self) -> set:
+        """显式 profile 模式下的启用增强引擎键集；启发式模式返回全量（由检测决定）"""
+        if getattr(self, "profile", None) is not None:
+            return set(self.profile["enabled_engines"])
+        return set(ENHANCEMENT_ENGINES)
 
     def generate(self) -> dict:
         std_result = self.standard.all_metrics()
-        ml_result = self.multilang.all_metrics()
-        tpl_result = self.template.all_metrics()
-        nvr_result = self.numerical.all_metrics()
-        sp_result = self.solver_physics.all_metrics()
+
+        # 引擎选择：显式 profile 优先（仅运行启用引擎）；否则启发式兜底（运行全部）
+        enabled = self._enabled_enhancement_keys()
+        profile_active = getattr(self, "profile", None) is not None
+
+        ml_result = self.multilang.all_metrics() if ("multilang" in enabled or not profile_active) else None
+        tpl_result = self.template.all_metrics() if ("template" in enabled or not profile_active) else None
+        nvr_result = self.numerical.all_metrics() if ("numerical" in enabled or not profile_active) else None
+        sp_result = self.solver_physics.all_metrics() if ("solver-physics" in enabled or not profile_active) else None
+        gcs_result = (getattr(self, "geometry", None).all_metrics()
+                     if ("geometry-consistency" in enabled or not profile_active) else None) if getattr(self, "geometry", None) else None
 
         struct_score = std_result["structural"]["score"]
 
-        is_single = ml_result.get("is_single_language", False)
-        has_cpp = tpl_result.get("is_cpp_project", False)
-        has_numerical = nvr_result.get("is_numerical", False)
-        has_multiphysics = sp_result.get("is_multiphysics", False)
+        is_single = ml_result.get("is_single_language", False) if ml_result else False
+        has_cpp = tpl_result.get("is_cpp_project", False) if tpl_result else False
+        has_numerical = nvr_result.get("is_numerical", False) if nvr_result else False
+        has_multiphysics = sp_result.get("is_multiphysics", False) if sp_result else False
+        has_geometry = gcs_result.get("is_geometry", False) if gcs_result else False
 
-        if is_single and not has_cpp and not has_numerical and not has_multiphysics:
-            merged_structural = struct_score
-            ml_weight_applied = 0.0
-            tpl_weight_applied = 0.0
-            nvr_weight_applied = 0.0
-            sp_weight_applied = 0.0
+        # 激活增强引擎列表：[(key, base_weight, result)]
+        # 启发式模式由检测信号决定；显式 profile 模式由声明引擎集 + 引擎实际产出（overall 非 None）决定
+        enh = []
+        if profile_active:
+            for key, engine, w, result in [
+                ("ml", "multilang", 0.15, ml_result),
+                ("tpl", "template", 0.15, tpl_result),
+                ("nvr", "numerical", 0.10, nvr_result),
+                ("sp", "solver-physics", 0.15, sp_result),
+                ("gcs", "geometry-consistency", 0.15, gcs_result),
+            ]:
+                if engine in enabled and result is not None and result.get("overall") is not None:
+                    enh.append((key, w, result))
         else:
-            base_w = 1.0
-            ml_w = 0.0
-            tpl_w = 0.0
-            nvr_w = 0.0
-            sp_w = 0.0
-            active_count = 0
-            if not is_single:
-                active_count += 1
-                ml_w = 0.15
-            if has_cpp:
-                active_count += 1
-                tpl_w = 0.15
-            if has_numerical:
-                active_count += 1
-                nvr_w = 0.10
-            if has_multiphysics:
-                active_count += 1
-                sp_w = 0.15
+            if not is_single and ml_result is not None and ml_result.get("overall") is not None:
+                enh.append(("ml", 0.15, ml_result))
+            if has_cpp and tpl_result is not None and tpl_result.get("overall") is not None:
+                enh.append(("tpl", 0.15, tpl_result))
+            if has_numerical and nvr_result is not None and nvr_result.get("overall") is not None:
+                enh.append(("nvr", 0.10, nvr_result))
+            if has_multiphysics and sp_result is not None and sp_result.get("overall") is not None:
+                enh.append(("sp", 0.15, sp_result))
+            if has_geometry and gcs_result is not None and gcs_result.get("overall") is not None:
+                enh.append(("gcs", 0.15, gcs_result))
 
-            if active_count == 0:
-                merged_structural = struct_score
-            else:
-                # 基础权重按激活数分档（与既有规则一致）
-                base_map = {1: 0.85, 2: 0.70, 3: 0.60, 4: 0.55}
-                base_w = base_map[active_count]
+        ml_weight_applied = 0.0
+        tpl_weight_applied = 0.0
+        nvr_weight_applied = 0.0
+        sp_weight_applied = 0.0
+        gcs_weight_applied = 0.0
 
-                # 各增强的基础权重（ml/tpl/sp 各 15%，nvr 10%）
-                enh_raw = {}
-                if not is_single:
-                    enh_raw["ml"] = 0.15
-                if has_cpp:
-                    enh_raw["tpl"] = 0.15
-                if has_numerical:
-                    enh_raw["nvr"] = 0.10
-                if has_multiphysics:
-                    enh_raw["sp"] = 0.15
+        active_count = len(enh)
+        if active_count == 0:
+            merged_structural = struct_score
+        else:
+            # 基础权重按激活数分档（与既有规则一致）
+            base_map = {1: 0.85, 2: 0.70, 3: 0.60, 4: 0.55, 5: 0.50}
+            base_w = base_map[active_count]
+            enh_raw = dict((k, w) for k, w, _ in enh)
 
-                ml_w = enh_raw.get("ml", 0)
-                tpl_w = enh_raw.get("tpl", 0)
-                nvr_w = enh_raw.get("nvr", 0)
-                sp_w = enh_raw.get("sp", 0)
+            # 归一化：当基础+增强权重和 > 1 时等比缩放（如 4 增强 110% → 100%）
+            real_w = base_w + sum(enh_raw.values())
+            if active_count >= 3 and real_w > 1.0:
+                scale = 1.0 / real_w
+                base_w *= scale
+                enh_raw = {k: v * scale for k, v in enh_raw.items()}
 
-                # 归一化：当基础+增强权重和 > 1 时等比缩放（如 4 增强 110% → 100%）
-                real_w = base_w + ml_w + tpl_w + nvr_w + sp_w
-                if active_count >= 3 and real_w > 1.0:
-                    scale = 1.0 / real_w
-                    base_w *= scale
-                    ml_w *= scale
-                    tpl_w *= scale
-                    nvr_w *= scale
-                    sp_w *= scale
+            ml_weight_applied = enh_raw.get("ml", 0.0)
+            tpl_weight_applied = enh_raw.get("tpl", 0.0)
+            nvr_weight_applied = enh_raw.get("nvr", 0.0)
+            sp_weight_applied = enh_raw.get("sp", 0.0)
+            gcs_weight_applied = enh_raw.get("gcs", 0.0)
 
-                ml_weight_applied = ml_w
-                tpl_weight_applied = tpl_w
-                nvr_weight_applied = nvr_w
-                sp_weight_applied = sp_w
-
-                ml_overall = ml_result["overall"] if ml_w > 0 and ml_result["overall"] is not None else 0
-                tpl_overall = tpl_result["overall"] if tpl_w > 0 and tpl_result["overall"] is not None else 0
-                nvr_overall = nvr_result["overall"] if nvr_w > 0 and nvr_result["overall"] is not None else 0
-                sp_overall = sp_result["overall"] if sp_w > 0 and sp_result["overall"] is not None else 0
-
-                merged_structural = (
-                    struct_score * base_w +
-                    ml_overall * ml_w +
-                    tpl_overall * tpl_w +
-                    nvr_overall * nvr_w +
-                    sp_overall * sp_w
-                ) / max(base_w + ml_w + tpl_w + nvr_w + sp_w, 0.01)
+            enh_overall = {k: r["overall"] for k, _, r in enh}
+            merged_structural = (
+                struct_score * base_w +
+                enh_overall.get("ml", 0) * ml_weight_applied +
+                enh_overall.get("tpl", 0) * tpl_weight_applied +
+                enh_overall.get("nvr", 0) * nvr_weight_applied +
+                enh_overall.get("sp", 0) * sp_weight_applied +
+                enh_overall.get("gcs", 0) * gcs_weight_applied
+            ) / max(base_w + ml_weight_applied + tpl_weight_applied
+                    + nvr_weight_applied + sp_weight_applied + gcs_weight_applied, 0.01)
 
         w = {k: v for k, v in self.quality_weights.items()}
         overall = (
@@ -149,12 +158,32 @@ class ComprehensiveReport:
             std_result["evolution"]["score"] * w.get("演进质量", 0.25)
         )
 
+        # 过渡口径（H2 WP-0，决策 8b）：profile 子集评分标注，与全引擎评分并列展示、禁止混合计分
+        skipped_engines = [e for e in ENHANCEMENT_ENGINES if e not in enabled] if profile_active else []
+        subset_scoring = profile_active and bool(skipped_engines)
+        profile_meta = {
+            "active": profile_active,
+            "config_source": self.profile.get("config_source", "") if profile_active else "",
+            "profile": self.profile.get("profile") if profile_active else None,
+            "enable_engines": self.profile.get("enable_engines") if profile_active else None,
+            "skip_engines": self.profile.get("skip_engines") if profile_active else None,
+            "enabled_engines": sorted(enabled),
+            "skipped_engines": skipped_engines,
+            "subset_scoring": subset_scoring,
+            "note": (
+                "过渡口径（H2 WP-0，决策 8b）：profile 子集评分仅基于已启用引擎，"
+                "与全引擎评分并列展示、禁止混合计分；激活子集全局归一化实施归 H3。"
+                if subset_scoring else "全引擎评分"
+            ),
+        }
+
         result = {
             "project": os.path.basename(self.root),
             "assessment_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "overall_score": round(overall, 2),
             "is_single_language": is_single,
-            "project_languages": ml_result.get("languages", []),
+            "project_languages": ml_result.get("languages", []) if ml_result else [],
+            "profile": profile_meta,
             "weights_source_standard": SKILL_QUALITY,
             "weights_source_multilang": SKILL_MULTILANG,
             "dimensions": {
@@ -179,7 +208,7 @@ class ComprehensiveReport:
                     "details": std_result["evolution"]["details"],
                 },
             },
-            "mlr_violations": ml_result["mlr_violations"],
+            "mlr_violations": list(ml_result.get("mlr_violations", [])) if ml_result else [],
             "files": std_result["files"],
             "score_breakdown": {
                 "formula": "overall = structural*30% + design*25% + doc*20% + evolution*25%",
@@ -189,8 +218,10 @@ class ComprehensiveReport:
                     f" + template*{int(tpl_weight_applied*100)}%"
                     f" + numerical*{int(nvr_weight_applied*100)}%"
                     f" + solver_physics*{int(sp_weight_applied*100)}%"
-                    if not is_single or has_cpp or has_numerical or has_multiphysics
-                    else "structural = base_structural*100% (single-language project, no enhancement)"
+                    f" + geometry_consistency*{int(gcs_weight_applied*100)}%"
+                    + (f" [profile 子集评分：启用 {sorted(enabled)}，跳过 {skipped_engines}]" if subset_scoring else "")
+                    if active_count > 0
+                    else "structural = base_structural*100% (no enhancement engine active)"
                 ),
                 "calculated": {
                     "merged_structural": round(merged_structural, 2),
@@ -202,80 +233,107 @@ class ComprehensiveReport:
             },
         }
 
-        if not is_single:
+        if ml_result is not None and ("ml" in (k for k, _, _ in enh)):
             result["dimensions"]["structural"]["multilang_enhancement"] = {
                 "score": ml_result["overall"],
                 "weight_applied": ml_weight_applied,
                 "details": ml_result["dimensions"],
             }
 
-        if has_cpp:
+        if tpl_result is not None and ("tpl" in (k for k, _, _ in enh)):
             result["dimensions"]["structural"]["template_enhancement"] = {
                 "score": tpl_result["overall"],
                 "weight_applied": tpl_weight_applied,
                 "details": tpl_result["dimensions"],
             }
 
-        if has_numerical:
+        if nvr_result is not None and ("nvr" in (k for k, _, _ in enh)):
             result["dimensions"]["structural"]["numerical_enhancement"] = {
                 "score": nvr_result["overall"],
                 "weight_applied": nvr_weight_applied,
                 "details": nvr_result["dimensions"],
             }
 
-        if has_multiphysics:
+        if sp_result is not None and ("sp" in (k for k, _, _ in enh)):
             result["dimensions"]["structural"]["solver_physics_enhancement"] = {
                 "score": sp_result["overall"],
                 "weight_applied": sp_weight_applied,
                 "details": sp_result["dimensions"],
             }
 
-        tpl_violations = tpl_result.get("mlr_violations", [])
-        if tpl_violations:
-            merged_014_023 = False
-            for v in tpl_violations:
-                if v.get("merge_to") == "MLR-014":
-                    for existing in result["mlr_violations"]:
-                        if existing.get("rule") == "MLR-014":
-                            existing["merged_with_023"] = True
-                            existing["detail"] += f"; 另有 {v['count']} 处多处重复实例化（MLR-023 已合并）"
-                            merged_014_023 = True
-                            break
-                    if not merged_014_023:
-                        result["mlr_violations"].append({
-                            "rule": "MLR-014", "name": v.get("name", ""),
-                            "severity": v.get("severity", "MEDIUM"),
-                            "output_level": v.get("output_level", "WARNING"),
-                            "count": v.get("count", 0),
-                            "detail": v.get("detail", ""),
-                        })
-                else:
-                    result["mlr_violations"].append(v)
+        if gcs_result is not None and ("gcs" in (k for k, _, _ in enh)):
+            result["dimensions"]["structural"]["geometry_consistency_enhancement"] = {
+                "score": gcs_result["overall"],
+                "weight_applied": gcs_weight_applied,
+                "details": gcs_result["dimensions"],
+            }
 
-            sme_waiver_notes = []
-            output_level_summary = {"ERROR": 0, "WARNING": 0, "INFO": 0}
-            for v in result["mlr_violations"]:
-                if v.get("rule", "").startswith("MLR-"):
-                    ol = v.get("output_level", v.get("severity", "WARNING"))
-                    if ol in output_level_summary:
-                        output_level_summary[ol] += 1
-                    if v.get("waivable"):
-                        sme_waiver_notes.append(f"{v['rule']}: severity={v['severity']}, output_level={ol}")
-            if any(v.get("rule") == "MLR-013" for v in tpl_violations) and any(v.get("rule") == "MLR-015" for v in tpl_violations):
-                result["structural_note_cross_concern"] = "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块"
-            if sme_waiver_notes:
-                result["sme_waiver_summary"] = sme_waiver_notes
-            result["output_level_summary"] = output_level_summary
+        # 跳过引擎并列展示（profile 子集模式）：标注未评估维度，禁止与全引擎评分混合
+        if profile_active and skipped_engines:
+            skipped_labels = {
+                "multilang": "跨语言混合依赖（MLR）",
+                "template": "模板元编程（TPL）",
+                "numerical": "数值算法正确性（NVR）",
+                "solver-physics": "求解器物理场（MPR）",
+            }
+            result["dimensions"]["structural"]["skipped_enhancements"] = [
+                {"engine": e, "label": skipped_labels.get(e, e),
+                 "status": "not_evaluated",
+                 "reason": f"profile 未启用 {e}（声明引擎集 {sorted(enabled)}）"}
+                for e in skipped_engines
+            ]
+
+        if tpl_result is not None:
+            tpl_violations = tpl_result.get("mlr_violations", [])
+            if tpl_violations:
+                merged_014_023 = False
+                for v in tpl_violations:
+                    if v.get("merge_to") == "MLR-014":
+                        for existing in result["mlr_violations"]:
+                            if existing.get("rule") == "MLR-014":
+                                existing["merged_with_023"] = True
+                                existing["detail"] += f"; 另有 {v['count']} 处多处重复实例化（MLR-023 已合并）"
+                                merged_014_023 = True
+                                break
+                        if not merged_014_023:
+                            result["mlr_violations"].append({
+                                "rule": "MLR-014", "name": v.get("name", ""),
+                                "severity": v.get("severity", "MEDIUM"),
+                                "output_level": v.get("output_level", "WARNING"),
+                                "count": v.get("count", 0),
+                                "detail": v.get("detail", ""),
+                            })
+                    else:
+                        result["mlr_violations"].append(v)
+
+                sme_waiver_notes = []
+                output_level_summary = {"ERROR": 0, "WARNING": 0, "INFO": 0}
+                for v in result["mlr_violations"]:
+                    if v.get("rule", "").startswith("MLR-"):
+                        ol = v.get("output_level", v.get("severity", "WARNING"))
+                        if ol in output_level_summary:
+                            output_level_summary[ol] += 1
+                        if v.get("waivable"):
+                            sme_waiver_notes.append(f"{v['rule']}: severity={v['severity']}, output_level={ol}")
+                if any(v.get("rule") == "MLR-013" for v in tpl_violations) and any(v.get("rule") == "MLR-015" for v in tpl_violations):
+                    result["structural_note_cross_concern"] = "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块"
+                if sme_waiver_notes:
+                    result["sme_waiver_summary"] = sme_waiver_notes
+                result["output_level_summary"] = output_level_summary
 
         # 合并 solver-physics MPR 违规到报告
-        sp_violations = sp_result.get("mpr_violations", [])
-        for v in sp_violations:
-            result["mlr_violations"].append(v)
+        if sp_result is not None:
+            for v in sp_result.get("mpr_violations", []):
+                result["mlr_violations"].append(v)
 
         # 合并 NVR 违规到报告
-        nvr_violations = nvr_result.get("nvr_violations", [])
-        for v in nvr_violations:
-            result["mlr_violations"].append(v)
+        if nvr_result is not None:
+            for v in nvr_result.get("nvr_violations", []):
+                result["mlr_violations"].append(v)
+
+        if gcs_result is not None:
+            for v in gcs_result.get("gcs_violations", []):
+                result["mlr_violations"].append(v)
 
         # 合并标准架构质量 SAR 违规到报告
         sar_violations = std_result.get("sar_violations", [])
@@ -286,6 +344,13 @@ class ComprehensiveReport:
 
 
 def main():
+    # 强制 UTF-8 输出（Windows 控制台默认 GBK，管道/重定向时子进程解码需一致）
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
     parser = argparse.ArgumentParser(description="架构质量综合评估报告")
     parser.add_argument("root", nargs="?", default=".", help="项目根目录")
     parser.add_argument("--build-dir", default="", help="构建目录（包含 SWIG 生成文件的目录，如 build/）")
@@ -297,11 +362,31 @@ def main():
                         help="报告存储模式: local=项目内 .opencode/, central=用户配置目录集中存储")
     parser.add_argument("--project-name", default=None,
                         help="集中模式下的项目名 (默认从根目录推断)")
+    parser.add_argument("--profile", default=None, action="append",
+                        choices=list(PROFILE_ENGINE_MAP.keys()),
+                        help="显式 profile（可重复指定多个，引擎集取并集；覆盖配置文件 arch-quality.yaml 的 profile 字段）")
 
     args = parser.parse_args()
 
-    test_dirs = list(args.test_dirs) if args.test_dirs else []
-    reporter = ComprehensiveReport(args.root, build_dir=args.build_dir, test_dirs=test_dirs)
+    # 显式 profile 配置：配置文件优先，CLI --profile 覆盖 profile 字段，CLI --test-dirs 覆盖 test_dirs
+    try:
+        cfg = load_profile_config(args.root)
+    except ValueError as e:
+        print(f"错误: {e}", file=sys.stderr)
+        return 1
+    if args.profile:
+        cfg = dict(cfg)
+        # 单 profile 归一为字符串（保持历史报告语义），多 profile 保留 list
+        cfg["profile"] = args.profile if len(args.profile) > 1 else args.profile[0]
+    if args.profile or cfg:
+        cfg = dict(cfg)
+        cfg["enabled_engines"] = resolve_enabled_engines(
+            cfg.get("profile"), cfg.get("enable_engines"), cfg.get("skip_engines"))
+
+    test_dirs = list(args.test_dirs) if args.test_dirs else list(cfg.get("test_dirs", []))
+    profile = cfg if (args.profile or cfg) else None
+    reporter = ComprehensiveReport(args.root, build_dir=args.build_dir, test_dirs=test_dirs,
+                                   profile=profile)
     data = reporter.generate()
 
     # 加载历史

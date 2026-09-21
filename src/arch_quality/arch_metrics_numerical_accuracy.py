@@ -892,6 +892,7 @@ def main():
 
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
+        print(f"\nReport saved: {report_path}")
     else:
         vi = result.get("version_info", {})
         print(f"Numerical Accuracy Assessment")

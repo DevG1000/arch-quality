@@ -137,13 +137,32 @@ class ReportGenerator:
                 god[path] = lines
         return god
 
+    # ── 工具仓库根（用于判断评估对象是否为 arch-quality 自身）──
+
+    @staticmethod
+    def _tool_repo_root() -> str:
+        """返回 arch-quality 工具仓库根目录（src/ 的上级）。"""
+        return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    def _is_self_assessment(self) -> bool:
+        """评估对象是否为 arch-quality 工具自身（root == 工具仓库根）。"""
+        try:
+            return os.path.abspath(self.root) == os.path.abspath(self._tool_repo_root())
+        except Exception:
+            return False
+
     # ── WP-4: 规则覆盖矩阵（动态生成，与 WP-2 对齐）──
 
     def _rule_coverage_matrix(self) -> str:
         """从 rule_coverage_matrix.json 生成规则覆盖矩阵表
 
         按引擎分组（MLR/NVR/MPR/TPL/SAR），展示每条规则的覆盖来源。
-        口径与 WP-2 的 docs/zh/计划/规则覆盖矩阵.md 一致。
+
+        语义定位（方案 B）：
+        - 评估 arch-quality 自身（root == 工具仓库根）：矩阵描述的是评估对象
+          本身的规则测试覆盖，置于正文，标题为"规则覆盖矩阵"。
+        - 评估其他项目（如 FreeCAD）：矩阵描述的是 arch-quality 工具的规则
+          测试覆盖，与评估对象无关，移至附录并显式标注工具声明。
         """
         matrix_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -164,11 +183,25 @@ class ReportGenerator:
             groups.setdefault(prefix, []).append((rule, info))
 
         icon = {"回归": "✅", "合成": "🧪", "单元": "📝", "未覆盖": "❌"}
-        lines = ["## 规则覆盖矩阵", "",
-                 "| 规则 | 覆盖来源 | 回归 | 合成 | 单元 |", 
-                 "|:-----|:--------|:----:|:----:|:----:|"]
         total = len(matrix)
         covered = sum(1 for v in matrix.values() if v["覆盖来源"] != "未覆盖")
+
+        is_self = self._is_self_assessment()
+        if is_self:
+            title = "## 规则覆盖矩阵"
+            note = ""
+        else:
+            title = "## 附录：工具规则覆盖声明"
+            note = (
+                "\n\n> **工具声明**：本表展示的是 arch-quality 工具自身规则的测试覆盖情况"
+                "（单元/合成/回归），**与本次评估对象（" 
+                f"{os.path.basename(self.root)}）无关**。用于说明本工具规则的检测能力"
+                "经过验证，不作为对评估对象的评价指标。\n"
+            )
+
+        lines = [title, "",
+                 "| 规则 | 覆盖来源 | 回归 | 合成 | 单元 |",
+                 "|:-----|:--------|:----:|:----:|:----:|"]
         for prefix in ["MLR", "NVR", "MPR", "TPL", "SAR"]:
             rules = sorted(groups.get(prefix, []))
             if not rules:
@@ -181,8 +214,8 @@ class ReportGenerator:
                     f"| {'✅' if info['单元覆盖'] else ''} |"
                 )
         lines.append("")
-        lines.append(f"**覆盖率**：{covered}/{total} = {covered/total*100:.0f}%（WP-2 KPI1）")
-        return "\n".join(lines)
+        lines.append(f"**覆盖率**：{covered}/{total} = {covered/total*100:.0f}%（arch-quality 工具 WP-2 KPI1）")
+        return "\n".join(lines) + note
 
     # ── 章节 1: 页头 ──
 
@@ -273,6 +306,8 @@ class ReportGenerator:
             sub_score = details.get(eng_key, 0)
             if isinstance(sub_score, dict):
                 sub_score = sub_score.get("score", 0)
+            if sub_score is None:
+                sub_score = 0
             rationale = ""
             if sub_formatters and eng_key in sub_formatters:
                 rationale = sub_formatters[eng_key](sub_score)
@@ -409,6 +444,82 @@ class ReportGenerator:
         )
 
     # ── 章节 9: MLR 违规 ──
+
+    # 增强引擎子维度中文标签（用于增强评估章节）
+    _ENH_DIM_LABELS = {
+        "numerical_enhancement": {
+            "title": "数值精度增强评估",
+            "dims": [
+                ("numerical_stability", "数值稳定性保障"),
+                ("roundoff_sensitivity", "舍入误差与数值敏感度控制"),
+                ("mms_verification", "MMS 验证完备性"),
+                ("error_estimation", "误差估计与离散化控制"),
+                ("regression_coverage", "数值回归测试覆盖"),
+                ("numerical_debt", "数值债务密度"),
+            ],
+        },
+        "template_enhancement": {
+            "title": "模板元编程增强评估",
+            "dims": [
+                ("compile_time_fanin", "编译期扇入"),
+                ("template_redundancy", "模板冗余度"),
+                ("header_influence_radius", "头文件影响半径"),
+                ("template_nesting_depth", "模板嵌套深度"),
+                ("binary_bloat_ratio", "二进制膨胀比"),
+                ("unnecessary_templating", "非必要模板化"),
+            ],
+        },
+        "solver_physics_enhancement": {
+            "title": "求解器物理场增强评估",
+            "dims": [
+                ("boundary_integrity", "模块边界完整性"),
+                ("coupling_architecture", "耦合架构"),
+                ("extension_support", "扩展支持"),
+                ("data_transfer", "跨场数据传输"),
+            ],
+        },
+        "geometry_consistency_enhancement": {
+            "title": "几何一致性增强评估",
+            "dims": [
+                ("geometry_kernel_consistency", "几何内核一致性"),
+                ("precision_unit_consistency", "精度与单位一致性"),
+                ("scidata_organization", "科学数据结构组织"),
+                ("data_access_norm", "数据访问规范"),
+            ],
+        },
+    }
+
+    def _enhancement_sections(self) -> str:
+        """渲染激活的增强引擎评估章节（数值/模板/求解器/几何）。
+
+        每个激活引擎输出一个小节：综合得分 + 子维度表。
+        多语言（multilang_enhancement）由 _multilang_section 单独处理。
+        """
+        struct = self.m.get("dimensions", {}).get("structural", {})
+        blocks = []
+        for enh_key, spec in self._ENH_DIM_LABELS.items():
+            enh = struct.get(enh_key, {})
+            if not enh or not enh.get("details"):
+                continue
+            score = enh.get("score", 0)
+            weight = enh.get("weight_applied", 0)
+            details = enh.get("details", {})
+            rows = []
+            for dim_key, zh_label in spec["dims"]:
+                d = details.get(dim_key, {})
+                s = d.get("score", 0)
+                if s is None:
+                    s = 0
+                rows.append(f"| {zh_label} | {s:.1f} |")
+            weight_pct = f"{weight*100:.1f}%" if weight else "—"
+            blocks.append(
+                f"## {spec['title']}\n\n"
+                f"**综合得分**: {score:.1f}/100 — 占结构质量 {weight_pct}\n\n"
+                f"| 子维度 | 得分 |\n"
+                f"|--------|:----:|\n"
+                + "\n".join(rows)
+            )
+        return "\n\n".join(blocks)
 
     def _mlr_violations(self) -> str:
         violations = self.m.get("mlr_violations", [])
@@ -705,6 +816,7 @@ class ReportGenerator:
             self._documentation_quality(),
             self._evolution_quality(),
             self._multilang_section(),
+            self._enhancement_sections(),
             self._mlr_violations(),
             self._rule_coverage_matrix(),
             self._scissors_gap_risk(),

@@ -67,6 +67,60 @@ def write_text_utf8(path, content):
         f.write(content)
 
 
+def detect_encoding(path: str) -> str:
+    """检测文本文件的实际编码（不修改文件）
+
+    - 先查 UTF-8 BOM 头（\xef\xbb\xbf）→ "utf-8-sig"
+    - 再按 utf-8 → gbk → gb18030 → latin-1 顺序尝试解码
+    - latin-1 总能解码任意字节，作为兜底
+    """
+    raw = Path(path).read_bytes()
+    if raw.startswith(b"\xef\xbb\xbf"):
+        return "utf-8-sig"
+    for enc in ("utf-8", "gbk", "gb18030", "latin-1"):
+        try:
+            raw.decode(enc)
+            return enc
+        except UnicodeDecodeError:
+            continue
+    return "latin-1"
+
+
+def ensure_utf8(path: str, backup: bool = False) -> bool:
+    """若文件非 UTF-8，转换为 UTF-8（带 BOM），原子写入。
+
+    返回 True=已转换 / False=原本就是 UTF-8（零操作）。
+
+    原子写入：先写同目录临时文件，再 os.replace() 原子替换——
+    即使中途抛异常（如编码错误），原文件保持完好，杜绝
+    open('w')"先截断后写入"导致的文件清零事故。
+    """
+    p = Path(path)
+    if not p.exists():
+        return False
+    raw = p.read_bytes()
+    enc = detect_encoding(path)
+    if enc in ("utf-8", "utf-8-sig"):
+        return False
+    text = raw.decode(enc)
+    if backup:
+        p.with_name(p.name + ".bak").write_bytes(raw)
+    tmp = p.with_name(p.name + ".utf8tmp")
+    tmp.write_bytes(text.encode("utf-8-sig"))
+    os.replace(tmp, p)
+    return True
+
+
+def write_text_safe(path, content):
+    """加固版写入：先 ensure_utf8（非 UTF-8 文件先转换），再写 UTF-8（BOM）。
+
+    智能体所有写文件操作统一走此入口，禁止对非 UTF-8 文件直接 open('w')，
+    防止"GBK 内容 + open('w') 截断 + 编码失败"类事故（H2 教训）。
+    """
+    ensure_utf8(path, backup=True)
+    return write_text_utf8(path, content)
+
+
 class FileIndex:
     """文件索引：路径、语言、行数、扩展名"""
 
@@ -583,6 +637,158 @@ def load_weights_from_skill(skill_path: str) -> dict:
     weights = {name.strip(): int(pct) / 100 for name, pct in matches}
 
     return weights
+
+
+# ── 显式 Profile 配置（H2 WP-0）──
+
+# 声明 profile → 启用引擎集（standard 为基础维度，始终强制）
+PROFILE_ENGINE_MAP = {
+    "standard": ["standard"],
+    "multilang": ["standard", "multilang"],
+    "numerical": ["standard", "numerical"],
+    "template": ["standard", "template"],
+    "solver-physics": ["standard", "solver-physics"],
+    "geometry-consistency": ["standard", "geometry-consistency"],
+}
+
+# 增强引擎（非 standard）名称列表（配置与报告共用的规范名）
+ENHANCEMENT_ENGINES = ["multilang", "template", "numerical", "solver-physics", "geometry-consistency"]
+ALL_ENGINES = ["standard"] + ENHANCEMENT_ENGINES
+
+_PROFILE_CONFIG_FILENAME = "arch-quality.yaml"
+_PROFILE_TOML_TABLE = "tool.arch-quality"
+
+
+def load_profile_config(root: str) -> dict:
+    """解析显式 profile 配置（arch-quality.yaml 优先，pyproject.toml [tool.arch-quality] 兜底）
+
+    无配置文件时返回 {}（调用方回退启发式引擎选择，向后兼容）。
+
+    返回 dict 结构：
+        profile          str|None   声明 profile（standard/multilang/numerical/template/solver-physics）
+        enable_engines   list|None  显式启用引擎（未列出的跳过）
+        skip_engines     list|None  显式排除引擎
+        test_dirs        list       out-of-tree 测试目录
+        config_source    str        配置来源文件绝对路径（无配置时为 ""）
+        enabled_engines  list       解析后的最终启用引擎集（始终含 standard）
+
+    配置非法时抛出 ValueError（schema 校验：枚举/类型/standard 强制）。
+    """
+    cfg_raw = {}
+    source = ""
+    yaml_path = Path(root) / _PROFILE_CONFIG_FILENAME
+    if yaml_path.exists():
+        cfg_raw = _parse_profile_yaml(yaml_path)
+        source = str(yaml_path)
+    else:
+        toml_path = Path(root) / "pyproject.toml"
+        if toml_path.exists():
+            table = _parse_profile_toml(toml_path)
+            if table:
+                cfg_raw = table
+                source = str(toml_path)
+    if not cfg_raw:
+        return {}
+
+    cfg = _validate_profile_config(cfg_raw, source)
+    cfg["config_source"] = source
+    cfg["enabled_engines"] = resolve_enabled_engines(
+        cfg.get("profile"), cfg.get("enable_engines"), cfg.get("skip_engines"))
+    return cfg
+
+
+def _parse_profile_yaml(path: Path) -> dict:
+    try:
+        import yaml
+    except ImportError:
+        raise ValueError(
+            f"Profile 配置需要 PyYAML（{path}），请先 pip install pyyaml")
+    with open(path, "rb") as f:
+        data = yaml.safe_load(f) or {}
+    if not isinstance(data, dict):
+        raise ValueError(f"Profile 配置格式错误（{path}）：顶层必须是映射")
+    return data
+
+
+def _parse_profile_toml(path: Path) -> dict:
+    try:
+        import tomllib
+    except ImportError:  # pragma: no cover - Python <3.11
+        import tomli as tomllib  # type: ignore
+    with open(path, "rb") as f:
+        data = tomllib.load(f)
+    tool = data.get("tool") or {}
+    if not isinstance(tool, dict):
+        return {}
+    table = tool.get("arch-quality") or {}
+    if not isinstance(table, dict):
+        raise ValueError(f"Profile 配置格式错误（{path}）：[tool.arch-quality] 必须是映射")
+    return table
+
+
+def _validate_profile_config(cfg: dict, source: str) -> dict:
+    """schema 校验：枚举、类型、standard 强制、未知键拒绝"""
+
+    def _err(msg):
+        raise ValueError(f"Profile 配置非法（{source}）: {msg}")
+
+    allowed_keys = {"profile", "enable_engines", "skip_engines", "test_dirs"}
+    unknown = set(cfg) - allowed_keys
+    if unknown:
+        _err(f"未知配置键 {sorted(unknown)}，允许 {sorted(allowed_keys)}")
+
+    profile = cfg.get("profile")
+    if profile is not None:
+        if not isinstance(profile, str) or profile not in PROFILE_ENGINE_MAP:
+            _err(f"profile 必须是 {sorted(PROFILE_ENGINE_MAP)} 之一，收到 {profile!r}")
+
+    for key in ("enable_engines", "skip_engines"):
+        val = cfg.get(key)
+        if val is None:
+            continue
+        if not isinstance(val, list) or not all(isinstance(x, str) for x in val):
+            _err(f"{key} 必须是字符串列表")
+        bad = [x for x in val if x not in ALL_ENGINES]
+        if bad:
+            _err(f"{key} 含未知引擎 {bad}，可选 {ALL_ENGINES}")
+
+    if "standard" in (cfg.get("skip_engines") or []):
+        _err("skip_engines 不能排除 standard（基础维度强制启用）")
+
+    test_dirs = cfg.get("test_dirs", [])
+    if not isinstance(test_dirs, list) or not all(isinstance(x, str) for x in test_dirs):
+        _err("test_dirs 必须是字符串列表")
+
+    return dict(cfg)
+
+
+def resolve_enabled_engines(profile, enable_engines, skip_engines) -> list:
+    """按优先级解析启用引擎集：profile > enable_engines > skip_engines > 全量
+
+    - profile 声明（单个字符串或多个列表）→ 对应 profile 引擎集的并集
+    - 否则 enable_engines → standard + 显式列表（standard 自动补齐）
+    - 否则 skip_engines → 全量减排除集
+    - 均未声明 → 全量
+    - skip_engines 在任意路径上做减法；standard 始终强制
+    """
+    if profile:
+        profiles = profile if isinstance(profile, (list, tuple)) else [profile]
+        engines = []
+        for p in profiles:
+            if p not in PROFILE_ENGINE_MAP:
+                continue
+            for e in PROFILE_ENGINE_MAP[p]:
+                if e not in engines:
+                    engines.append(e)
+    elif enable_engines:
+        engines = ["standard"] + [e for e in enable_engines if e != "standard"]
+    else:
+        engines = list(ALL_ENGINES)
+    if skip_engines:
+        engines = [e for e in engines if e not in skip_engines]
+    if "standard" not in engines:
+        engines = ["standard"] + engines
+    return engines
 
 
 def ensure_output_dir(root: str, mode: str = "local", project_name: str = None) -> str:

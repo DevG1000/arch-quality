@@ -1,0 +1,30 @@
+{
+  "project": "salome_geom",
+  "overall": 84.0,
+  "is_geometry": true,
+  "dimensions": {
+    "geometry_kernel_consistency": 80,
+    "precision_unit_consistency": 50,
+    "scidata_organization": 100,
+    "data_access_norm": 100
+  },
+  "gcs_violations": [
+    {
+      "rule": "GCS-004",
+      "name": "内核对象生命周期",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "count": 9,
+      "detail": "同作用域手动 new/delete 内核对象，建议 Handle 自动管理"
+    },
+    {
+      "rule": "GCS-005",
+      "name": "硬编码精度/容差魔法数字",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 180,
+      "detail": "检测到硬编码精度/容差魔法数字，建议集中为命名常量"
+    }
+  ],
+  "root_path": "D:\\opensource\\gcs-baselines\\salome-geom"
+}

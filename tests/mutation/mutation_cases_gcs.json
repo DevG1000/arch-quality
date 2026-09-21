@@ -1,0 +1,112 @@
+[
+  {
+    "id": "MUT-GCS-001",
+    "name": "删除闭合性校验测试",
+    "target_file": "src/geometry/boolean_ops.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "    BRepCheck_Analyzer analyzer(op.Shape());\n    if (!analyzer.IsValid()) throw std::runtime_error(\"invalid shape\");\n",
+        "mutated": "" }
+    ],
+    "expected": {
+      "overall_change": "no_assert",
+      "nvr_rules_changed": ["GCS-001"],
+      "dimension_after_min": {"geometry_kernel_consistency": 70}
+    }
+  },
+  {
+    "id": "MUT-GCS-002",
+    "name": "引入裸指针跨作用域穿越",
+    "target_file": "src/geometry/surface.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "Handle(Geom_Plane) make_plane() {\n    return new Geom_Plane(gp_Pln());\n}",
+        "mutated": "Geom_Plane* make_plane() {\n    return new Geom_Plane(gp_Pln());\n}" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["GCS-002"],
+      "dimension_before_max": {"geometry_kernel_consistency": 100},
+      "dimension_after_min": {"geometry_kernel_consistency": 75}
+    }
+  },
+  {
+    "id": "MUT-GCS-003",
+    "name": "删除 IsDone 失败状态检查",
+    "target_file": "src/geometry/boolean_ops.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "    if (!op.IsDone()) throw std::runtime_error(\"fuse failed\");\n",
+        "mutated": "" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["GCS-003"],
+      "dimension_after_min": {"geometry_kernel_consistency": 75}
+    }
+  },
+  {
+    "id": "MUT-GCS-005",
+    "name": "引入硬编码精度魔法数字",
+    "target_file": "src/common/units.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "double inch_to_mm(double inches) {\n    return unit::convert(inches, unit::Inch, unit::MM);\n}",
+        "mutated": "double inch_to_mm(double inches) {\n    double tolerance = 1e-8;\n    return inches * tolerance;\n}" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["GCS-005"],
+      "dimension_before_max": {"precision_unit_consistency": 100},
+      "dimension_after_min": {"precision_unit_consistency": 50}
+    }
+  },
+  {
+    "id": "MUT-GCS-007",
+    "name": "引入网格语义混用",
+    "target_file": "src/mesh/mesh.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "class MeshAdapter {\n    vtkSmartPointer<vtkUnstructuredGrid> vtk_;\npublic:\n    vtkUnstructuredGrid* getVTK() { return vtk_; }\n};",
+        "mutated": "class MeshAdapter {\n    vtkSmartPointer<vtkUnstructuredGrid> vtk_;\npublic:\n    vtkUnstructuredGrid* getVTK() { return vtk_; }\n    double mass(int i) { gmsh::model::getMass(0, i, vtk_->GetPoint(0)); return 0.0; }\n};" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["GCS-007"],
+      "dimension_before_max": {"scidata_organization": 100},
+      "dimension_after_min": {"scidata_organization": 60}
+    }
+  },
+  {
+    "id": "MUT-GCS-012",
+    "name": "引入直接成员访问",
+    "target_file": "src/mesh/mesh.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "    void set(size_t i, double v) { data_.at(i) = v; }",
+        "mutated": "    void set(size_t i, double v) { f->data_[0] = 1.0; data_.at(i) = v; }" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["GCS-012"],
+      "dimension_before_max": {"data_access_norm": 100},
+      "dimension_after_min": {"data_access_norm": 65}
+    }
+  },
+  {
+    "id": "MUT-GCS-010",
+    "name": "引入裸数组密度超阈值",
+    "target_file": "src/mesh/mesh.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "    vtkUnstructuredGrid* getVTK() { return vtk_; }",
+        "mutated": "    vtkUnstructuredGrid* getVTK() { return vtk_; }\n    double* coords;\n    double* normals;" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["GCS-010"],
+      "dimension_before_max": {"data_access_norm": 100},
+      "dimension_after_min": {"data_access_norm": 65}
+    }
+  }
+]
