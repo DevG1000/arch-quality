@@ -86,11 +86,22 @@ ENGINES = {
         "weights": [],
         "case_keywords": ["MPR", "Kratos", "preCICE"],
     },
+    "geometry_consistency": {
+        "guide": "docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估指南.md",
+        "skill": "src/arch_quality/skills/geometry-consistency.md",
+        "tool": "src/arch_quality/arch_metrics_geometry_consistency.py",
+        "case": "docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估验证案例集.md",
+        "rule_prefix": "GCS",
+        "rule_count": 12,
+        "version_pairs": [("GUIDE_VERSION", "1.6"), ("SKILL_VERSION", "1.0")],
+        "dimensions": ["几何内核数据一致性", "内核精度/单位一致性", "科学数据结构组织一致性"],
+        "weights": [],
+        "case_keywords": ["GCS", "OCCT", "BRepCheck", "vtk"],
+    },
 }
-
 RULE_ID_VALIDATION_PENDING = True
 # 已知规则空洞（WP-7.1 重编号/补齐后应消除）
-KNOWN_HOLES = {"NVR-009", "MPR-011"}
+KNOWN_HOLES = {"NVR-009", "MPR-011", "GCS-013", "GCS-014"}
 
 
 def read(path):

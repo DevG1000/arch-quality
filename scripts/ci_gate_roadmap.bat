@@ -57,6 +57,11 @@ if not "%PROJECT_ROOT%"=="" (
     echo [INFO] No --project, skip perf
 )
 
-echo.
-echo [PASS] All gates passed
+echo [6/6] Sample fetch registration (H2 WP-0.5, informational)...
+python scripts/fetch_project.py --check-all
+if not %errorlevel%==0 (
+    echo [FAIL] Fetch registration
+    exit /b 1
+)
+echo [PASS] All gates passed
 exit /b 0

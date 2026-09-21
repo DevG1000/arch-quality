@@ -1,11 +1,17 @@
-# projects.yaml — H1 WP-5 回归项目清单（相对路径，CI 可复现）
+# projects.yaml — H1 WP-5 回归项目清单 + H2 WP-0.5 参考样本注册（相对路径，CI 可复现）
 #
-# 结构：项目名 → { desc, fetch(获取方式), eval(评估配置), note }
+# 结构：项目名 → { desc, fetch(获取方式), eval(评估配置), license(授权), note }
 # - fetch.repo: 第三方源码仓库 URL（CI 通过 git clone 获取）
+# - fetch.ref:  固定 git ref（refs/tags/<tag> 或 40-hex commit SHA），保证可复现获取（H2 WP-0.5）
+# - fetch.method: 获取方式: shallow(浅克隆, 默认) / local(本仓库自举) / tarball
 # - fetch.dir: 相对源码根目录的评估子目录（可空）
 # - eval.engine: 使用的评估引擎
 # - eval.snapshot: 对应回归快照
-# - 校验和：由 scripts/ci_gate_roadmap 在首次获取后生成（WP-5e）
+# - license: 授权方式（静态分析源码用）
+# - 校验和（checksums 段）：格式 git_ref:<repo>:<commit_sha>，由 scripts/fetch_project.py 校验
+#
+# H2 WP-0.5 新增：occt（几何内核 GCS 样本）+ salome-geom（外部内核封装/数据交换防腐 ACL 样本）；
+# 若两者获取失败（网络/授权），GCS/ACL 回归用 freecad / brl-cad 兜底基线（H2 决策 4）。
 
 projects:
   # ── 本仓库自举（始终可用）──
@@ -178,7 +184,35 @@ projects:
       snapshot: [tpl_range_v3]
     note: ""
 
+  # ── 几何内核 / 防腐层参考样本（H2 WP-0.5 新增，GCS/ACL 引擎 WP-2/WP-4 落地）──
+  occt:
+    desc: Open CASCADE Technology 几何内核（维度④ GCS 正样本，B-Rep/Handle_/STEP 数据交换）
+    fetch:
+      repo: https://github.com/Open-Cascade-SAS/OCCT.git
+      ref: refs/tags/V8.0.1
+      method: shallow
+      dir: src
+    eval:
+      engine: [gcs, standard]
+      snapshot: []
+    license: LGPL-2.1 with Open CASCADE Exception 1.0
+    note: "官方 GitHub mirror；浅克隆固定 tag V8.0.1 避免全历史(~2GB)；GCS 快照 WP-2 生成"
+  salome-geom:
+    desc: SALOME GEOM 几何模块（维度⑧ ACL 正样本，OCCT 外部封装 + STEP/IGES/BREP 防腐）
+    fetch:
+      repo: https://github.com/SalomePlatform/geom.git
+      ref: 3f85d2e295e5d5415a0b1fe5f5e128a84d244996
+      method: shallow
+      dir: src
+    eval:
+      engine: [acl, standard]
+      snapshot: []
+    license: LGPL-2.1
+    note: "SALOME 裁剪策略：仅几何模块（上游 git.salome-platform.org/gitpub/modules/geometry.git 官方克隆），非全平台；固定 master commit；ACL 快照 WP-4 生成"
+
 # 校验和：首次获取后由脚本生成（`arch-quality` 用 git 分支 commit 作为参考基准）
 checksums:
-  generated_by: scripts/gen_checksums.py (WP-5e 生成)
+  generated_by: scripts/fetch_project.py (H2 WP-0.5)
   format: "git_ref:<repo>:<commit_sha>"
+  git_ref:https://github.com/Open-Cascade-SAS/OCCT.git: b8f597c677811d1f9f4d8a97f5ae2825c0353a42
+  git_ref:https://github.com/SalomePlatform/geom.git: 3f85d2e295e5d5415a0b1fe5f5e128a84d244996

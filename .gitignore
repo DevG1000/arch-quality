@@ -15,3 +15,9 @@ build/
 htmlcov/
 .coverage
 daily report/
+# 生成物 / artifacts
+archify/
+docs/zh/mms/
+docs/ppt/*.pptx
+opencode.json.bak
+*.bak

@@ -59,6 +59,7 @@ python -m arch_quality D:\path\to\project --build-dir D:\path\to\build
 ## Critical Conventions
 
 - **Encoding**: All file I/O uses UTF-8 BOM. `read_text_smart()` auto-tries UTF-8-sig → UTF-8 → GBK → GB18030 → Latin-1. Always use these helpers from `arch_core.py`, not bare `open()`.
+- **Write-safety (H2 lesson)**: Before writing/editing any file, run `ensure_utf8(path)` (converts non-UTF-8 → UTF-8 BOM atomically via temp file + `os.replace`). Use `write_text_safe(path, content)` as the single write entry for files that may be legacy-encoded; **never `open('w')` directly on a non-UTF-8 file** (a GBK write with a non-GBK character truncates the file to 0). Legacy files should be converted to UTF-8 first, not written in place as GBK.
 - **Weights**: All dimension weights are parsed from `skills/*.md` at runtime. Weights sum must be exactly 100% or error is raised. Never hardcode weights.
 - **Multilang/Template/NumAcc enhancements**: Auto-detected (by file extensions/keywords). When 0/1/2/3 enhancements active, base structural weight adjusts: 100%/85%/70%/60%.
 - **Report mode**: Default is `central` (`~/.config/opencode/arch-reports/`). Use `--report-mode local` for project-local storage.
