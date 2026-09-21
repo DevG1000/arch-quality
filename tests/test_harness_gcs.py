@@ -124,5 +124,46 @@ class TestGCSAssertionFlow(unittest.TestCase):
         self.assertNotEqual(errs, [])
 
 
+
+
+class TestCrossValidation(unittest.TestCase):
+    """GCS k-fold 交叉验证（3-fold LOOCV）。"""
+
+    def test_cross_validate_script_exists(self):
+        p = os.path.join(os.path.dirname(__file__), "..", "scripts",
+                         "cross_validate_geometry_consistency.py")
+        self.assertTrue(os.path.exists(p))
+
+    def test_cross_validate_report_generated(self):
+        p = os.path.join(os.path.dirname(__file__), "..", "docs", "zh",
+                         "几何内核与科学数据结构一致性评估",
+                         "交叉验证报告_geometry_consistency.md")
+        self.assertTrue(os.path.exists(p), "交叉验证报告缺失")
+        with open(p, encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("Leave-One-Out (3-fold)", content)
+        self.assertIn("gcs_occt", content)
+        self.assertIn("gcs_salome_geom", content)
+        self.assertIn("gcs_freecad", content)
+
+    def test_cross_validate_baselines_used(self):
+        # 3 个基线快照被交叉验证使用
+        for name in ["gcs_occt.json", "gcs_salome_geom.json", "gcs_freecad.json"]:
+            p = os.path.join(os.path.dirname(__file__), "..", "tests",
+                             "regression", "snapshots", name)
+            self.assertTrue(os.path.exists(p), f"{name} 缺失")
+
+    def test_cross_validate_run(self):
+        # 实际运行脚本（快速，使用缓存基线）
+        import subprocess
+        script = os.path.join(os.path.dirname(__file__), "..", "scripts",
+                              "cross_validate_geometry_consistency.py")
+        r = subprocess.run(
+            [sys.executable, script], capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=60)
+        self.assertEqual(r.returncode, 0, f"脚本失败: {r.stderr[:300]}")
+        self.assertIn("WARNING", r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
