@@ -34,6 +34,18 @@ _DEFAULTS = {
         "boundary_integrity", "coupling_architecture",
         "extension_support", "data_transfer",
     ],
+    "gcs_dimension_fields": [
+        "geometry_kernel_consistency", "precision_unit_consistency",
+        "scidata_organization", "data_access_norm",
+    ],
+    "single_engine_prefixes": [
+        "python -m arch_quality.arch_metrics_geometry_consistency",
+        "python -m arch_quality.arch_metrics_numerical_accuracy",
+        "python -m arch_quality.arch_metrics_standard",
+        "python -m arch_quality.arch_metrics_multilang",
+        "python -m arch_quality.arch_metrics_template",
+        "python -m arch_quality.arch_metrics_solver_physics",
+    ],
     "assert_mode": "log",
 }
 

@@ -1,0 +1,21 @@
+{
+  "id": "case-5-gcs-flawed",
+  "name": "几何内核一致性评估-违规项目",
+  "description": "验证 agent 对 bad_project_gcs 合成项目识别出 GCS 违规（Handle 裸指针穿越 + 闭合性缺失）",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_gcs",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_gcs 目录直接运行几何内核与科学数据结构一致性评估命令：python -m arch_quality.arch_metrics_geometry_consistency D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_gcs --json，然后汇报该命令输出的 overall 评分、各维度评分和 GCS 违规（gcs_violations）。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_geometry": true,
+    "overall_range": [
+      50,
+      90
+    ],
+    "dimension_fields": [
+      "geometry_kernel_consistency",
+      "precision_unit_consistency",
+      "scidata_organization",
+      "data_access_norm"
+    ],
+    "max_retries": 2
+  }
+}
