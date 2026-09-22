@@ -21,4 +21,6 @@ archify/
 docs/ppt/*.pptx
 opencode.json.bak
 *.bak
+# mms 运行输出目录（case 生成物），脚本本身保留跟踪
+docs/zh/mms/*_mms_*/
 docs/zh/mms/mms_*/
