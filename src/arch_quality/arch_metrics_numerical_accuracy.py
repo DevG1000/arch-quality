@@ -12,6 +12,7 @@ arch_metrics_numerical_accuracy.py — 数值算法正确性与精度保障评�
 """
 
 import os
+import sys
 import re
 import json
 import argparse
@@ -361,6 +362,33 @@ class NumericalAccuracyMetrics:
             "has_dynamic_tool": has_dynamic_tool,
         }
 
+
+    @staticmethod
+    def _has_reasonable_order(content: str) -> bool:
+        """校验收敛阶数字合理性（p=0/-1/99 等异常值不算'有收敛阶'）。
+
+        匹配 `p = <数字>` / `order = <数字>` 等，仅当数字落在 [0.5, 4.0]
+        合理范围（一阶~1.0 / 二阶~2.0 / 三阶~3.0）才返回 True。
+        """
+        # 1) 显式数字校验：p/order/observed/actual = <数字>，仅合理范围 [0.5, 4.0]
+        nums = []
+        for m in re.finditer(r'(?:p|order|observed|actual)\s*=\s*(\d+(?:\.\d+)?)', content):
+            try:
+                nums.append(float(m.group(1)))
+            except ValueError:
+                continue
+        if nums:
+            # 有显式数字：全部异常才算"无合理收敛阶"（如 p=0/p=-1/p=99）
+            return all(0.5 <= v <= 4.0 for v in nums)
+        # 2) 隐含收敛信号（convergence rate / observed order / slope / O(h)）
+        if re.search(r'\b(?:convergence\s*rate|observed\s*order|slope|O\s*\(\s*h\s*\))\b',
+                     content, re.IGNORECASE):
+            return True
+        # 3) 其他 ACCURACY_ORDER_PATTERN 关键词（order accuracy 等，无显式数字）
+        if ACCURACY_ORDER_PATTERN.search(content):
+            return True
+        return False
+
     def calc_mms_verification(self) -> tuple:
         """2.3 MMS 验证完备性 (20%)
 
@@ -392,7 +420,7 @@ class NumericalAccuracyMetrics:
             if MMS_PATTERN.search(content):
                 mms_count += 1
                 has_mms = True
-            if ACCURACY_ORDER_PATTERN.search(content):
+            if self._has_reasonable_order(content):
                 has_accuracy_order = True
 
         # 评分逻辑
@@ -873,7 +901,11 @@ def main():
     else:
         result = metrics.all_metrics()
 
-    # 若传入了 MMS 观察阶，覆盖自动检测
+    # 若传入了 MMS 观察阶，覆盖自动检测（合理性校验：收敛阶合理范围 [0.5, 4.0]）
+    if args.mms_pobs is not None and not (0.5 <= args.mms_pobs <= 4.0):
+        print(f"警告: --mms-pobs={args.mms_pobs} 超出合理范围 [0.5, 4.0]（一阶~1.0/二阶~2.0/三阶~3.0），忽略覆盖",
+              file=sys.stderr)
+        args.mms_pobs = None
     if args.mms_pobs is not None:
         if "dimensions" in result and "mms_verification" in result["dimensions"]:
             score = 100 if abs(args.mms_pobs - 2.0) <= 0.1 else (50 if abs(args.mms_pobs - 2.0) <= 0.2 else 20)

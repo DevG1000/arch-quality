@@ -17,7 +17,8 @@ htmlcov/
 daily report/
 # 生成物 / artifacts
 archify/
-docs/zh/mms/
+# docs/zh/mms/ 下的运行输出（case 目录）由以下规则排除
 docs/ppt/*.pptx
 opencode.json.bak
 *.bak
+docs/zh/mms/mms_*/

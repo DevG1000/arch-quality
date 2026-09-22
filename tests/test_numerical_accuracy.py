@@ -2,6 +2,7 @@
 """test_numerical_accuracy.py — 数值算法正确性与精度保障评估单元测试"""
 
 import os
+import sys
 import shutil
 import tempfile
 import unittest
@@ -445,6 +446,68 @@ class TestFortranSupport(unittest.TestCase):
         """SOLVER_KEYWORDS 应包含 Fortran 关键词"""
         from arch_quality.arch_metrics_numerical_accuracy import SOLVER_KEYWORDS
         self.assertIn("subroutine", SOLVER_KEYWORDS)
+
+
+
+
+class TestMMSPobsEnhancements(unittest.TestCase):
+    """--mms-pobs 合理性校验 + 自动检测数字校验（B/C 改进）。"""
+
+    def test_reasonable_order_accepted(self):
+        from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetrics
+        for content in ["p = 2", "p = 2.001", "order = 2.5", "convergence rate 1.9",
+                        "slope = 1.2", "O(h) method", "p = 3.5", "observed order of accuracy"]:
+            self.assertTrue(
+                NumericalAccuracyMetrics._has_reasonable_order(content),
+                f"应判为合理: {content!r}")
+
+    def test_unreasonable_order_rejected(self):
+        from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetrics
+        for content in ["p = 0", "p = -1", "p = 99", "order = 0.2", "", "plain text",
+                        "p = 0; order = 2"]:
+            self.assertFalse(
+                NumericalAccuracyMetrics._has_reasonable_order(content),
+                f"应判为异常: {content!r}")
+
+    def test_mms_pobs_out_of_range_warns(self):
+        # 超范围 --mms-pobs 应输出警告且不覆盖
+        import subprocess
+        env = dict(os.environ); env["PYTHONIOENCODING"] = "utf-8"
+        proj = os.path.join(os.path.dirname(__file__), "mutation", "projects")
+        r = subprocess.run(
+            [sys.executable, "-m", "arch_quality.arch_metrics_numerical_accuracy",
+             proj, "--json", "--mms-pobs", "99"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            cwd=os.path.dirname(os.path.dirname(__file__)), env=env, timeout=60)
+        self.assertIn("超出合理范围", r.stderr)
+        self.assertEqual(r.returncode, 0)
+
+    def test_mms_pobs_in_range_applies(self):
+        # 合理 --mms-pobs 应覆盖 mms_verification 得分
+        import subprocess
+        env = dict(os.environ); env["PYTHONIOENCODING"] = "utf-8"
+        proj = os.path.join(os.path.dirname(__file__), "mutation", "projects")
+        r = subprocess.run(
+            [sys.executable, "-m", "arch_quality.arch_metrics_numerical_accuracy",
+             proj, "--json", "--mms-pobs", "2.001"],
+            capture_output=True, text=True, encoding="utf-8", errors="replace",
+            cwd=os.path.dirname(os.path.dirname(__file__)), env=env, timeout=60)
+        self.assertEqual(r.returncode, 0)
+        import json
+        start = r.stdout.find("{")
+        d = json.loads(r.stdout[start:r.stdout.rfind("}")+1])
+        self.assertEqual(d["dimensions"]["mms_verification"]["score"], 100)
+        self.assertEqual(d["dimensions"]["mms_verification"]["detail"]["p_obs"], 2.001)
+
+    def test_mms_scripts_have_json_output(self):
+        # A: MMS 脚本含 --json 机器可读输出
+        import ast
+        for f in ["openfoam_laplacian_mms.py", "openfoam_simplefoam_mms.py"]:
+            p = os.path.join(os.path.dirname(__file__), "..", "docs", "zh", "mms", f)
+            src = open(p, encoding="utf-8").read()
+            ast.parse(src)  # 语法正确
+            self.assertIn("--json", src, f"{f} 缺 --json 支持")
+            self.assertIn("_json.dumps", src, f"{f} 缺 JSON 输出")
 
 
 if __name__ == "__main__":

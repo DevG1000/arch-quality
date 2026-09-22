@@ -12,7 +12,7 @@ PDE:     div(UU) - laplacian(nu*U) = -grad(p) + S,  nu=1
 求解器:  simpleFoam + vectorCodedSource
 """
 
-import os, math, shutil, subprocess
+import os, math, sys, shutil, subprocess
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 MESHES = [("coarse", 10, 10), ("medium", 20, 20), ("fine", 40, 40)]
@@ -587,6 +587,20 @@ def main():
         if not all_pass_p:
             print(f"  Note: p ~1.0-1.3 is typical for SIMPLE (p is not source-driven)")
     print("=" * 60)
+
+    # 机器可读输出（供 --mms-pobs 对接 / CI 捕获）
+    if "--json" in sys.argv and orders_U:
+        import json as _json
+        print(_json.dumps({
+            "p_obs_U": round(pavg_U, 4) if orders_U else None,
+            "p_obs_p": round(pavg_p, 4) if orders_p else None,
+            "all_pass_U": all_pass_U if orders_U else False,
+            "all_pass_p": all_pass_p if orders_p else False,
+            "orders_U": [round(o, 4) for o in orders_U],
+            "orders_p": [round(o, 4) for o in orders_p],
+            "expected_order": 2.0,
+            "verdict": "PASS" if (orders_U and all_pass_U) else ("CLOSE" if orders_U else "FAIL"),
+        }))
 
 
 if __name__ == "__main__":

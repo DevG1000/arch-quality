@@ -10,7 +10,8 @@ PDE:     -∇·(DT·∇T) = S   (DT=1, 稳态, 纯扩散)
 每个网格在独立子目录中运行, 避免交叉污染。
 """
 
-import os, math, shutil, subprocess
+import os
+import sys, math, shutil, subprocess
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 MESHES = [("coarse", 20, 20), ("medium", 40, 40), ("fine", 80, 80)]
@@ -368,6 +369,17 @@ def main():
         print(f"\n  Average observed order: {pavg:.3f}")
         print(f"  Overall result: [{'PASS' if all_pass else 'FAIL'}]")
     print("=" * 60)
+
+    # 机器可读输出（供 --mms-pobs 对接 / CI 捕获）
+    if "--json" in sys.argv and orders:
+        import json as _json
+        print(_json.dumps({
+            "p_obs": round(pavg, 4) if orders else None,
+            "all_pass": all_pass if orders else False,
+            "orders": [round(o, 4) for o in orders],
+            "expected_order": 2.0,
+            "verdict": "PASS" if all_pass else "FAIL",
+        }))
 
 
 if __name__ == "__main__":
