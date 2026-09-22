@@ -165,5 +165,44 @@ class TestCrossValidation(unittest.TestCase):
         self.assertIn("WARNING", r.stdout)
 
 
+
+
+class TestOverallRangeEnforced(unittest.TestCase):
+    """修复验证：GCS 用例的 overall_range 现在真正生效（此前未检查）。"""
+
+    def _assert(self, text: str, expect: dict) -> list:
+        from assertors import output_schema
+        return output_schema.assert_all(text, expect)
+
+    def test_gcs_overall_out_of_range_fails(self):
+        # case-4 期望 [80,100]，overall=30 应 FAIL
+        expect = {"is_geometry": True, "overall_range": [80, 100],
+                  "dimension_fields": ["geometry_kernel_consistency"]}
+        text = "评估完成：overall: 30.0, geometry_kernel_consistency=100"
+        errs = self._assert(text, expect)
+        self.assertNotEqual(errs, [], "overall=30 应越界 FAIL")
+        self.assertTrue(any("30" in e for e in errs), f"应含越界提示: {errs}")
+
+    def test_gcs_overall_in_range_passes(self):
+        expect = {"is_geometry": True, "overall_range": [80, 100],
+                  "dimension_fields": ["geometry_kernel_consistency"]}
+        text = "评估完成：overall: 90.0, geometry_kernel_consistency=100"
+        errs = self._assert(text, expect)
+        self.assertEqual(errs, [])
+
+    def test_gcs_non_geometry_still_passes(self):
+        expect = {"is_geometry": False, "overall_range": None, "dimension_fields": []}
+        text = "评估完成：is_geometry: False，纯 Markdown 无几何特征，不适用"
+        errs = self._assert(text, expect)
+        self.assertEqual(errs, [])
+
+    def test_legacy_multiphysics_still_works(self):
+        # 旧 solver 用例兼容
+        expect = {"is_multiphysics": False, "overall_range": None, "dimension_fields": []}
+        text = "评估完成：is_multiphysics: False，非多物理场"
+        errs = self._assert(text, expect)
+        self.assertEqual(errs, [])
+
+
 if __name__ == "__main__":
     unittest.main()

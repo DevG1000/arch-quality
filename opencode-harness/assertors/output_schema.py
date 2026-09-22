@@ -94,40 +94,89 @@ def assert_overall_mentions(text: str, expected_range: list | None,
     return errors
 
 
-def assert_non_multiphysics(text: str) -> list[str]:
-    """断言：非多物理场判定（求解器物理场维度未激活，权重 0 或分数缺失）。
+def assert_not_applicable(text: str, engine_key: str = "solver_physics") -> list[str]:
+    """断言：引擎"不适用"判定（非多物理场/非几何/非数值等）。
 
-    CLI 综合报告始终有 overall_score（其他维度评分），故不能据此判断。
-    判断依据（任一即通过）：
-    1. 明确文字标记（"非多物理场/未激活"等，来自 rules.json）
-    2. solver_physics 权重为 0% 或 enhancement 维度缺失
-    3. 完整评估 JSON 中完全没有 solver_physics 提及（单语言/非多物理场项目）
+    依据 expect 的 is_<engine> 为 False 时调用。判断依据（任一即通过）：
+    1. 明确文字标记（来源 rules.json：非多物理场/未激活/非几何等）
+    2. 该引擎权重 0% 或 enhancement 维度缺失
+    3. 完整评估 JSON 中完全没有该引擎提及（单语言/非该类型项目）
     """
     errors = []
     if not text.strip():
         return ["无文本输出"]
-    # 判据1：明确文字标记（来源 rules.json，含"未启用/未激活"等）
-    if re.search(r"(?i)" + "|".join(NON_MULTIPHYSICS_MARKERS), text):
+    markers = []
+    for key in NON_MULTIPHYSICS_MARKERS:
+        markers.append(key)
+    # 引擎相关的"不适用"标记
+    engine_markers = {
+        "solver_physics": ["非多物理场", "非求解器", "非多物理", "无多物理场特征"],
+        "geometry": ["非几何", "not a geometry", "无几何内核", "无几何特征",
+                     "无几何内核特征", "几何评估不适用", "非几何项目"],
+        "numerical": ["非数值", "非数值密集型", "not numerical", "无数值特征"],
+    }
+    for key in engine_markers.get(engine_key, []):
+        markers.append(key)
+    # 判据1：明确文字标记
+    if re.search(r"(?i)" + "|".join(markers), text):
         return []
-    # 判据2：solver_physics 权重 0% 或 enhancement 维度缺失
-    if re.search(r"solver_physics\*?0%|solver_physics[^0-9]{0,10}0\.0|solver_physics_enhancement", text, re.IGNORECASE):
-        if not re.search(r'"solver_physics_enhancement":\s*\{\s*"score"', text, re.IGNORECASE):
+    # 判据2：引擎权重 0% 或 enhancement 维度缺失
+    engine_field = {
+        "solver_physics": "solver_physics_enhancement",
+        "geometry": "geometry_consistency_enhancement",
+        "numerical": "numerical_enhancement",
+    }.get(engine_key, engine_key + "_enhancement")
+    if re.search(r"(?i)" + engine_key.replace("_", "").replace("physics", "physics"),
+                 text) and engine_key + "*?0%" in text:
+        if not re.search(r'"' + engine_field + r'":\s*\{\s*"score"', text, re.IGNORECASE):
             return []
-        return errors  # 有 enhancement 详情 → 非多物理场判定无法确认
-    # 判据3：完整评估 JSON（含 project 字段）且全文本无任何 solver 提及 → 非多物理场
-    if re.search(r'"project"\s*:\s*"[^"]+"', text) and not re.search(r"(?i)solver", text):
+        return errors  # 有 enhancement 详情 → 无法确认不适用
+    # 判据3：完整评估 JSON 且全文本无该引擎提及
+    if re.search(r'"project"\s*:\s*"[^"]+"', text) and not re.search(
+            r"(?i)" + engine_key.replace("_", ""), text):
         return []
-    errors.append("无法确认非多物理场判定（未找到 solver_physics 0% 或明确说明）")
+    errors.append(f"无法确认{engine_key}不适用判定（未找到该引擎 0% 或明确说明）")
     return errors
 
 
+def assert_non_multiphysics(text: str) -> list[str]:
+    """向后兼容：非多物理场判定（等价 assert_not_applicable(engine_key='solver_physics')）。"""
+    return assert_not_applicable(text, "solver_physics")
+
+
+def _expect_engine_flags(expect: dict) -> dict:
+    """提取 expect 中的引擎类型标志（is_multiphysics/is_geometry/is_numerical/is_template）。"""
+    return {k: v for k, v in expect.items()
+            if k.startswith("is_") and isinstance(v, bool)}
+
+
 def assert_all(text: str, expect: dict) -> list[str]:
-    """运行全部结构断言。expect 含 dimension_fields/overall_range/is_multiphysics。"""
+    """运行全部结构断言。expect 含 dimension_fields/overall_range/is_* 引擎标志。
+
+    支持任意引擎类型：
+    - is_* = True  → 断言 overall 区间 + 维度字段
+    - is_* = False → 断言"不适用"判定（引擎类型对应）
+    """
     errors = []
     errors += assert_report_structure(text, expect.get("dimension_fields", []))
     errors += assert_no_hallucination(text)
-    if expect.get("is_multiphysics") is True:
+
+    flags = _expect_engine_flags(expect)
+    # 若有任一引擎标志为 True → 检查 overall 区间
+    any_true = any(v for v in flags.values())
+    if any_true:
         errors += assert_overall_mentions(text, expect.get("overall_range"), True)
-    elif expect.get("is_multiphysics") is False:
-        errors += assert_non_multiphysics(text)
+
+    # 若有引擎标志为 False → 检查"不适用"判定
+    false_flags = [k for k, v in flags.items() if v is False]
+    for flag in false_flags:
+        engine_key = flag.replace("is_", "")
+        errors += assert_not_applicable(text, engine_key)
+
+    # 兼容旧字段：未用 is_* 时的行为（保持原逻辑）
+    if not flags and "is_multiphysics" in expect:
+        if expect["is_multiphysics"] is True:
+            errors += assert_overall_mentions(text, expect.get("overall_range"), True)
+        elif expect["is_multiphysics"] is False:
+            errors += assert_non_multiphysics(text)
     return errors
