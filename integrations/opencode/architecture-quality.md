@@ -1,5 +1,5 @@
----
-description: 架构质量评估智能体 — 系统性分析、评估和改进软件系统架构质量，支持标准架构评估、多语言混合依赖评估、模板元编程专项分析、求解器物理场模块化架构评估和几何内核与科学数据结构一致性评估
+﻿---
+description: 架构质量评估智能体 — 系统性分析、评估和改进软件系统架构质量，支持标准架构评估、多语言混合依赖评估、模板元编程专项分析和求解器物理场模块化架构评估
 mode: primary
 permission:
   read: allow
@@ -105,16 +105,15 @@ permission:
 
 ### 几何内核与科学数据结构一致性评估
 
-衡量工业软件中几何内核与科学数据结构的一致性质量。在检测到几何内核特征项目时自动启用，权重占结构质量 15%（原始）/ 13.64%（归一后）。
+衡量工业软件中几何内核（OCCT 等）与科学数据结构（VTK/gmsh/OpenFOAM 网格、场量）的数据一致性质量。在检测到几何内核/科学数据结构引用时自动启用，权重候选 10%~15%（H2 归一化定案）。
 
 **4 个维度**：
-- 几何内核一致性（25%）— 闭合性校验、Handle 裸指针、失败状态检查
-- 精度与单位一致性（20%）— 硬编码精度、单位因子魔法数字
-- 科学数据结构组织（15%）— 网格语义、场数据按单元统一
-- 数据访问规范（10%）— 裸数组访问、复制语义、访问器封装
+- 几何内核数据一致性（30%）— 闭合性校验测试/Handle 智能指针/失败状态传播/生命周期
+- 内核精度/单位一致性（20%）— 精度容差魔法数字/单位换算因子
+- 科学数据结构组织一致性（25%）— 网格语义混用/场量命名/维度匹配
+- 数据表示与访问规范性（25%）— 裸数组密度/深浅拷贝/访问封装（2.1<60 递进折半）
 
-**12 条 GCS 规则**：GCS-001 至 GCS-012，覆盖内核闭合性校验、Handle 指针一致性、内核异常/失败状态、内核对象生命周期、硬编码精度、单位因子、网格单元一致性、数据结构组织、维度匹配、几何数学结构、深/浅拷贝、数据访问封装。
-
+**12 条 GCS 规则**：GCS-001 至 GCS-012，覆盖内核闭合性校验存在性、Handle 一致性、异常/失败状态传播、生命周期、精度/单位魔法因子、网格语义混用、场量组织、维度匹配、裸数组密度、深浅拷贝、数据访问封装。
 
 ## Process
 
@@ -139,6 +138,7 @@ permission:
 8. **超大型项目**（10K+ 文件）— 评估可能耗时数分钟，源码中已实现性能优化策略。
 9. **子模块检查** — 运行评估前先确认 `git submodule update --init` 已完成，否则可能漏检文件。
 10. **知识库访问** — 知识库 `D:\opensource\knowledge-base` 已获访问授权。
+11. **写入前 UTF-8 化（H2 教训）** — 编辑/写入任何文件前先 `ensure_utf8(path)`（`arch_core.py`），非 UTF-8 自动转换为 UTF-8 BOM（原子写入）；写文件统一走 `write_text_safe(path, content)`；**禁止对非 UTF-8 文件直接 `open('w')`**（GBK 内容含非 GBK 字符会截断文件为 0）。
 
 ## I/O Format
 
@@ -203,6 +203,15 @@ python -m arch_quality.arch_report <项目路径> [--json] [--md] [--build-dir <
   - 回归测试：`tests/regression/test_numerical_regression.py`
   - 回归快照：`tests/regression/snapshots/nvr_openfoam.json`, `nvr_calculix.json`
 
+- **几何内核与科学数据结构一致性评估**
+  - 技能定义：`src/arch_quality/skills/geometry-consistency.md`
+  - opencode 入口：`.opencode/skills/geometry-consistency/SKILL.md`
+  - 评分算法：`src/arch_quality/arch_metrics_geometry_consistency.py`
+  - 评估指南（1.6版）：`docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估指南.md`
+  - 验证案例集（1.2版）：`docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估验证案例集.md`
+  - 工具设计文档：`docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估工具设计文档.md`
+  - 回归测试：`tests/regression/test_geometry_regression.py`
+  - 回归快照：`tests/regression/snapshots/`（gcs_occt.json、gcs_salome_geom.json、gcs_freecad.json）
 - **模板元编程与编译时依赖膨胀评估**
   - 技能定义：`src/arch_quality/skills/template-metaprogramming.md`
   - 评分算法：`src/arch_quality/arch_metrics_template.py`
@@ -219,14 +228,6 @@ python -m arch_quality.arch_report <项目路径> [--json] [--md] [--build-dir <
   - 评估指南：`docs/zh/求解器和物理场模块化架构模式识别评估/求解器与物理场模块化架构模式识别评估指南.md`
   - 验证案例库：`docs/zh/求解器和物理场模块化架构模式识别评估/求解器与物理场模块化架构模式识别评估验证案例集.md`
 
-- **几何内核与科学数据结构一致性评估**
-  - 技能定义：`src/arch_quality/skills/geometry-consistency.md`
-  - 评分算法：`src/arch_quality/arch_metrics_geometry_consistency.py`
-  - 评估指南：`docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估指南.md`
-  - 验证案例集：`docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估验证案例集.md`
-  - CI 门禁：`scripts/ci_gate_geometry_consistency.bat`
-  - 单元测试：`tests/test_geometry_consistency.py` + `tests/test_geometry_integration.py`
-  - 回归测试：`tests/regression/test_geometry_regression.py`（occt/salome-geom/freecad 3 项目基线）
 ## Knowledge Base
 
 评估结果和知识沉淀存放于 Obsidian 知识库：

@@ -63,5 +63,12 @@ if not %errorlevel%==0 (
     echo [FAIL] Fetch registration
     exit /b 1
 )
+echo [7/7] GCS consistency (H2 WP-2)...
+python scripts/consistency_check.py --engine geometry_consistency
+if not %errorlevel%==0 (
+    echo [FAIL] GCS consistency
+    exit /b 1
+)
+echo [INFO] GCS regression: python -m pytest tests/regression/test_geometry_regression.py (slow, informational)
 echo [PASS] All gates passed
 exit /b 0

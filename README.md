@@ -1,10 +1,10 @@
 ﻿# arch-quality
 
-软件架构质量评估引擎 — 系统性分析、评估和改进软件系统架构质量。支持标准架构评估、多语言混合依赖评估、C++ 模板元编程专项分析、数值算法精度保障评估、求解器/物理场模块化架构评估。
+软件架构质量评估引擎 — 系统性分析、评估和改进软件系统架构质量。支持标准架构评估、多语言混合依赖评估、C++ 模板元编程专项分析、数值算法精度保障评估、求解器/物理场模块化架构评估、几何内核/科学数据结构一致性评估。
 
 ## 核心能力
 
-5 个评估引擎，共 60 条规则（每条规则对应一个可机检的架构反模式/质量缺陷）：
+6 个评估引擎，共 72 条规则（每条规则对应一个可机检的架构反模式/质量缺陷）：
 
 | 引擎 | 模块 | CLI 入口 | 维度 | 规则 |
 |------|------|----------|------|------|
@@ -13,8 +13,9 @@
 | 模板元编程 | arch_metrics_template | arch-quality-template | 6 维 | TPL（MLR-013~024） |
 | 数值算法精度 | arch_metrics_numerical_accuracy | python -m arch_quality.arch_metrics_numerical_accuracy | 6 维 | NVR-001~012 |
 | 求解器/物理场 | arch_metrics_solver_physics | python -m arch_quality.arch_metrics_solver_physics | 4 维 | MPR-001~012 |
+| 几何内核/科学数据 | arch_metrics_geometry_consistency | python -m arch_quality.arch_metrics_geometry_consistency | 4 维 | GCS-001~012 |
 
-综合入口 `arch-quality` 自动探测项目语言构成，按需启用多语言/模板/数值/求解器物理增强，合并生成 JSON + Markdown 报告。
+综合入口 `arch-quality` 自动探测项目语言构成，按需启用多语言/模板/数值/求解器物理/几何内核增强，合并生成 JSON + Markdown 报告。
 
 维度与权重定义全部从 `src/arch_quality/skills/*.md` 运行时解析（合计必须 100%）。
 
@@ -28,7 +29,7 @@ cd arch-quality
 pip install -e .
 ```
 
-> Windows 用户若 `arch-quality` 命令找不到，请将 Python Scripts 目录加入 PATH，或用 `python -m arch_quality` 替代。详见 [安装部署指南](docs/zh/安装部署指南.md)。
+> Windows 用户若 `arch-quality`/`arch-quality-standard` 等命令找不到，请将 Python Scripts 目录加入 PATH——pip 用户级安装通常在 `%APPDATA%\Python\Python3xx\Scripts`（本机为 `C:\Users\<用户>\AppData\Roaming\Python\Python314\Scripts`）；或用 `python -m arch_quality` / `python -m arch_quality.arch_metrics_standard` 等模块方式替代。详见 [安装部署指南](docs/zh/安装部署指南.md)。
 
 ### 命令行使用
 
@@ -50,6 +51,7 @@ arch-quality-multilang --full [项目路径]
 arch-quality-template [项目路径]
 python -m arch_quality.arch_metrics_numerical_accuracy [项目路径]
 python -m arch_quality.arch_metrics_solver_physics [项目路径]
+python -m arch_quality.arch_metrics_geometry_consistency [项目路径]
 
 # 模块方式
 python -m arch_quality [项目路径]
@@ -87,7 +89,7 @@ cp .opencode/agents/architecture-quality.md ~/.config/opencode/agents/architectu
     "architecture-quality": {
       "description": "架构质量评估智能体",
       "prompt_file": "~/.config/opencode/agents/architecture-quality.md",
-      "mode": "subagent",
+      "mode": "primary",
       "permission": {
         "read": "allow",
         "bash": { "*": "ask", "arch-quality*": "allow", "python -m arch_quality*": "allow" },
@@ -119,7 +121,10 @@ cp .opencode/agents/architecture-quality.md ~/.config/opencode/agents/architectu
 ### 求解器/物理场模块化架构（MPR-001~012）
 多物理场耦合架构、求解器模块化、插件扩展机制、跨场数据传输。
 
-> 规则覆盖矩阵（KPI1）：`scripts/gen_rule_coverage_matrix.py --check` 校验 60/60 = 100% 覆盖。
+### 几何内核/科学数据结构一致性（GCS-001~012）
+B-Rep 闭合性校验存在性、Handle 智能指针一致性、内核异常/失败状态传播、生命周期、精度/单位魔法因子、网格语义混用、场量组织、维度匹配、裸数组密度、深浅拷贝、数据访问封装。
+
+> 规则覆盖矩阵（KPI1）：`scripts/gen_rule_coverage_matrix.py --check` 校验 60/60 = 100%（SAR/MLR/TPL/NVR/MPR 五引擎；GCS 规则覆盖纳入 WP-8 矩阵扩展）。
 
 ## 报告存储
 
@@ -130,15 +135,15 @@ cp .opencode/agents/architecture-quality.md ~/.config/opencode/agents/architectu
 
 ## 测试与 CI
 
-- **单元测试**：`python -m pytest tests/`（426 用例）
-- **回归快照**：`tests/regression/`，基线存于 `tests/regression/snapshots/`（自举 + 5 个外部项目）
-- **三方一致性**：`scripts/consistency_check_standard.py`（指南 ↔ Skill ↔ 工具 版本/权重/命名/SAR 规则）
+- **单元测试**：`python -m pytest tests/`（815 用例）
+- **回归快照**：`tests/regression/`，基线存于 `tests/regression/snapshots/`（自举 + 5 个多语言/数值项目 + 3 个 GCS 项目：gcs_occt/gcs_salome_geom/gcs_freecad）
+- **三方一致性**：`scripts/consistency_check.py`（指南 ↔ Skill ↔ 工具 版本/权重/命名/规则，6 引擎含 GCS）
 - **规则覆盖矩阵**：`scripts/gen_rule_coverage_matrix.py --check`
 - **性能基线**：`scripts/benchmark_h1_baseline.py`（KPI2：FreeCAD src 全量 < 10 min）
 
 ### CI 门禁
 
-- 本地：`scripts/ci_gate_roadmap.bat [--quick] [--project ROOT]`，5 项门禁（单元/一致性/覆盖矩阵/快照/性能），全过 exit 0
+- 本地：`scripts/ci_gate_roadmap.bat [--quick] [--project ROOT]`，7 项门禁（单元/一致性/覆盖矩阵/快照/性能/fetch 注册/GCS 一致性），全过 exit 0
 - GitHub Actions：`.github/workflows/arch-quality-ci.yml` — 单元矩阵（py3.10/3.11/3.12）+ 门禁 job + 性能基线 job
 - 项目清单：`projects.yaml`（18 个回归项目，可复现获取与校验）
 - 治理准则：`docs/zh/计划/门禁治理准则.md`
@@ -154,7 +159,8 @@ arch-quality/
 │   ├── arch_metrics_template.py      # 模板元编程 6 维 + TPL（MLR-013~024）
 │   ├── arch_metrics_numerical_accuracy.py  # 数值精度 6 维 + NVR-012
 │   ├── arch_metrics_solver_physics.py      # 求解器/物理场 4 维 + MPR-012
-│   ├── arch_report.py                # 综合报告（合并 5 引擎）
+│   ├── arch_metrics_geometry_consistency.py # 几何内核/科学数据 4 维 + GCS-012
+│   ├── arch_report.py                # 综合报告（合并 6 引擎）
 │   ├── arch_report_generator.py      # Markdown 报告模板
 │   ├── arch_bindings_parser.py       # pybind11 绑定解析
 │   ├── arch_python_ast.py            # Python AST 调用提取
@@ -164,7 +170,8 @@ arch-quality/
 │       ├── multilang-dependency.md
 │       ├── numerical-accuracy.md
 │       ├── template-metaprogramming.md
-│       └── solver-physics-architecture.md
+│       ├── solver-physics-architecture.md
+│       └── geometry-consistency.md
 ├── tests/                            # 单元 + 回归（snapshots/）
 ├── scripts/                          # 一致性检查 / 覆盖矩阵 / 性能基线 / CI 门禁
 ├── docs/zh/                          # 中文指南与验证案例库
@@ -186,6 +193,7 @@ arch-quality/
 | [模板元编程与编译时依赖膨胀评估指南](docs/zh/模板元编程与编译时依赖膨胀评估指南.md) | 6 维 + TPL |
 | [模板元编程与编译时依赖膨胀验证案例库](docs/zh/模板元编程与编译时依赖膨胀验证案例库.md) | 模板验证场景 |
 | [求解器和物理场模块化架构模式识别评估指南](docs/zh/求解器和物理场模块化架构模式识别评估/求解器与物理场模块化架构模式识别评估指南.md) | MPR-001~012 |
+| [几何内核与科学数据结构一致性评估指南](docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估指南.md) | 4 维 + GCS-001~012 |
 | [OpenCode 智能体开发指南](docs/zh/OpenCode 智能体开发指南.md) | 智能体集成 |
 | [基于 OPENCODE 的架构质量评估 SKILL 开发指南](docs/zh/基于OPENCODE的架构质量评估SKILL开发指南.md) | Skill 开发流程（A/B/C 三阶段 + 部署同步 C1.5）|
 | [门禁治理准则](docs/zh/计划/门禁治理准则.md) | CI 升级/回滚/豁免 |
