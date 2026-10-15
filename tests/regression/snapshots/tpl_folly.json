@@ -1,20 +1,32 @@
 {
   "project": "Folly",
-  "snapshot_date": "2026-06-11",
+  "snapshot_date": "2026-10-13",
   "root_path": "D:\\OPENSOURCE\\folly",
-  "template_overall": null,
+  "template_overall": 30.82,
   "is_cpp_project": true,
-  "cpp_file_count": 0,
-  "file_count": 0,
+  "cpp_file_count": 2294,
+  "file_count": 2334,
   "dimensions": {
-    "compile_time_coupling": 100.0,
-    "template_redundancy": 100.0,
-    "header_influence_radius": 100.0,
-    "template_nesting_depth": 100.0,
-    "binary_bloat_ratio": 100.0,
-    "unnecessary_templating": 100.0
+    "compile_time_fanin": 64.69,
+    "template_redundancy": 0,
+    "header_influence_radius": 67.18,
+    "template_nesting_depth": 37,
+    "binary_bloat_ratio": 27.38,
+    "unnecessary_templating": 0
   },
-  "mlr_violations": {},
+  "mlr_violations": {
+    "MLR-013|HIGH|WARNING": 326,
+    "MLR-014|HIGH|WARNING": 309,
+    "MLR-015|MEDIUM|WARNING": 886,
+    "MLR-016|MEDIUM|WARNING": 57,
+    "MLR-017|MEDIUM|WARNING": 1,
+    "MLR-018|HIGH|WARNING": 2844,
+    "MLR-020|MEDIUM|WARNING": 150,
+    "MLR-021|LOW|INFO": 24,
+    "MLR-022|HIGH|ERROR": 38,
+    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 2068,
+    "MLR-024|HIGH|ERROR": 16
+  },
   "required_mlr_rules": [],
   "forced_merge_rules": []
 }

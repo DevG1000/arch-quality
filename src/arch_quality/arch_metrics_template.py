@@ -1,4 +1,4 @@
-"""
+﻿"""
 arch_metrics_template.py — 模板元编程与编译时依赖膨胀评估指标
 
 实现 模板元编程与编译时依赖膨胀评估指南.md 中的 6 个评估维度和 12 条 MLR 规则。
@@ -473,9 +473,12 @@ class TemplateMetaprogrammingMetrics:
 
         template_defs = []
         template_usage_types = defaultdict(set)
+        type_only_names = set()
+        extern_tpl_names = set()
+        _extern_re = re.compile(r'extern\s+template\s+(?:class|struct)\s+(\w+)\s*<')
 
         template_decl_pattern = re.compile(
-            r'template\s*<\s*[^>]*\s*>\s*(?:class|struct|inline\s+)?\s*(\w+)\s*(?:<[^>]*>)?\s*'
+            r'template\s*<([^>]*)>\s*(?:class|struct|inline\s+)?\s*(\w+)\s*(?:<[^>]*>)?\s*'
         )
 
         template_use_pattern = re.compile(
@@ -487,6 +490,19 @@ class TemplateMetaprogrammingMetrics:
                          'shared_ptr', 'unique_ptr', 'weak_ptr', 'optional',
                          'variant', 'pair', 'tuple', 'function'}
 
+        cpp_keywords = {
+            'void', 'bool', 'char', 'int', 'float', 'double', 'short', 'long',
+            'unsigned', 'signed', 'const', 'volatile', 'static', 'auto',
+            'inline', 'constexpr', 'consteval', 'constinit', 'explicit',
+            'virtual', 'typename', 'class', 'struct', 'union', 'enum',
+            'template', 'return', 'new', 'delete', 'decltype', 'sizeof',
+            'operator', 'and', 'or', 'not', 'this', 'namespace', 'friend',
+            'wchar_t', 'char8_t', 'char16_t', 'char32_t', 'size_t', 'nullptr_t',
+            'true', 'false', 'public', 'private', 'protected', 'static_cast',
+            'reinterpret_cast', 'const_cast', 'dynamic_cast', 'noexcept',
+            'override', 'final', 'mutable', 'register', 'thread_local',
+        }
+
         for f in self.index.files:
             if f["ext"] not in CPP_EXTS and f["ext"] != ".h":
                 continue
@@ -494,14 +510,26 @@ class TemplateMetaprogrammingMetrics:
             if content is None:
                 continue
 
+            for mm in _extern_re.finditer(content):
+                extern_tpl_names.add(mm.group(1))
+
             if not TEMPLATE_PATTERN.search(content):
                 continue
 
             for m in template_decl_pattern.finditer(content):
-                name = m.group(1)
-                if name in std_templates:
+                name = m.group(2)
+                if name in std_templates or name in cpp_keywords:
+                    continue
+                if not re.match(r'[A-Za-z_]', name):
                     continue
                 template_defs.append(name)
+                params = m.group(1)
+                parts = [pp.strip() for pp in params.split(',') if pp.strip()]
+                if parts and all(
+                    ('class' in pp or 'typename' in pp) and '=' not in pp
+                    for pp in parts
+                ):
+                    type_only_names.add(name)
 
             for m in template_use_pattern.finditer(content):
                 name = m.group(1)
@@ -523,7 +551,11 @@ class TemplateMetaprogrammingMetrics:
 
         unnecessary = 0
         unnecessary_details = []
+        exempted_by_intent = 0
         for name in template_defs:
+            if name in type_only_names and name in extern_tpl_names:
+                exempted_by_intent += 1
+                continue
             types_used = template_usage_types.get(name, set())
             if len(types_used) <= 1:
                 unnecessary += 1
@@ -542,6 +574,7 @@ class TemplateMetaprogrammingMetrics:
         return round(max(0, score), 2), {
             "total_templates": total_templates,
             "unnecessary_templates": unnecessary,
+            "exempted_by_intent": exempted_by_intent,
             "ratio": round(ratio, 4),
             "details": unnecessary_details[:20],
         }
@@ -880,6 +913,10 @@ class TemplateMetaprogrammingMetrics:
             })
 
         # MLR-024: 头文件包含循环依赖
+        # 邻接表使用 set 存储，其迭代序依赖 PYTHONHASHSEED；配合下方"全局 visited
+        # 的 DFS 只探索每个节点一次"，不同哈希种子会发现数量不同的环（实测同一项目
+        # 在 seed=0/1/2 下分别得到 9/33/20 个），使 ERROR 级规则的计数不可复现。
+        # 故对起点与邻接均排序，并对同一环的不同旋转去重，保证同输入同输出。
         cycle_detector = defaultdict(set)
         for s, d in self.graph.edges:
             if os.path.basename(s) != os.path.basename(d):
@@ -890,20 +927,25 @@ class TemplateMetaprogrammingMetrics:
 
         def _find_cycles(node, path, path_set):
             visited.add(node)
-            for neighbor in cycle_detector.get(node, set()):
+            for neighbor in sorted(cycle_detector.get(node, ())):
                 if neighbor in path_set:
                     cycle_start = path.index(neighbor)
                     cycles_found.append(path[cycle_start:] + [neighbor])
                 elif neighbor not in visited:
                     _find_cycles(neighbor, path + [neighbor], path_set | {neighbor})
 
-        for node in list(cycle_detector.keys()):
+        for node in sorted(cycle_detector.keys()):
             if node not in visited:
                 _find_cycles(node, [node], {node})
 
         header_cycles = []
+        seen_cycles = set()
         for cycle in cycles_found:
             if all(any(n.endswith(ext) for ext in CPP_HEADER_EXTS | {".h"}) for n in cycle):
+                key = frozenset(cycle)
+                if key in seen_cycles:
+                    continue
+                seen_cycles.add(key)
                 header_cycles.append(cycle)
 
         if header_cycles:

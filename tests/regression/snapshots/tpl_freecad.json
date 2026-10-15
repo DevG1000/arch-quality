@@ -1,20 +1,31 @@
 {
   "project": "FreeCAD",
-  "snapshot_date": "2026-06-11",
+  "snapshot_date": "2026-10-13",
   "root_path": "D:\\OPENSOURCE\\FreeCAD",
-  "template_overall": null,
+  "template_overall": 39.42,
   "is_cpp_project": true,
-  "cpp_file_count": 0,
-  "file_count": 0,
+  "cpp_file_count": 4782,
+  "file_count": 7693,
   "dimensions": {
-    "compile_time_coupling": 100.0,
-    "template_redundancy": 100.0,
-    "header_influence_radius": 100.0,
-    "template_nesting_depth": 100.0,
-    "binary_bloat_ratio": 100.0,
-    "unnecessary_templating": 100.0
+    "compile_time_fanin": 76.37,
+    "template_redundancy": 0,
+    "header_influence_radius": 79.04,
+    "template_nesting_depth": 7,
+    "binary_bloat_ratio": 77.3,
+    "unnecessary_templating": 0
   },
-  "mlr_violations": {},
+  "mlr_violations": {
+    "MLR-013|HIGH|WARNING": 445,
+    "MLR-014|HIGH|WARNING": 309,
+    "MLR-015|MEDIUM|WARNING": 1162,
+    "MLR-016|MEDIUM|WARNING": 50,
+    "MLR-018|HIGH|WARNING": 888,
+    "MLR-020|MEDIUM|WARNING": 37,
+    "MLR-021|LOW|INFO": 3,
+    "MLR-022|HIGH|ERROR": 3,
+    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 4656,
+    "MLR-024|LOW|LOW": 8
+  },
   "required_mlr_rules": [],
   "forced_merge_rules": []
 }

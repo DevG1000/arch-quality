@@ -1,20 +1,31 @@
 {
   "project": "OpenFOAM-v2512",
-  "snapshot_date": "2026-06-11",
+  "snapshot_date": "2026-10-13",
   "root_path": "D:\\OPENSOURCE\\OpenFOAM-v2512",
-  "template_overall": null,
+  "template_overall": 42.23,
   "is_cpp_project": true,
-  "cpp_file_count": 0,
-  "file_count": 0,
+  "cpp_file_count": 5709,
+  "file_count": 10397,
   "dimensions": {
-    "compile_time_coupling": 100.0,
-    "template_redundancy": 100.0,
-    "header_influence_radius": 100.0,
-    "template_nesting_depth": 100.0,
-    "binary_bloat_ratio": 100.0,
-    "unnecessary_templating": 100.0
+    "compile_time_fanin": 93.11,
+    "template_redundancy": 0,
+    "header_influence_radius": 94.95,
+    "template_nesting_depth": 31,
+    "binary_bloat_ratio": 41.74,
+    "unnecessary_templating": 0
   },
-  "mlr_violations": {},
+  "mlr_violations": {
+    "MLR-013|HIGH|WARNING": 367,
+    "MLR-014|HIGH|WARNING": 86,
+    "MLR-015|MEDIUM|WARNING": 49,
+    "MLR-016|MEDIUM|WARNING": 76,
+    "MLR-017|MEDIUM|WARNING": 1,
+    "MLR-018|HIGH|WARNING": 4259,
+    "MLR-019|LOW|INFO": 1,
+    "MLR-020|MEDIUM|WARNING": 62,
+    "MLR-022|HIGH|ERROR": 39,
+    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 541
+  },
   "required_mlr_rules": [],
   "forced_merge_rules": []
 }

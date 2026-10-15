@@ -1,20 +1,32 @@
 {
   "project": "Hana",
-  "snapshot_date": "2026-06-11",
+  "snapshot_date": "2026-10-13",
   "root_path": "D:\\OPENSOURCE\\boost\\libs\\hana",
-  "template_overall": null,
+  "template_overall": 23.72,
   "is_cpp_project": true,
-  "cpp_file_count": 0,
-  "file_count": 0,
+  "cpp_file_count": 1704,
+  "file_count": 1710,
   "dimensions": {
-    "compile_time_coupling": 100.0,
-    "template_redundancy": 100.0,
-    "header_influence_radius": 100.0,
-    "template_nesting_depth": 100.0,
-    "binary_bloat_ratio": 100.0,
-    "unnecessary_templating": 100.0
+    "compile_time_fanin": 40.99,
+    "template_redundancy": 0,
+    "header_influence_radius": 49.52,
+    "template_nesting_depth": 43,
+    "binary_bloat_ratio": 25.28,
+    "unnecessary_templating": 0
   },
-  "mlr_violations": {},
+  "mlr_violations": {
+    "MLR-013|HIGH|WARNING": 319,
+    "MLR-014|HIGH|WARNING": 19,
+    "MLR-015|MEDIUM|WARNING": 289,
+    "MLR-016|MEDIUM|WARNING": 6,
+    "MLR-017|MEDIUM|WARNING": 1,
+    "MLR-018|HIGH|WARNING": 501,
+    "MLR-019|LOW|INFO": 1,
+    "MLR-020|MEDIUM|WARNING": 116,
+    "MLR-022|HIGH|ERROR": 154,
+    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 92,
+    "MLR-024|HIGH|ERROR": 45
+  },
   "required_mlr_rules": [],
   "forced_merge_rules": []
 }

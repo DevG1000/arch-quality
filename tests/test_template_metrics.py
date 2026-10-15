@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_template_metrics.py — arch_metrics_template.py 单元测试
 
 测试场景:
@@ -250,6 +250,75 @@ class TestUnnecessaryTemplating(unittest.TestCase):
             metrics = TemplateMetaprogrammingMetrics(tmp)
             score, detail = metrics.calc_unnecessary_templating()
             self.assertEqual(score, 100)
+        finally:
+            shutil.rmtree(tmp)
+
+
+    def test_keyword_not_counted_as_template_name(self):
+        """WP-5: template<...> ?? C++ ???????????"""
+        tmp = self._make_fixture({
+            "src/fn.cpp": (
+                "template<typename T> void foo() {}\n"
+                "template<int N> bool bar() { return N > 0; }\n"
+                "template<typename T> const T& qux(const T& v) { return v; }\n"),
+        })
+        try:
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            score, detail = metrics.calc_unnecessary_templating()
+            names = {d["name"] for d in detail.get("details", [])}
+            # ????????????????"????"????
+            for kw in ("void", "bool", "const"):
+                self.assertNotIn(kw, names)
+            # ???????? 0??????????????
+            self.assertEqual(detail.get("total_templates"), 0)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_extern_template_type_only_exempted(self):
+        """WP-5 ?????????? class/typename + extern template ? ????"""
+        tmp = self._make_fixture({
+            "include/foo.hpp": (
+                "template <class T> class Foo { T v; };\n"
+                "extern template class Foo<int>;\n"),
+            "src/use.cpp": "int main() { return 0; }\n",
+        })
+        try:
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            score, detail = metrics.calc_unnecessary_templating()
+            self.assertGreaterEqual(detail.get("exempted_by_intent", 0), 1)
+            names = {d["name"] for d in detail.get("details", [])}
+            self.assertNotIn("Foo", names)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_type_only_without_extern_not_exempted(self):
+        """??????????? extern template ? ???????"""
+        tmp = self._make_fixture({
+            "include/bar.hpp": "template <class T> class Bar { T v; };\n",
+            "src/use.cpp": "int main() { return 0; }\n",
+        })
+        try:
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            score, detail = metrics.calc_unnecessary_templating()
+            self.assertEqual(detail.get("exempted_by_intent", 0), 0)
+            names = {d["name"] for d in detail.get("details", [])}
+            self.assertIn("Bar", names)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_non_type_param_not_type_only(self):
+        """???????int N?????? type-only"""
+        tmp = self._make_fixture({
+            "include/arr.hpp": (
+                "template <class T, int N> class Arr { T v[N]; };\n"
+                "extern template class Arr<int, 4>;\n"),
+            "src/use.cpp": "int main() { return 0; }\n",
+        })
+        try:
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            score, detail = metrics.calc_unnecessary_templating()
+            # ?????? ? ???
+            self.assertEqual(detail.get("exempted_by_intent", 0), 0)
         finally:
             shutil.rmtree(tmp)
 

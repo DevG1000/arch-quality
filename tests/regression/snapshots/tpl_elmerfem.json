@@ -1,20 +1,30 @@
 {
   "project": "ElmerFEM",
-  "snapshot_date": "2026-06-11",
+  "snapshot_date": "2026-10-13",
   "root_path": "D:\\OPENSOURCE\\ElmerFEM",
-  "template_overall": null,
+  "template_overall": 50.02,
   "is_cpp_project": true,
-  "cpp_file_count": 0,
-  "file_count": 0,
+  "cpp_file_count": 668,
+  "file_count": 3232,
   "dimensions": {
-    "compile_time_coupling": 100.0,
-    "template_redundancy": 100.0,
-    "header_influence_radius": 100.0,
-    "template_nesting_depth": 100.0,
-    "binary_bloat_ratio": 100.0,
-    "unnecessary_templating": 100.0
+    "compile_time_fanin": 88.42,
+    "template_redundancy": 0,
+    "header_influence_radius": 90.92,
+    "template_nesting_depth": 37,
+    "binary_bloat_ratio": 100,
+    "unnecessary_templating": 0
   },
-  "mlr_violations": {},
+  "mlr_violations": {
+    "MLR-013|HIGH|WARNING": 60,
+    "MLR-014|HIGH|WARNING": 71,
+    "MLR-015|MEDIUM|WARNING": 62,
+    "MLR-016|MEDIUM|WARNING": 7,
+    "MLR-018|HIGH|WARNING": 49,
+    "MLR-019|LOW|INFO": 1,
+    "MLR-020|MEDIUM|WARNING": 2,
+    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 1513,
+    "MLR-024|HIGH|ERROR": 31
+  },
   "required_mlr_rules": [],
   "forced_merge_rules": []
 }

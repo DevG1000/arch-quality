@@ -1,0 +1,30 @@
+{
+  "project": "deal.II",
+  "snapshot_date": "2026-10-13",
+  "root_path": "D:\\opensource\\dealii",
+  "template_overall": 29.35,
+  "is_cpp_project": true,
+  "cpp_file_count": 24253,
+  "file_count": 24288,
+  "dimensions": {
+    "compile_time_fanin": 74.34,
+    "template_redundancy": 0,
+    "header_influence_radius": 75.58,
+    "template_nesting_depth": 13,
+    "binary_bloat_ratio": 12.27,
+    "unnecessary_templating": 0
+  },
+  "mlr_violations": {
+    "MLR-013|HIGH|WARNING": 4529,
+    "MLR-014|HIGH|WARNING": 1316,
+    "MLR-015|MEDIUM|WARNING": 11291,
+    "MLR-016|MEDIUM|WARNING": 942,
+    "MLR-017|MEDIUM|WARNING": 1,
+    "MLR-018|HIGH|WARNING": 47636,
+    "MLR-020|MEDIUM|WARNING": 2412,
+    "MLR-021|LOW|INFO": 29,
+    "MLR-022|HIGH|ERROR": 903,
+    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 22157,
+    "MLR-024|HIGH|ERROR": 369
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "scan_date": "2026-10-13",
+  "engine_before_wp5": true,
+  "dealii": {
+    "path": "D:\\opensource\\dealii",
+    "overall": 29.35,
+    "mlr018": 102308,
+    "mlr014": 1316,
+    "mlr013": 4529,
+    "scan_seconds": 513.7
+  },
+  "existing_tpl_snapshots": {
+    "tpl_abseil.json": {
+      "mlr018": 2581,
+      "overall": 31.48
+    },
+    "tpl_boost_gil.json": {
+      "mlr018": 1326,
+      "overall": 25.2
+    },
+    "tpl_boost_mpl.json": {
+      "mlr018": 4151,
+      "overall": 40.18
+    },
+    "tpl_brl_cad.json": {
+      "mlr018": 1041,
+      "overall": 40.03
+    },
+    "tpl_eigen.json": {
+      "mlr018": 12901,
+      "overall": 17.79
+    },
+    "tpl_elmerfem.json": {
+      "mlr018": 185,
+      "overall": 50.02
+    },
+    "tpl_folly.json": {
+      "mlr018": 7037,
+      "overall": 30.82
+    },
+    "tpl_freecad.json": {
+      "mlr018": 2300,
+      "overall": 39.42
+    },
+    "tpl_hana.json": {
+      "mlr018": 2230,
+      "overall": 23.72
+    },
+    "tpl_openfoam_v2512.json": {
+      "mlr018": 8327,
+      "overall": 42.23
+    },
+    "tpl_range_v3.json": {
+      "mlr018": 2461,
+      "overall": 23.52
+    }
+  }
+}

@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_template_regression.py - Template metaprogramming regression test framework
 
 Validates that TemplateMetaprogrammingMetrics produces stable, predictable results
@@ -56,6 +56,7 @@ from arch_quality.arch_metrics_template import TemplateMetaprogrammingMetrics
 
 SNAP_DIR = Path(__file__).resolve().parent / "snapshots"
 UPDATE_SNAPSHOTS = os.environ.get("ARCH_REGRESSION_UPDATE", "") == "1"
+SNAPSHOT_DATE = "2026-10-13"  # WP-5 ?????
 
 TOLERANCE_OVERALL = 0.5
 TOLERANCE_DIMENSION = 1.0
@@ -122,7 +123,7 @@ def _make_project_class(project_name, snap_name, root_path):
             if UPDATE_SNAPSHOTS:
                 snap = _load_snapshot(cls.snap_name_local)
                 snap.update(cls._actual)
-                snap["snapshot_date"] = "2026-06-11"
+                snap["snapshot_date"] = SNAPSHOT_DATE
                 snap["root_path"] = cls.root_path_local
                 _save_snapshot(cls.snap_name_local, snap)
 
@@ -148,6 +149,13 @@ def _make_project_class(project_name, snap_name, root_path):
             actual = self._actual["template_overall"]
             if actual is None:
                 self.skipTest("Non-C++ project, no template score")
+            if expected is None:
+                self.fail(
+                    f"{self.project_name_local}: snapshot has no template baseline "
+                    f"(template_overall=null) but the engine produced {actual}. "
+                    f"The project is now detected as a C++ project - regenerate "
+                    f"the snapshot with ARCH_REGRESSION_UPDATE=1."
+                )
             self.assertAlmostEqual(
                 actual,
                 expected,
@@ -172,6 +180,15 @@ def _make_project_class(project_name, snap_name, root_path):
                         f"{self.project_name_local}: dimension '{dim_name}' "
                         f"missing from actual results"
                     )
+                if expected is None or actual is None:
+                    self.assertEqual(
+                        actual, expected,
+                        msg=(f"{self.project_name_local}: dimension '{dim_name}' "
+                             f"None mismatch (snapshot={expected}, actual={actual}). "
+                             f"If the project is newly detected as a C++ project, "
+                             f"regenerate the snapshot with ARCH_REGRESSION_UPDATE=1."),
+                    )
+                    continue
                 self.assertAlmostEqual(
                     actual,
                     expected,
@@ -338,6 +355,13 @@ TestTemplateHana = _make_project_class(
     "tpl_hana",
     r"D:\OPENSOURCE\boost\libs\hana",
 )
+
+TestTemplateDealII = _make_project_class(
+    "deal.II",
+    "tpl_dealii",
+    r"D:\opensource\dealii",
+)
+
 
 if __name__ == "__main__":
     unittest.main()
