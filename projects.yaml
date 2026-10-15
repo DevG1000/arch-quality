@@ -1,4 +1,4 @@
-# projects.yaml — H1 WP-5 回归项目清单 + H2 WP-0.5 参考样本注册（相对路径，CI 可复现）
+﻿# projects.yaml — H1 WP-5 回归项目清单 + H2 WP-0.5 参考样本注册（相对路径，CI 可复现）
 #
 # 结构：项目名 → { desc, fetch(获取方式), eval(评估配置), license(授权), note }
 # - fetch.repo: 第三方源码仓库 URL（CI 通过 git clone 获取）
@@ -209,6 +209,77 @@ projects:
       snapshot: []
     license: LGPL-2.1
     note: "SALOME 裁剪策略：仅几何模块（上游 git.salome-platform.org/gitpub/modules/geometry.git 官方克隆），非全平台；固定 master commit；ACL 快照 WP-4 生成"
+
+  # ── WP-7 语料扩充（GCS/ACL 交叉验证样本）──
+  gmsh:
+    desc: Gmsh 网格生成器（GCS mesh_tool / ACL 数据交换样本）
+    fetch:
+      repo: https://gitlab.onelab.info/gmsh/gmsh.git
+      method: shallow
+      dir: ""
+    eval:
+      engine: [gcs, acl]
+      snapshot: [gcs_gmsh, acl_gmsh]
+    note: "WP-7 语料"
+  kratos:
+    desc: Kratos 多物理场（GCS multiphysics 样本）
+    fetch:
+      repo: https://github.com/KratosMultiphysics/Kratos.git
+      method: shallow
+      dir: ""
+    eval:
+      engine: [gcs]
+      snapshot: [gcs_kratos]
+    note: "WP-7 语料"
+  code_aster:
+    desc: Code_Aster 结构力学 FEM（GCS 样本）
+    fetch:
+      repo: https://gitlab.com/codeaster/src.git
+      method: shallow
+      dir: ""
+    eval:
+      engine: [gcs]
+      snapshot: [gcs_code_aster]
+    note: "WP-7 语料"
+  mfem:
+    desc: MFEM 有限元库（GCS 健康样本）
+    fetch:
+      repo: https://github.com/mfem/mfem.git
+      method: shallow
+      dir: ""
+    eval:
+      engine: [gcs]
+      snapshot: [gcs_mfem]
+    note: "WP-7 语料"
+  elmerfem:
+    desc: Elmer FEM（GCS/ACL 样本）
+    fetch:
+      repo: https://github.com/ElmerCSC/elmerfem.git
+      method: shallow
+      dir: ""
+    eval:
+      engine: [gcs, acl, standard, template]
+      snapshot: [gcs_elmerfem, acl_elmerfem, standard_elmerfem, tpl_elmerfem]
+    note: "WP-7 语料"
+  kicad:
+    desc: KiCad EDA（ACL eda 样本）
+    fetch:
+      repo: https://gitlab.com/kicad/code/kicad.git
+      method: shallow
+      dir: ""
+    eval:
+      engine: [acl]
+      snapshot: [acl_kicad]
+    note: "WP-7 语料"
+  wp7_corpus:
+    desc: WP-7 合成语料（gcs/acl 健康/不健康正交样本）
+    fetch:
+      repo: local
+      dir: tests/wp7_corpus
+    eval:
+      engine: [gcs, acl]
+      snapshot: [gcs_synth_unhealthy, acl_synth_healthy, acl_synth_direct, acl_synth_scatter]
+    note: "本仓库自举，无需获取"
 
 # 校验和：首次获取后由脚本生成（`arch-quality` 用 git 分支 commit 作为参考基准）
 checksums:

@@ -1,0 +1,122 @@
+﻿{
+  "assessed_date": "2026-10-15",
+  "note": "WP-7 语料：每维 9 = 5 健康 + 4 不健康；健康标签为专家人工标注（AI 专家判断 + 评分佐证）",
+  "gcs": {
+    "engine": "geometry_consistency",
+    "samples": {
+      "occt": {
+        "path": "D:\\opensource\\gcs-baselines\\occt",
+        "overall": 64.0,
+        "health": "healthy",
+        "type": "kernel"
+      },
+      "salome_geom": {
+        "path": "D:\\opensource\\gcs-baselines\\salome-geom",
+        "overall": 84.0,
+        "health": "healthy",
+        "type": "kernel_wrap"
+      },
+      "freecad": {
+        "path": "D:\\OPENSOURCE\\FreeCAD",
+        "overall": 84.0,
+        "health": "healthy",
+        "type": "kernel_app"
+      },
+      "mfem": {
+        "path": "D:\\OPENSOURCE\\mfem",
+        "overall": 81.0,
+        "health": "healthy",
+        "type": "fem_lib"
+      },
+      "elmerfem": {
+        "path": "D:\\OPENSOURCE\\ElmerFEM",
+        "overall": 72.25,
+        "health": "healthy",
+        "type": "fem_suite"
+      },
+      "gmsh": {
+        "path": "D:\\OPENSOURCE\\gmsh",
+        "overall": 65.25,
+        "health": "unhealthy",
+        "type": "mesh_tool"
+      },
+      "kratos": {
+        "path": "D:\\OPENSOURCE\\Kratos",
+        "overall": 72.25,
+        "health": "unhealthy",
+        "type": "multiphysics"
+      },
+      "code_aster": {
+        "path": "D:\\OPENSOURCE\\code_aster",
+        "overall": 72.25,
+        "health": "unhealthy",
+        "type": "fem"
+      },
+      "synth_unhealthy": {
+        "path": "tests/wp7_corpus/gcs_synth_unhealthy",
+        "overall": 63.5,
+        "health": "unhealthy",
+        "type": "synthetic_bad"
+      }
+    }
+  },
+  "acl": {
+    "engine": "anti_corruption",
+    "samples": {
+      "salome_geom": {
+        "path": "D:\\opensource\\gcs-baselines\\salome-geom",
+        "overall": 26.5,
+        "health": "healthy",
+        "type": "kernel_wrap"
+      },
+      "gmsh": {
+        "path": "D:\\OPENSOURCE\\gmsh",
+        "overall": 24.0,
+        "health": "healthy",
+        "type": "mesh_tool"
+      },
+      "freecad": {
+        "path": "D:\\OPENSOURCE\\FreeCAD",
+        "overall": 38.0,
+        "health": "healthy",
+        "type": "kernel_app"
+      },
+      "elmerfem": {
+        "path": "D:\\OPENSOURCE\\ElmerFEM",
+        "overall": 39.5,
+        "health": "healthy",
+        "type": "fem_suite"
+      },
+      "synth_healthy": {
+        "path": "tests/wp7_corpus/acl_synth_healthy",
+        "overall": 87.5,
+        "health": "healthy",
+        "type": "synthetic_good"
+      },
+      "occt": {
+        "path": "D:\\opensource\\gcs-baselines\\occt",
+        "overall": 36.5,
+        "health": "unhealthy",
+        "type": "kernel"
+      },
+      "kicad": {
+        "path": "D:\\OPENSOURCE\\KiCad",
+        "overall": 47.0,
+        "health": "unhealthy",
+        "type": "eda"
+      },
+      "synth_direct": {
+        "path": "tests/wp7_corpus/acl_synth_direct",
+        "overall": 35.0,
+        "health": "unhealthy",
+        "type": "synthetic_bad"
+      },
+      "synth_scatter": {
+        "path": "tests/wp7_corpus/acl_synth_scatter",
+        "overall": 35.0,
+        "health": "unhealthy",
+        "type": "synthetic_bad"
+      }
+    }
+  }
+}

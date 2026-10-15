@@ -1,0 +1,38 @@
+{
+  "project": "kratos",
+  "overall": 72.25,
+  "is_geometry": true,
+  "dimensions": {
+    "geometry_kernel_consistency": 70,
+    "precision_unit_consistency": 50,
+    "scidata_organization": 100,
+    "data_access_norm": 65
+  },
+  "gcs_violations": [
+    {
+      "rule": "GCS-001",
+      "name": "内核闭合性校验测试存在性（加分项）",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 1,
+      "detail": "未检测到 B-Rep 闭合性校验测试（BRepCheck/BOPCheck），建议补充"
+    },
+    {
+      "rule": "GCS-005",
+      "name": "硬编码精度/容差魔法数字",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 3488,
+      "detail": "检测到硬编码精度/容差魔法数字，建议集中为命名常量"
+    },
+    {
+      "rule": "GCS-012",
+      "name": "数据访问封装性",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "count": 5,
+      "detail": "跨模块直接访问内部数据成员"
+    }
+  ],
+  "root_path": "D:\\OPENSOURCE\\Kratos"
+}

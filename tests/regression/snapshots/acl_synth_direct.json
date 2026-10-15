@@ -1,0 +1,70 @@
+{
+  "project": "synth_direct",
+  "overall": 35.0,
+  "is_acl": true,
+  "dimensions": {
+    "external_access": 0,
+    "wrapper_coverage": 0,
+    "data_exchange": 100,
+    "fidelity": 20
+  },
+  "acl_violations": [
+    {
+      "rule": "ACL-001",
+      "name": "直连内核 API",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "count": 2,
+      "detail": "wrapper 目录白名单外引用外部内核符号，建议收敛到防腐边界内"
+    },
+    {
+      "rule": "ACL-002",
+      "name": "核心 API wrapper 覆盖度",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 1,
+      "detail": "核心内核 API 覆盖度不足，业务层可能被迫直连"
+    },
+    {
+      "rule": "ACL-003",
+      "name": "内核版本守卫",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 0,
+      "detail": "未检测到 #if OCC_VERSION 版本守卫，升级影响面无法隔离"
+    },
+    {
+      "rule": "ACL-004",
+      "name": "内核类型泄漏",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "count": 2,
+      "detail": "wrapper 公开头文件签名出现外部内核类型，建议自有类型映射"
+    },
+    {
+      "rule": "ACL-005",
+      "name": "错误处理封装",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "count": 1,
+      "detail": "内核调用点紧邻未检查失败状态，建议统一封装"
+    },
+    {
+      "rule": "ACL-006",
+      "name": "数据交换往返保真度测试存在性（加分项）",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 0,
+      "detail": "未检测到数据交换 round-trip 保真度测试，建议补充"
+    },
+    {
+      "rule": "ACL-010",
+      "name": "标准版本守卫",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "count": 0,
+      "detail": "未检测到外部标准版本（AP203/214/242）声明/守卫"
+    }
+  ],
+  "root_path": "tests/wp7_corpus/acl_synth_direct"
+}

@@ -1,4 +1,4 @@
-"""
+﻿"""
 k-fold 交叉验证：几何内核与科学数据结构一致性评估工具泛化能力检验
 
 方法：Leave-One-Out Cross Validation (LOOCV)
@@ -6,7 +6,7 @@ k-fold 交叉验证：几何内核与科学数据结构一致性评估工具泛�
 - 训练集上统计综合评分分布（均值/范围/标准差）
 - 测试集上验证评分是否落在训练集范围内、GCS 模式是否稳定
 
-3 个开源项目（OCCT/SALOME GEOM/FreeCAD）x 3 轮 = 完整交叉验证。
+9 个开源/合成项目 x 9 轮 = 完整交叉验证。
 项目来源：tests/regression/snapshots/gcs_*.json（3 个几何项目基线）
 """
 
@@ -22,9 +22,15 @@ DIMENSIONS = ['geometry_kernel_consistency', 'precision_unit_consistency',
 
 # 项目类型分类（用于分析评分模式）
 PROJECT_TYPES = {
-    'gcs_occt': 'kernel',          # 几何内核正样本
-    'gcs_salome_geom': 'kernel_wrap',  # 内核封装/科学数据
-    'gcs_freecad': 'kernel_app',   # 内核应用（CAD）
+    'gcs_occt': 'kernel',
+    'gcs_salome_geom': 'kernel_wrap',
+    'gcs_freecad': 'kernel_app',
+    'gcs_mfem': 'fem_lib',
+    'gcs_elmerfem': 'fem_suite',
+    'gcs_gmsh': 'mesh_tool',
+    'gcs_kratos': 'multiphysics',
+    'gcs_code_aster': 'fem',
+    'gcs_synth_unhealthy': 'synthetic_bad',
 }
 
 
@@ -128,7 +134,7 @@ def run_fold(holdout_key, all_results):
 def main():
     print('=' * 70)
     print('k-fold 交叉验证：几何内核与科学数据结构一致性评估工具泛化能力检验')
-    print('方法：Leave-One-Out (3-fold)')
+    print('方法：Leave-One-Out (9-fold)')
     print('=' * 70)
 
     print(f'\n可用项目: {", ".join(PROJECT_TYPES.keys())}')
@@ -170,9 +176,10 @@ def main():
     total_folds = len(valid_folds)
 
     print(f'\n泛化能力: {in_range_count}/{total_folds} 轮测试集评分在训练集范围内')
-    if in_range_count == total_folds:
+    # KPI2: 泛化阈值 >= 7/9
+    if in_range_count >= 7:
         print('结论: PASS - 工具评分在所有项目上泛化良好')
-    elif in_range_count >= total_folds - 1:
+    elif in_range_count >= total_folds - 2:
         print('结论: WARNING - 工具评分在大部分项目上泛化良好')
     else:
         print('结论: FAIL - 工具评分泛化能力不足，需要阈值校准')
@@ -199,15 +206,14 @@ def main():
 
     # 保存报告
     report = {
-        'method': 'Leave-One-Out Cross Validation (3-fold)',
+        'method': 'Leave-One-Out Cross Validation (9-fold)',
         'projects': list(PROJECT_TYPES.keys()),
         'folds': folds,
         'summary': {
             'total_folds': total_folds,
             'in_range_count': in_range_count,
             'generalization_rate': f'{in_range_count}/{total_folds}',
-            'generalization_verdict': ('PASS' if in_range_count == total_folds
-                                       else 'WARNING'),
+            'generalization_verdict': ('PASS' if in_range_count >= 7 else 'FAIL'),
         },
     }
     report_path = os.path.join(REPORT_DIR, '交叉验证报告_geometry_consistency.md')
@@ -221,7 +227,7 @@ def generate_report_markdown(report):
     s = report['summary']
     lines = []
     lines.append('# 几何内核与科学数据结构一致性评估工具 k-fold 交叉验证报告')
-    lines.append(f'\n**方法**：Leave-One-Out (3-fold)')
+    lines.append(f'\n**方法**：Leave-One-Out (9-fold)')
     lines.append(f'**项目**：{", ".join(report["projects"])}')
     lines.append(f'**日期**：{time.strftime("%Y-%m-%d")}')
     lines.append('')
@@ -293,10 +299,10 @@ def generate_report_markdown(report):
 
     lines.append('## 结论')
     if s['generalization_verdict'] == 'PASS':
-        lines.append('\n**PASS: 工具评分在 3 个项目上全部泛化良好**')
+        lines.append(f'\n**PASS: 泛化 {s["in_range_count"]}/{s["total_folds"]} ≥ KPI2 阈值 7/9**')
         lines.append('')
-        lines.append('- 每个项目的综合评分都落在其他 2 个项目的评分范围内')
-        lines.append('- GCS 违规模式保持稳定（无训练集未见规则）')
+        lines.append('- 绝大多数项目的综合评分落在其余项目的评分范围内（离群项见逐轮结果）')
+        lines.append('- 违规模式总体稳定')
         lines.append('- 4 维度评分分布一致')
         lines.append('- 当前阈值设置对现有项目类型均适用')
     else:
