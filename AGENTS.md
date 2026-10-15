@@ -18,6 +18,7 @@ python -m arch_quality --help     # entry if arch-quality not on PATH
 | `arch-quality-ui` | `arch_quality.ui.server:main` | Web operation panel (browser UI for all CLI entries) |
 | via `-m` | `arch_metrics_numerical_accuracy.py:main` | Numerical accuracy (no CLI entry in pyproject) |
 | via `-m` | `arch_metrics_geometry_consistency.py:main` | Geometry consistency (no CLI entry in pyproject) |
+| via `-m` | `arch_metrics_anti_corruption.py:main` | Anti-corruption layer (no CLI entry in pyproject) |
 
 ## Architecture
 
@@ -29,6 +30,7 @@ src/arch_quality/
   arch_metrics_template.py      # TemplateMetaprogrammingMetrics — 6 dims + 12 MLR
   arch_metrics_numerical_accuracy.py  # NumericalAccuracyMetrics — 6 dims + 12 NVR
 arch_metrics_geometry_consistency.py # GeometryConsistencyMetrics — 4 dims + 12 GCS
+arch_metrics_anti_corruption.py      # AntiCorruptionMetrics — 4 dims + 12 ACL
 ui/                            # Web panel (Flask): commands_meta + runner + server
   arch_report.py                # ComprehensiveReport — merges all above
   arch_report_generator.py      # Markdown report template (16 sections)

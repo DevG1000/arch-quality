@@ -7,7 +7,7 @@
 配置驱动：每个引擎定义指南、Skill、工具、案例集路径 + 规则前缀 + 版本绑定。
 
 用法：
-    python scripts/consistency_check.py [--engine all|standard|multilang|template|numerical|solver_physics]
+    python scripts/consistency_check.py [--engine all|standard|multilang|template|numerical|solver_physics|geometry_consistency|anti_corruption|anti_corruption]
 
 退出码：0=全一致, 1=存在不一致
 """
@@ -93,15 +93,27 @@ ENGINES = {
         "case": "docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估验证案例集.md",
         "rule_prefix": "GCS",
         "rule_count": 12,
-        "version_pairs": [("GUIDE_VERSION", "1.6"), ("SKILL_VERSION", "1.0")],
+        "version_pairs": [("GUIDE_VERSION", "1.7"), ("SKILL_VERSION", "1.1")],
         "dimensions": ["几何内核数据一致性", "内核精度/单位一致性", "科学数据结构组织一致性"],
         "weights": [],
         "case_keywords": ["GCS", "OCCT", "BRepCheck", "vtk"],
     },
+    "anti_corruption": {
+        "guide": "docs/zh/外部科学内核与几何内核的封装与防腐层评估/外部科学内核与几何内核的封装与防腐层评估指南.md",
+        "skill": "src/arch_quality/skills/anti-corruption.md",
+        "tool": "src/arch_quality/arch_metrics_anti_corruption.py",
+        "case": "docs/zh/外部科学内核与几何内核的封装与防腐层评估/外部科学内核与几何内核的封装与防腐层评估验证案例集.md",
+        "rule_prefix": "ACL",
+        "rule_count": 12,
+        "version_pairs": [("GUIDE_VERSION", "1.3"), ("SKILL_VERSION", "1.0")],
+        "dimensions": ["外部内核访问防腐", "Wrapper 覆盖度与演进守卫", "数据交换防腐"],
+        "weights": [],
+        "case_keywords": ["ACL", "STEPControl", "TopoDS", "OCCT"],
+    },
 }
 RULE_ID_VALIDATION_PENDING = True
 # 已知规则空洞（WP-7.1 重编号/补齐后应消除）
-KNOWN_HOLES = {"NVR-009", "MPR-011", "GCS-013", "GCS-014"}
+KNOWN_HOLES = {"NVR-009", "MPR-011", "GCS-013", "GCS-014", "ACL-013"}
 
 
 def read(path):

@@ -487,6 +487,15 @@ class ReportGenerator:
                 ("data_access_norm", "数据访问规范"),
             ],
         },
+        "anti_corruption_enhancement": {
+            "title": "外部内核防腐层增强评估",
+            "dims": [
+                ("external_access", "外部内核访问防腐"),
+                ("wrapper_coverage", "Wrapper 覆盖与演进守卫"),
+                ("data_exchange", "数据交换防腐"),
+                ("fidelity", "保真度与标准一致性"),
+            ],
+        },
     }
 
     def _enhancement_sections(self) -> str:

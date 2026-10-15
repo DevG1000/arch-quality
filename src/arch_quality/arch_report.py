@@ -29,6 +29,7 @@ from arch_quality.arch_metrics_template import TemplateMetaprogrammingMetrics
 from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetrics
 from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
 from arch_quality.arch_metrics_geometry_consistency import GeometryConsistencyMetrics
+from arch_quality.arch_metrics_anti_corruption import AntiCorruptionMetrics
 from arch_quality.arch_report_generator import ReportGenerator
 
 SKILL_QUALITY = str(Path(__file__).parent / "skills" / "arch-quality.md")
@@ -57,6 +58,7 @@ class ComprehensiveReport:
         self.numerical = NumericalAccuracyMetrics(root)
         self.solver_physics = SolverPhysicsMetrics(root)
         self.geometry = GeometryConsistencyMetrics(root)
+        self.anti_corruption = AntiCorruptionMetrics(root)
 
     def _enabled_enhancement_keys(self) -> set:
         """显式 profile 模式下的启用增强引擎键集；启发式模式返回全量（由检测决定）"""
@@ -77,6 +79,8 @@ class ComprehensiveReport:
         sp_result = self.solver_physics.all_metrics() if ("solver-physics" in enabled or not profile_active) else None
         gcs_result = (getattr(self, "geometry", None).all_metrics()
                      if ("geometry-consistency" in enabled or not profile_active) else None) if getattr(self, "geometry", None) else None
+        acl_result = (getattr(self, "anti_corruption", None).all_metrics()
+                     if ("anti-corruption" in enabled or not profile_active) else None) if getattr(self, "anti_corruption", None) else None
 
         struct_score = std_result["structural"]["score"]
 
@@ -85,6 +89,7 @@ class ComprehensiveReport:
         has_numerical = nvr_result.get("is_numerical", False) if nvr_result else False
         has_multiphysics = sp_result.get("is_multiphysics", False) if sp_result else False
         has_geometry = gcs_result.get("is_geometry", False) if gcs_result else False
+        has_acl = acl_result.get("is_acl", False) if acl_result else False
 
         # 激活增强引擎列表：[(key, base_weight, result)]
         # 启发式模式由检测信号决定；显式 profile 模式由声明引擎集 + 引擎实际产出（overall 非 None）决定
@@ -96,6 +101,7 @@ class ComprehensiveReport:
                 ("nvr", "numerical", 0.10, nvr_result),
                 ("sp", "solver-physics", 0.15, sp_result),
                 ("gcs", "geometry-consistency", 0.15, gcs_result),
+                ("acl", "anti-corruption", 0.15, acl_result),
             ]:
                 if engine in enabled and result is not None and result.get("overall") is not None:
                     enh.append((key, w, result))
@@ -110,20 +116,23 @@ class ComprehensiveReport:
                 enh.append(("sp", 0.15, sp_result))
             if has_geometry and gcs_result is not None and gcs_result.get("overall") is not None:
                 enh.append(("gcs", 0.15, gcs_result))
+            if has_acl and acl_result is not None and acl_result.get("overall") is not None:
+                enh.append(("acl", 0.15, acl_result))
 
         ml_weight_applied = 0.0
         tpl_weight_applied = 0.0
         nvr_weight_applied = 0.0
         sp_weight_applied = 0.0
         gcs_weight_applied = 0.0
+        acl_weight_applied = 0.0
 
         active_count = len(enh)
         if active_count == 0:
             merged_structural = struct_score
         else:
             # 基础权重按激活数分档（与既有规则一致）
-            base_map = {1: 0.85, 2: 0.70, 3: 0.60, 4: 0.55, 5: 0.50}
-            base_w = base_map[active_count]
+            base_map = {1: 0.85, 2: 0.70, 3: 0.60, 4: 0.55, 5: 0.50, 6: 0.45}
+            base_w = base_map.get(active_count, 0.45)
             enh_raw = dict((k, w) for k, w, _ in enh)
 
             # 归一化：当基础+增强权重和 > 1 时等比缩放（如 4 增强 110% → 100%）
@@ -138,6 +147,7 @@ class ComprehensiveReport:
             nvr_weight_applied = enh_raw.get("nvr", 0.0)
             sp_weight_applied = enh_raw.get("sp", 0.0)
             gcs_weight_applied = enh_raw.get("gcs", 0.0)
+            acl_weight_applied = enh_raw.get("acl", 0.0)
 
             enh_overall = {k: r["overall"] for k, _, r in enh}
             merged_structural = (
@@ -146,9 +156,11 @@ class ComprehensiveReport:
                 enh_overall.get("tpl", 0) * tpl_weight_applied +
                 enh_overall.get("nvr", 0) * nvr_weight_applied +
                 enh_overall.get("sp", 0) * sp_weight_applied +
-                enh_overall.get("gcs", 0) * gcs_weight_applied
+                enh_overall.get("gcs", 0) * gcs_weight_applied +
+                enh_overall.get("acl", 0) * acl_weight_applied
             ) / max(base_w + ml_weight_applied + tpl_weight_applied
-                    + nvr_weight_applied + sp_weight_applied + gcs_weight_applied, 0.01)
+                    + nvr_weight_applied + sp_weight_applied
+                    + gcs_weight_applied + acl_weight_applied, 0.01)
 
         w = {k: v for k, v in self.quality_weights.items()}
         overall = (
@@ -213,12 +225,13 @@ class ComprehensiveReport:
             "score_breakdown": {
                 "formula": "overall = structural*30% + design*25% + doc*20% + evolution*25%",
                 "structural_note": (
-                    f"structural = base*{int((1-ml_weight_applied-tpl_weight_applied-nvr_weight_applied-sp_weight_applied)*100)}%"
+                    f"structural = base*{int((1-ml_weight_applied-tpl_weight_applied-nvr_weight_applied-sp_weight_applied-gcs_weight_applied-acl_weight_applied)*100)}%"
                     f" + multilang*{int(ml_weight_applied*100)}%"
                     f" + template*{int(tpl_weight_applied*100)}%"
                     f" + numerical*{int(nvr_weight_applied*100)}%"
                     f" + solver_physics*{int(sp_weight_applied*100)}%"
                     f" + geometry_consistency*{int(gcs_weight_applied*100)}%"
+                    f" + anti_corruption*{int(acl_weight_applied*100)}%"
                     + (f" [profile 子集评分：启用 {sorted(enabled)}，跳过 {skipped_engines}]" if subset_scoring else "")
                     if active_count > 0
                     else "structural = base_structural*100% (no enhancement engine active)"
@@ -268,6 +281,13 @@ class ComprehensiveReport:
                 "details": gcs_result["dimensions"],
             }
 
+        if acl_result is not None and ("acl" in (k for k, _, _ in enh)):
+            result["dimensions"]["structural"]["anti_corruption_enhancement"] = {
+                "score": acl_result["overall"],
+                "weight_applied": acl_weight_applied,
+                "details": acl_result["dimensions"],
+            }
+
         # 跳过引擎并列展示（profile 子集模式）：标注未评估维度，禁止与全引擎评分混合
         if profile_active and skipped_engines:
             skipped_labels = {
@@ -275,6 +295,8 @@ class ComprehensiveReport:
                 "template": "模板元编程（TPL）",
                 "numerical": "数值算法正确性（NVR）",
                 "solver-physics": "求解器物理场（MPR）",
+                "geometry-consistency": "几何内核一致性（GCS）",
+                "anti-corruption": "外部内核防腐层（ACL）",
             }
             result["dimensions"]["structural"]["skipped_enhancements"] = [
                 {"engine": e, "label": skipped_labels.get(e, e),
@@ -333,6 +355,11 @@ class ComprehensiveReport:
 
         if gcs_result is not None:
             for v in gcs_result.get("gcs_violations", []):
+                result["mlr_violations"].append(v)
+
+        # 合并 ACL 防腐层违规到报告
+        if acl_result is not None:
+            for v in acl_result.get("acl_violations", []):
                 result["mlr_violations"].append(v)
 
         # 合并标准架构质量 SAR 违规到报告

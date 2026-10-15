@@ -177,7 +177,8 @@ class TestEngineResolution(unittest.TestCase):
     def test_skip_engines_from_full(self):
         self.assertEqual(
             set(resolve_enabled_engines(None, None, ["multilang", "solver-physics"])),
-            {"standard", "template", "numerical", "geometry-consistency"})
+            {"standard", "template", "numerical", "geometry-consistency",
+             "anti-corruption"})
 
     def test_profile_precedence_over_enable(self):
         # profile 声明优先于 enable_engines
@@ -253,7 +254,7 @@ class TestComprehensiveReportProfile(unittest.TestCase):
             profile = {"profile": "standard", "enabled_engines": ["standard"]}
             data = ComprehensiveReport(tmp, profile=profile).generate()
             self.assertTrue(data["profile"]["subset_scoring"])
-            self.assertEqual(len(data["profile"]["skipped_engines"]), 5)
+            self.assertEqual(len(data["profile"]["skipped_engines"]), 6)
             self.assertNotIn("numerical_enhancement", data["dimensions"]["structural"])
         finally:
             shutil.rmtree(tmp)

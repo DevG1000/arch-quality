@@ -29,7 +29,7 @@ class TestCommandsMeta(unittest.TestCase):
 
     def test_all_entries_present(self):
         expected = {"comprehensive", "standard", "multilang", "template",
-                    "numerical", "solver", "geometry"}
+                    "numerical", "solver", "geometry", "anti_corruption"}
         self.assertEqual(set(COMMANDS.keys()), expected)
 
     def test_all_entries_in_order(self):

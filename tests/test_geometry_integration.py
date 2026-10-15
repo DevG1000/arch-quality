@@ -118,7 +118,7 @@ class TestReportMergeIntegration(unittest.TestCase):
             shutil.rmtree(tmp, ignore_errors=True)
 
     def test_structural_weights_normalize_to_100(self):
-        """好几何项目确定性触发 3 增强（template/numerical/gcs）→ base 0.60 + 0.15/0.10/0.15 = 1.0"""
+        """好几何项目确定性触发 5 增强（ml/tpl/nvr/gcs/acl）→ 权重归一化总和恒 1.0"""
         tmp = _make_good_geometry()
         try:
             data = ComprehensiveReport(tmp).generate()
@@ -128,16 +128,18 @@ class TestReportMergeIntegration(unittest.TestCase):
             nvr_w = s.get("numerical_enhancement", {}).get("weight_applied", 0)
             sp_w = s.get("solver_physics_enhancement", {}).get("weight_applied", 0)
             gcs_w = s.get("geometry_consistency_enhancement", {}).get("weight_applied", 0)
-            base_w = 1 - (ml_w + tpl_w + nvr_w + sp_w + gcs_w)
-            # 精确值断言（防归一化公式回归）：4 增强（ml/tpl/nvr/gcs）→ base 0.50, 0.1364×3, 0.0909
-            self.assertAlmostEqual(base_w, 0.50, places=4)
-            self.assertAlmostEqual(ml_w, 0.1364, places=4)
-            self.assertAlmostEqual(tpl_w, 0.1364, places=4)
-            self.assertAlmostEqual(nvr_w, 0.0909, places=4)
-            self.assertAlmostEqual(gcs_w, 0.1364, places=4)
+            acl_w = s.get("anti_corruption_enhancement", {}).get("weight_applied", 0)
+            base_w = 1 - (ml_w + tpl_w + nvr_w + sp_w + gcs_w + acl_w)
+            # 精确值断言（防归一化公式回归）：5 增强（ml/tpl/nvr/gcs/acl）等比缩放
+            self.assertAlmostEqual(ml_w, 0.125, places=3)
+            self.assertAlmostEqual(tpl_w, 0.125, places=3)
+            self.assertAlmostEqual(nvr_w, 0.0833, places=3)
+            self.assertAlmostEqual(gcs_w, 0.125, places=3)
+            self.assertAlmostEqual(acl_w, 0.125, places=3)
             self.assertEqual(sp_w, 0.0)
             # 总和恒为 1
-            self.assertAlmostEqual(base_w + ml_w + tpl_w + nvr_w + sp_w + gcs_w, 1.0, places=4)
+            self.assertAlmostEqual(base_w + ml_w + tpl_w + nvr_w + sp_w + gcs_w + acl_w,
+                                   1.0, places=4)
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
 

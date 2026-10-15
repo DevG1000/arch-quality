@@ -464,7 +464,16 @@ class DepGraph:
 
 
 class GitHistory:
-    """Git 历史信息提取"""
+    """Git 历史信息提取
+
+    超时/异常约定：查询失败时返回 None（而非 0），以区分"查询失败"与"真实为 0"。
+    历史上曾统一返回空串，被调用方当作 0 参与评分，导致超时静默提分
+    （如 avg_commit_size 超时返回 0，被判为"无膨胀"而得满分）。
+    大型仓库的 `git log --shortstat -30` 实测需 10 s 以上，30 s 上限在批量
+    分析负载下会被击穿，故放宽到 300 s。
+    """
+
+    GIT_TIMEOUT = 300
 
     def __init__(self, root: str):
         self.root = Path(root)
@@ -475,41 +484,48 @@ class GitHistory:
                 ["git"] + list(args),
                 capture_output=True, text=True,
                 encoding="utf-8", errors="replace",
-                cwd=self.root, timeout=30
+                cwd=self.root, timeout=self.GIT_TIMEOUT
             )
             return result.stdout.strip()
         except Exception:
-            return ""
+            return None
 
     def recent_days_commits(self, days: int = 7):
-        """最近 days 天内的提交数"""
+        """最近 days 天内的提交数；查询失败返回 None"""
         since = self._git("log", "--oneline", "--since", f"{days} days ago")
-        return len(since.split("\n")) if since else 0
+        return None if since is None else (len(since.split("\n")) if since else 0)
 
     def has_git(self):
-        return bool(self._git("rev-parse", "--is-inside-work-tree"))
+        out = self._git("rev-parse", "--is-inside-work-tree")
+        return None if out is None else bool(out)
 
     def recent_commits(self, months: int = 3):
-        """最近 months 个月内的提交数"""
+        """最近 months 个月内的提交数；查询失败返回 None"""
         since = self._git("log", "--oneline", "--since", f"{months} months ago")
-        return len(since.split("\n")) if since else 0
+        return None if since is None else (len(since.split("\n")) if since else 0)
 
     def commit_count(self):
-        """总提交数"""
+        """总提交数；查询失败返回 None"""
         out = self._git("rev-list", "--count", "HEAD")
+        if out is None:
+            return None
         try:
             return int(out)
         except (ValueError, TypeError):
             return 0
 
     def contributors_count(self):
-        """贡献者人数"""
+        """贡献者人数；查询失败返回 None"""
         out = self._git("shortlog", "-sn")
+        if out is None:
+            return None
         return len([l for l in out.split("\n") if l.strip()]) if out else 0
 
     def avg_commit_size(self, n: int = 30):
-        """最近 n 次提交的平均变更行数"""
+        """最近 n 次提交的平均变更行数；查询失败返回 None"""
         out = self._git("log", "--shortstat", f"-{n}")
+        if out is None:
+            return None
         total = 0
         count = 0
         for line in out.split("\n"):
@@ -649,10 +665,12 @@ PROFILE_ENGINE_MAP = {
     "template": ["standard", "template"],
     "solver-physics": ["standard", "solver-physics"],
     "geometry-consistency": ["standard", "geometry-consistency"],
+    "anti-corruption": ["standard", "anti-corruption"],
 }
 
 # 增强引擎（非 standard）名称列表（配置与报告共用的规范名）
-ENHANCEMENT_ENGINES = ["multilang", "template", "numerical", "solver-physics", "geometry-consistency"]
+ENHANCEMENT_ENGINES = ["multilang", "template", "numerical", "solver-physics",
+                       "geometry-consistency", "anti-corruption"]
 ALL_ENGINES = ["standard"] + ENHANCEMENT_ENGINES
 
 _PROFILE_CONFIG_FILENAME = "arch-quality.yaml"

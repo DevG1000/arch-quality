@@ -1,0 +1,130 @@
+[
+  {
+    "id": "MUT-ACL-001",
+    "name": "业务层直连内核 API",
+    "target_file": "src/business.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "#include \"../wrapper/cad_ops.h\"\n#include \"step_io.h\"\n\nvoid process(const MatShape& a, const MatShape& b, const char* path) {\n    CadEngine e;\n    MatShape m = e.do_fuse(a, b);",
+        "mutated": "#include \"../wrapper/cad_ops.h\"\n#include \"step_io.h\"\n#include <BRepAlgoAPI_Fuse.hxx>\n\nTopoDS_Shape direct_fuse(const MatShape& a, const MatShape& b) {\n    BRepAlgoAPI_Fuse op(a.inner(), b.inner());\n    if (!op.IsDone()) throw std::runtime_error(\"f\");\n    return op.Shape();\n}\n\nvoid process(const MatShape& a, const MatShape& b, const char* path) {\n    MatShape m = MatShape::wrap(direct_fuse(a, b));" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-001"],
+      "dimension_before_max": {"external_access": 100},
+      "dimension_after_min": {"external_access": 60}
+    }
+  },
+  {
+    "id": "MUT-ACL-003",
+    "name": "删除内核版本守卫",
+    "target_file": "wrapper/cad_ops.h",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "#include <BRepAlgoAPI_Fuse.hxx>\n#if OCC_VERSION >= 70800\n#pragma once\nclass CadEngine {",
+        "mutated": "#include <BRepAlgoAPI_Fuse.hxx>\n#pragma once\nclass CadEngine {" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-003"],
+      "dimension_before_max": {"wrapper_coverage": 50},
+      "dimension_after_min": {"wrapper_coverage": 0}
+    }
+  },
+  {
+    "id": "MUT-ACL-004",
+    "name": "wrapper 公开接口泄漏内核类型",
+    "target_file": "wrapper/cad_ops.h",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "class CadEngine {\npublic:\n    MatShape do_fuse(const MatShape& a, const MatShape& b);\n    MatShape do_cut(const MatShape& a, const MatShape& b);\n};",
+        "mutated": "class CadEngine {\npublic:\n    MatShape do_fuse(const MatShape& a, const MatShape& b);\n    MatShape do_cut(const MatShape& a, const MatShape& b);\n    TopoDS_Shape do_leak(const MatShape& a);\n};" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-004"],
+      "dimension_before_max": {"external_access": 100},
+      "dimension_after_min": {"external_access": 70}
+    }
+  },
+  {
+    "id": "MUT-ACL-005",
+    "name": "删除 IsDone 失败状态检查",
+    "target_file": "wrapper/cad_ops.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "MatShape CadEngine::do_fuse(const MatShape& a, const MatShape& b) {\n    BRepAlgoAPI_Fuse op(a.inner(), b.inner());\n    if (!op.IsDone()) throw std::runtime_error(\"fuse failed\");\n    return MatShape::wrap(op.Shape());\n}",
+        "mutated": "MatShape CadEngine::do_fuse(const MatShape& a, const MatShape& b) {\n    BRepAlgoAPI_Fuse op(a.inner(), b.inner());\n    return MatShape::wrap(op.Shape());\n}" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-005"],
+      "dimension_before_max": {"external_access": 100},
+      "dimension_after_min": {"external_access": 70}
+    }
+  },
+  {
+    "id": "MUT-ACL-007",
+    "name": "STEP 读写散落业务模块",
+    "target_file": "src/business.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "#include \"../wrapper/cad_ops.h\"\n#include \"step_io.h\"\n\nvoid process",
+        "mutated": "#include \"../wrapper/cad_ops.h\"\n#include \"step_io.h\"\n#include <STEPControl_Writer.hxx>\n\nvoid scattered_export() {\n    STEPControl_Writer w;\n    w.Write(\"scatter.stp\");\n}\n\nvoid process" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-007"],
+      "dimension_before_max": {"data_exchange": 100},
+      "dimension_after_min": {"data_exchange": 55}
+    }
+  },
+  {
+    "id": "MUT-ACL-008",
+    "name": "引入单位换算魔法因子",
+    "target_file": "importexport/step_io.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "double export_len(const double v) {\n    return unit::convert(v, unit::INCH, unit::MM);\n}",
+        "mutated": "double export_len(const double v) {\n    return v * 25.4;\n}" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-008"],
+      "dimension_before_max": {"fidelity": 100},
+      "dimension_after_min": {"fidelity": 80}
+    }
+  },
+  {
+    "id": "MUT-ACL-011",
+    "name": "删除 reader 错误码检查",
+    "target_file": "importexport/step_io.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "MatShape import_step(const char* path) {\n    STEPControl_Reader r;\n    if (r.ReadFile(path) != IFSelect_RetDone) throw std::runtime_error(\"read fail\");\n    r.TransferRoots();",
+        "mutated": "MatShape import_step(const char* path) {\n    STEPControl_Reader r;\n    r.ReadFile(path);\n    r.TransferRoots();" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-011"],
+      "dimension_before_max": {"data_exchange": 100},
+      "dimension_after_min": {"data_exchange": 70}
+    }
+  },
+  {
+    "id": "MUT-ACL-012",
+    "name": "业务侧持有格式 reader",
+    "target_file": "src/business.cpp",
+    "mutations": [
+      { "action": "replace_block",
+        "original": "#include \"../wrapper/cad_ops.h\"\n#include \"step_io.h\"\n\nvoid process",
+        "mutated": "#include \"../wrapper/cad_ops.h\"\n#include \"step_io.h\"\n#include <IGESControl_Reader.hxx>\n\nclass GeoView {\n    IGESControl_Reader r_;\n};\n\nvoid process" }
+    ],
+    "expected": {
+      "overall_change": "drop",
+      "nvr_rules_changed": ["ACL-012"],
+      "dimension_before_max": {"data_exchange": 100},
+      "dimension_after_min": {"data_exchange": 75}
+    }
+  }
+]
