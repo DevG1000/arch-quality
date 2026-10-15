@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+from arch_quality.arch_origin import origin_tag as _origin_tag
+
 ESC = "\033"
 
 
@@ -530,6 +532,25 @@ class ReportGenerator:
             )
         return "\n\n".join(blocks)
 
+    @staticmethod
+    def _origin_annotation(v: dict) -> str:
+        """WP-6：违规来源标注 [third-party]/[test]（计数感知）。
+
+        优先使用 origin_counts（如 MLR-024 循环依赖按成员归类），
+        回退到 origin 单值。first_party（项目自身）不标注。
+        """
+        counts = v.get("origin_counts") or {}
+        tags = []
+        if counts.get("third_party"):
+            tags.append(f"[third-party×{counts['third_party']}]")
+        if counts.get("test"):
+            tags.append(f"[test×{counts['test']}]")
+        if not tags:
+            tg = _origin_tag(v.get("origin", "first_party"))
+            if tg:
+                tags.append(tg)
+        return (" " + " ".join(tags)) if tags else ""
+
     def _mlr_violations(self) -> str:
         violations = self.m.get("mlr_violations", [])
         if not violations:
@@ -539,19 +560,36 @@ class ReportGenerator:
         low = [v for v in violations if v.get("severity") == "LOW"]
         info = [v for v in violations if v.get("severity") == "INFO"]
 
+        annotated = []
         lines = []
         for v in violations:
             sev = v.get("severity", "LOW")
             icon = _severity_icon(sev)
-            lines.append(f"- {icon} **{v['rule']}** ({sev}) {v['name']}: {v['detail']}")
+            annot = self._origin_annotation(v)
+            if annot:
+                annotated.append((v.get("rule"), v.get("name", ""), annot.strip()))
+            lines.append(f"- {icon} **{v['rule']}** ({sev}) {v['name']}{annot}: {v['detail']}")
 
         summary = f"共 {len(violations)} 项 — {len(high)} HIGH, {len(med)} MEDIUM, {len(low)} LOW"
         if info:
             summary += f", {len(info)} INFO"
+
+        # WP-6：来源标注汇总（附录式披露）
+        origin_note = ""
+        if annotated:
+            tp = sum(1 for _, _, a in annotated if "[third-party" in a)
+            tc = sum(1 for _, _, a in annotated if "[test" in a)
+            origin_note = (
+                f"\n\n> **来源标注（WP-6）**：{len(annotated)} 项违规含非项目自身来源 — "
+                f"[third-party] {tp} 项，[test] {tc} 项。"
+                f"标注依据：路径分类（third_party/vendor/external 目录 → [third-party]；"
+                f"test/qa/示例 → [test]）。未标注项默认视为项目自身债务。"
+            )
         return (
             "## 六、MLR 规则违反\n\n"
             f"{summary}\n\n"
             + "\n".join(lines)
+            + origin_note
         )
 
     # ── 章节 10: 剪刀差风险 ──

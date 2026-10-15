@@ -18,6 +18,7 @@ from arch_quality.arch_core import (
     load_weights_from_skill, ensure_output_dir,
     write_report, read_text_smart
 )
+from arch_quality.arch_origin import classify_paths as _classify_paths
 
 SKILL_PATH = str(Path(__file__).parent / "skills" / "template-metaprogramming.md")
 
@@ -955,11 +956,21 @@ class TemplateMetaprogrammingMetrics:
             )
             severity_024 = "LOW" if has_module_ifc else "HIGH"
             output_level_024 = "LOW" if has_module_ifc else "ERROR"
+            # WP-6 来源标注：按循环成员归类（第三方/测试/自有）
+            _oc = {"third_party": 0, "test": 0, "first_party": 0}
+            for c in header_cycles:
+                _oc[_classify_paths(c)] += 1
+            origin_counts_024 = _oc
+            # 主导来源（计数最大者）；仅用于无 origin_counts 的旧渲染路径回退
+            _origin_024 = max(("first_party", "test", "third_party"),
+                              key=lambda k: _oc[k])
             mlr_results.append({
                 "rule": "MLR-024", "name": "头文件包含循环依赖",
                 "severity": severity_024,
                 "output_level": output_level_024,
                 "count": len(header_cycles),
+                "origin": _origin_024,
+                "origin_counts": origin_counts_024,
                 "detail": f"发现 {len(header_cycles)} 个头文件循环依赖: " +
                           "; ".join(" → ".join(c[:5]) for c in header_cycles[:5]) +
                           (" (检测到 C++20 Modules 接口文件，降级为 LOW)" if has_module_ifc else ""),

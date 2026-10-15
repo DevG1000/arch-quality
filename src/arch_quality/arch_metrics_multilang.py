@@ -1321,6 +1321,8 @@ class MultilangMetrics:
                     "rule": "MLR-001", "name": f"{lang}模块级循环依赖（第三方，已豁免）",
                     "severity": "INFO",
                     "count": tp_cycles,
+                    "origin": "third_party",
+                    "origin_counts": {"third_party": tp_cycles},
                     "detail": f"发现 {tp_cycles} 个 {lang} 模块级循环依赖（第三方代码，已豁免）",
                 })
             if non_tp_cycles:
@@ -1329,6 +1331,8 @@ class MultilangMetrics:
                     "rule": "MLR-001", "name": f"{lang}模块级循环依赖",
                     "severity": "MEDIUM",
                     "count": len(non_tp_cycles),
+                    "origin": "first_party",
+                    "origin_counts": {"first_party": len(non_tp_cycles)},
                     "detail": f"发现 {len(non_tp_cycles)} 个 {lang} 模块级循环依赖: {cycle_samples}",
                 })
 
