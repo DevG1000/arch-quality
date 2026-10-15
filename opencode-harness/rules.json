@@ -1,4 +1,4 @@
-﻿{
+{
   "$comment": "agent harness 断言规则单一事实源。Python 断言器与 opencode 插件 hook 共享，修改需同时保证两者读取一致。",
   "eval_bash_prefixes": [
     "arch-quality",

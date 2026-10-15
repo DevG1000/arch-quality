@@ -14,7 +14,7 @@
       "name": "内核异常/失败状态传播",
       "severity": "MEDIUM",
       "output_level": "WARNING",
-      "count": 40,
+      "count": 39,
       "detail": "内核调用点紧邻未检查 IsDone()/IsValid()，失败可能被静默吞没"
     },
     {
@@ -30,7 +30,7 @@
       "name": "硬编码精度/容差魔法数字",
       "severity": "LOW",
       "output_level": "INFO",
-      "count": 1924,
+      "count": 1699,
       "detail": "检测到硬编码精度/容差魔法数字，建议集中为命名常量"
     }
   ],

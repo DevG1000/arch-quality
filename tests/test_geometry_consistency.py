@@ -296,6 +296,311 @@ class TestAllMetrics(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+class TestKernelSelfExclusion(unittest.TestCase):
+    """T1：路径级内核目录排除扩展至全部 12 条规则"""
+
+    def test_kernel_dir_excluded_from_gcs012(self):
+        """内核目录下的直接成员访问不计入 GCS-012"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/occt/inner.cpp": "f->data_[0] = 1.0;\nf->internal_[1] = 2.0;\n",
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertEqual(d4d["access_encapsulation"]["direct_access_count"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_kernel_dir_excluded_from_gcs011(self):
+        """内核目录下的浅拷贝不计入 GCS-011"""
+        shallow = ("class Buf { vtkSmartPointer<vtkPoints> pts_;\n"
+                   " public:\n Buf(const Buf& b) : pts_(b.pts_) {} };\n")
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/brep/inner.cpp": shallow,
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertEqual(d4d["copy_semantics"]["shallow_count"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_non_kernel_dir_still_counted(self):
+        """非内核目录的同类违规仍应计入（防过度排除）"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/app/inner.cpp": "f->data_[0] = 1.0;\n",
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertGreater(d4d["access_encapsulation"]["direct_access_count"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_kernel_dir_excluded_from_gcs003(self):
+        """内核目录下的 BRep 布尔操作不计入 GCS-003"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRepAlgoAPI_Fuse.hxx>\nTopoDS_Shape s;\n",
+            "src/tkbool/inner.cpp": (
+                "BRepAlgoAPI_Fuse *op = new BRepAlgoAPI_Fuse(a, b);\n"
+                "op->Build();\nTopoDS_Shape r = op->Shape();\n"),
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d1d = m.calc_geometry_kernel_consistency()
+            self.assertEqual(d1d["error_propagation"]["missing_check_count"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class TestWaiverAnnotations(unittest.TestCase):
+    """T2/T3：豁免注解 @kernel_exempt / @gcs_waiver"""
+
+    def test_kernel_exempt_suppresses_gcs012(self):
+        """@kernel_exempt：该文件从 12 条规则统计中剔除"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/hot.cpp": ("/* @kernel_exempt: 遗留适配层，待 2026-Q4 重构 */\n"
+                            "f->data_[0] = 1.0;\nf->internal_[1] = 2.0;\n"),
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertEqual(d4d["access_encapsulation"]["direct_access_count"], 0)
+            self.assertIn("src/hot.cpp", m._kernel_exempt)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_kernel_exempt_without_reason_invalid(self):
+        """@kernel_exempt 缺 reason → 豁免无效，仍触发"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/hot.cpp": "/* @kernel_exempt */\nf->data_[0] = 1.0;\n",
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertGreater(d4d["access_encapsulation"]["direct_access_count"], 0)
+            self.assertEqual(m._kernel_exempt, {})
+            self.assertEqual(m._invalid_waivers[0]["annotation"], "@kernel_exempt")
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_kernel_exempt_file_scoped_only(self):
+        """@kernel_exempt 仅作用于本文件，同目录另一文件仍触发"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/a.cpp": "/* @kernel_exempt: 适配层 */\nf->data_[0] = 1.0;\n",
+            "src/b.cpp": "f->data_[1] = 2.0;\n",
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertGreater(d4d["access_encapsulation"]["direct_access_count"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_gcs_waiver_lowers_density(self):
+        """@gcs_waiver：受控裸数组文件从 GCS-010 分子分母同时剔除"""
+        body = "vtkSmartPointer<vtkPoints> pts;\ndouble *buf = new double[3];\n"
+        files = {"src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n"}
+        # 3 个裸数组文件 + 1 个干净的科学数据文件 → 密度 0.75 超阈值
+        for i in range(3):
+            files[f"src/bare{i}.cpp"] = body
+        files["src/clean.cpp"] = "vtkSmartPointer<vtkPoints> pts;\n"
+        tmp = _make_project(files)
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertGreater(d4d["bare_array"]["density"], 0.5)
+            self.assertEqual(d4d["bare_array"]["score"], 0)
+
+            # 豁免其中 2 个 → bare2 + clean 计入，密度 1/2 = 0.5 ≤ 阈值 → 得分恢复 35
+            m2_files = dict(files)
+            m2_files["src/bare0.cpp"] = body + "// @gcs_waiver: 求解器热路径，已测性能\n"
+            m2_files["src/bare1.cpp"] = body + "// @gcs_waiver: 求解器热路径，已测性能\n"
+            tmp2 = _make_project(m2_files)
+            try:
+                m2 = GeometryConsistencyMetrics(tmp2)
+                _, d2d = m2.calc_data_access_norm()
+                self.assertEqual(d2d["bare_array"]["waived_files"], 2)
+                self.assertEqual(d2d["bare_array"]["density"], 0.5)
+                self.assertEqual(d2d["bare_array"]["score"], 35)
+            finally:
+                shutil.rmtree(tmp2)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_gcs_waiver_without_reason_invalid(self):
+        """@gcs_waiver 缺 reason → 不生效，密度不变"""
+        body = "vtkSmartPointer<vtkPoints> pts;\ndouble *buf = new double[3];\n"
+        files = {"src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n"}
+        for i in range(3):
+            files[f"src/bare{i}.cpp"] = body
+        files["src/clean.cpp"] = "vtkSmartPointer<vtkPoints> pts;\n"
+        files["src/bare0.cpp"] = body + "// @gcs_waiver\n"
+        tmp = _make_project(files)
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertEqual(d4d["bare_array"]["waived_files"], 0)
+            self.assertEqual(m._gcs_waiver, {})
+            self.assertGreater(d4d["bare_array"]["density"], 0.5)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_waiver_audit_output(self):
+        """豁免审计输出结构 + 反滥用守卫（占比低于阈值时不告警）"""
+        files = {
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/a.cpp": "/* @kernel_exempt: 适配层 */\nf->data_[0] = 1.0;\n",
+            "src/b.cpp": "vtkSmartPointer<vtkPoints> p;\ndouble *x = new double[2];"
+                         "// @gcs_waiver: 热路径\n",
+        }
+        for i in range(4):
+            files[f"src/filler{i}.cpp"] = "vtkSmartPointer<vtkPoints> p;\n"
+        tmp = _make_project(files)
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            r = m.all_metrics()
+            wa = r["waiver_audit"]
+            self.assertEqual(wa["kernel_exempt"]["count"], 1)
+            self.assertEqual(wa["gcs_waiver"]["count"], 1)
+            self.assertIn("全部 12 条规则", wa["kernel_exempt"]["scope"])
+            self.assertIn("GCS-010", wa["gcs_waiver"]["scope"])
+            self.assertIsNone(wa["abuse_warning"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_waiver_abuse_warning(self):
+        """@kernel_exempt 占比超阈值 → 反滥用告警"""
+        files = {"src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n"}
+        for i in range(4):
+            files[f"src/x{i}.cpp"] = ("/* @kernel_exempt: 批量标注 */\n"
+                                      "f->data_[0] = 1.0;\n")
+        tmp = _make_project(files)
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            wa = m.all_metrics()["waiver_audit"]
+            self.assertGreater(wa["kernel_exempt"]["ratio"], 0.30)
+            self.assertIsNotNone(wa["abuse_warning"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_waiver_in_comment_stripped_content_not_matched(self):
+        """豁免注解须在剥离注释前采集（防止注解被 _strip_comments 吞掉）"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/a.cpp": ("/* @kernel_exempt: 适配层 */\n"
+                          "f->data_[0] = 1.0;\n"
+                          "// @gcs_waiver: 热路径\n"),
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            self.assertEqual(len(m._kernel_exempt), 1)
+            self.assertEqual(len(m._gcs_waiver), 1)
+            _, d4d = m.calc_data_access_norm()
+            self.assertEqual(d4d["access_encapsulation"]["direct_access_count"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+
+class TestWaiverAbuseGuards(unittest.TestCase):
+    """专家校对第二轮 P0-1/P0-2/P1-1 修复的回归测试"""
+
+    def test_empty_reason_forms_rejected(self):
+        """P0-2：空 reason 形式必须被拒（否则 reason 必填规则可被绕过）"""
+        base = {"src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n"}
+        cases = {
+            "/* @kernel_exempt: */\nf->data_[0] = 1.0;\n": "kernel_exempt",
+            "/* @kernel_exempt */\nf->data_[0] = 1.0;\n": "kernel_exempt",
+            "vtkSmartPointer<vtkPoints> p;\ndouble *b = new double[3];\n"
+            "// @gcs_waiver:\n": "gcs_waiver",
+            "vtkSmartPointer<vtkPoints> p;\ndouble *b = new double[3];\n"
+            "// @gcs_waiver\n": "gcs_waiver",
+        }
+        for content, kind in cases.items():
+            tmp = _make_project(dict(base, **{"src/a.cpp": content}))
+            try:
+                m = GeometryConsistencyMetrics(tmp)
+                self.assertEqual(m._kernel_exempt, {}, f"{kind} 空 reason 不应生效")
+                self.assertEqual(m._gcs_waiver, {}, f"{kind} 空 reason 不应生效")
+                self.assertEqual(len(m._invalid_waivers), 1)
+                self.assertEqual(m._invalid_waivers[0]["annotation"], f"@{kind}")
+            finally:
+                shutil.rmtree(tmp)
+
+    def test_gcs_waiver_ratio_guard(self):
+        """P0-1：@gcs_waiver 占比超阈值须告警（否则可全量豁免刷满 GCS-010）"""
+        body = "vtkSmartPointer<vtkPoints> p;\ndouble *b = new double[3];\n"
+        files = {"src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n"}
+        for i in range(4):
+            files[f"src/x{i}.cpp"] = body + "// @gcs_waiver: 热路径\n"
+        tmp = _make_project(files)
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            wa = m.all_metrics()["waiver_audit"]
+            self.assertGreater(wa["gcs_waiver"]["ratio"], 0.30)
+            self.assertIn("@gcs_waiver", wa["abuse_warning"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_density_undefined_when_denominator_waived_away(self):
+        """P0-1：分母被豁免清空时密度不可解读，须显式标记"""
+        body = "vtkSmartPointer<vtkPoints> p;\ndouble *b = new double[3];\n"
+        files = {"src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n"}
+        for i in range(3):
+            files[f"src/x{i}.cpp"] = body + "// @gcs_waiver: 热路径\n"
+        tmp = _make_project(files)
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            _, d4d = m.calc_data_access_norm()
+            self.assertTrue(d4d["bare_array"]["density_undefined"])
+            self.assertIsNotNone(d4d["bare_array"]["caveat"])
+            self.assertEqual(d4d["bare_array"]["scidata_files"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_kernel_dir_over_exclusion_guard(self):
+        """P1-1：内核目录排除占比过高须告警（通用目录名 geom/brep 误伤风险）"""
+        files = {"src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n"}
+        for i in range(4):
+            files[f"src/geom/app{i}.cpp"] = "f->data_[0] = 1.0;\n"
+        tmp = _make_project(files)
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            wa = m.all_metrics()["waiver_audit"]
+            kd = wa["kernel_dir_exclusion"]
+            self.assertEqual(kd["count"], 4)
+            self.assertGreater(kd["ratio"], 0.30)
+            self.assertIn("内核目录排除占比", wa["abuse_warning"])
+            self.assertIn("geom", kd["weak_names"])
+            self.assertIn("tkbool", kd["strong_names"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_valid_reason_still_effective(self):
+        """修复后合法注解不得被误伤（防过度收紧）"""
+        tmp = _make_project({
+            "src/brep.cpp": "#include <BRep_Tool.hxx>\nTopoDS_Shape s;\n",
+            "src/a.cpp": "/* @kernel_exempt: 遗留适配层，2026-Q4 重构 */\nf->data_[0] = 1.0;\n",
+            "src/b.cpp": "vtkSmartPointer<vtkPoints> p;\ndouble *x = new double[2];"
+                         "// @gcs_waiver: 求解器热路径，已测性能\n",
+        })
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            self.assertEqual(list(m._kernel_exempt), ["src/a.cpp"])
+            self.assertEqual(list(m._gcs_waiver), ["src/b.cpp"])
+            self.assertEqual(m._invalid_waivers, [])
+            _, d4d = m.calc_data_access_norm()
+            self.assertEqual(d4d["access_encapsulation"]["direct_access_count"], 0)
+        finally:
+            shutil.rmtree(tmp)
+
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -877,21 +877,32 @@ class StandardMetrics:
         """历史可追溯性：Git 活跃度（提交频率+团队协作+分支健康）"""
         if not self.git.has_git():
             return None, {"has_git": False, "reason": "无 Git 仓库"}
+        c3m = self.git.recent_commits(3)
+        c1m = self.git.recent_commits(1)
+        c7d = self.git.recent_days_commits(7)
+        contributors = self.git.contributors_count()
+        if None in (c3m, c1m, c7d, contributors):
+            # 查询失败（超时/异常）不可当作"无提交"，否则会误判项目不活跃（SAR-012）
+            # 或误判无贡献者。数据不可得时本子维度按 N/A 处理。
+            return None, {
+                "has_git": True,
+                "query_failed": True,
+                "reason": "Git 查询失败或超时，数据不可得",
+            }
         score = 20  # 有 Git 仓库
         detail = {"has_git": True}
-        if self.git.recent_commits(3) > 0:
+        if c3m > 0:
             score += 20
         else:
             detail["no_commit_3m"] = True
-        if self.git.recent_commits(1) > 0:
+        if c1m > 0:
             score += 20
         else:
             detail["no_commit_1m"] = True
-        if self.git.recent_days_commits(7) > 0:  # 近 7 天
+        if c7d > 0:  # 近 7 天
             score += 20
         else:
             detail["no_commit_7d"] = True
-        contributors = self.git.contributors_count()
         if contributors > 1:
             score += 10
             detail["contributors"] = contributors
@@ -1032,7 +1043,9 @@ class StandardMetrics:
             return None, {"has_git": False}
         avg = self.git.avg_commit_size(30)
         if avg is None:
-            return None, {"has_git": True, "no_commits": True}
+            # 查询失败/超时：不可当作 0（0 会被判为"无膨胀"而得满分 100）
+            return None, {"has_git": True, "query_failed": True,
+                          "reason": "Git 查询失败或超时，数据不可得"}
         detail = {"avg_commit_size": round(avg, 1)}
         if avg < 50:      score = 100
         elif avg < 100:   score = 80

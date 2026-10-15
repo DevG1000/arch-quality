@@ -17,7 +17,8 @@ MLR rule coverage:
   MLR-001  cross-language cycles    -> FreeCAD-CAM
   MLR-001b same-language cycles     -> ElmerFEM (Fortran use/call)
   MLR-003  binding inconsistency    -> FreeCAD-CAM (pybind11 .def())
-  MLR-004  script boundary          -> BRL-CAD (Tcl namespace)
+  MLR-004  script boundary          -> (Python ctypes.CDLL 直访内部符号；无项目命中)
+  MLR-004b Tcl namespace violation  -> BRL-CAD (Tcl 命名空间)
   MLR-005  callback depth          -> FreeCAD-Fem (depth-2/3)
   MLR-006  hot module               -> OpenFOAM, BRL-CAD, FreeCAD
   MLR-008  GIL deadlock risk        -> FreeCAD-CAM, ElmerFEM

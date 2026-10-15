@@ -1,9 +1,14 @@
 {
-  "snapshot_date": "2026-08-21",
+  "snapshot_date": "2026-09-28",
   "root_path": "D:\\OPENSOURCE\\OpenFOAM-v2512\\applications",
-  "standard_overall": 41.54,
-  "dimensions": {},
-  "file_count": 1824,
+  "standard_overall": 41.55,
+  "dimensions": {
+    "structural": 59.17,
+    "design": 61.37,
+    "documentation": 24.0,
+    "evolution": 14.62
+  },
+  "file_count": 1823,
   "sar_violations": {
     "SAR-002": 1,
     "SAR-004": 1,

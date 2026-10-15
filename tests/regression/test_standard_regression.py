@@ -31,6 +31,11 @@ TOLERANCE_OVERALL = 2.0
 TOLERANCE_DIMENSION = 5.0
 TOLERANCE_FILE_COUNT_PCT = 0.02
 
+# 时间/环境依赖型规则：结果随 Git 提交时间、依赖数据库刷新而漂移，
+# 不适合作为快照基线（test_standard_sar.py 已将其定义为 N/A 条件规则并有单元覆盖）。
+# SAR-011 依赖过时程度依赖依赖数据的新鲜度；SAR-012 依赖"近 3 个月无提交"的滚动窗口。
+TIME_DEPENDENT_SAR = {"SAR-011", "SAR-012"}
+
 
 def _load_snapshot(name):
     path = SNAP_DIR / f"{name}.json"
@@ -44,17 +49,29 @@ def _save_snapshot(name, data):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
+# StandardMetrics.all_metrics() 将四个维度暴露为顶层键（structural/design/
+# documentation/evolution），而非嵌套在 "dimensions" 下。历史快照的 dimensions
+# 因此恒为 {}，test_dimension_scores 一直空转通过——此处按实际结构取数。
+STANDARD_DIM_KEYS = ("structural", "design", "documentation", "evolution")
+
+
 def _compute_actual(root_path):
     m = StandardMetrics(root_path)
     result = m.all_metrics()
 
     dimensions = {}
+    for k in STANDARD_DIM_KEYS:
+        v = result.get(k)
+        if isinstance(v, dict):
+            dimensions[k] = v.get("score")
     for k, v in result.get("dimensions", {}).items():
         dimensions[k] = v.get("score", 0) if isinstance(v, dict) else v
 
     sar_violations = {}
     for v in result.get("sar_violations", []):
         key = v["rule"]
+        if key in TIME_DEPENDENT_SAR:
+            continue
         sar_violations[key] = sar_violations.get(key, 0) + v.get("count", 1)
 
     return {
@@ -109,6 +126,15 @@ def _make_project_class(project_name, snap_name, root_path):
                 if actual is None:
                     self.fail(f"{self.project_name_local}: dimension "
                               f"'{dim_name}' missing")
+                if expected is None or actual is None:
+                    self.assertEqual(
+                        actual, expected,
+                        msg=(f"{self.project_name_local}: dimension '{dim_name}' "
+                             f"None mismatch (snapshot={expected}, actual={actual}). "
+                             f"Regenerate with ARCH_REGRESSION_UPDATE=1 if the "
+                             f"project baseline is stale."),
+                    )
+                    continue
                 self.assertAlmostEqual(
                     actual, expected, delta=TOLERANCE_DIMENSION,
                     msg=(f"{self.project_name_local}: {dim_name}={actual} "

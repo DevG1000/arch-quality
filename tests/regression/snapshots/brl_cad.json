@@ -30,7 +30,7 @@
     "cross_lang_cycles": 100
   },
   "mlr_violations": {
-    "MLR-004|MEDIUM": 7751,
+    "MLR-004b|MEDIUM": 7751,
     "MLR-010|LOW": 186,
     "MLR-010|MEDIUM": 63
   },
@@ -45,7 +45,7 @@
     "call_hit_rate": 0.0
   },
   "required_mlr_rules": [
-    "MLR-004",
+    "MLR-004b",
     "MLR-010"
   ]
 }

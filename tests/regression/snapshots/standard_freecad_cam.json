@@ -1,8 +1,13 @@
 {
-  "snapshot_date": "2026-08-21",
+  "snapshot_date": "2026-09-28",
   "root_path": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\CAM",
-  "standard_overall": 35.91,
-  "dimensions": {},
+  "standard_overall": 34.96,
+  "dimensions": {
+    "structural": 35.45,
+    "design": 67.2,
+    "documentation": 18.0,
+    "evolution": 15.71
+  },
   "file_count": 600,
   "sar_violations": {
     "SAR-001": 1,

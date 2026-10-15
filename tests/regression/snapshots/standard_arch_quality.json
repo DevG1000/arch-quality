@@ -1,13 +1,18 @@
 {
-  "snapshot_date": "2026-08-21",
+  "snapshot_date": "2026-09-28",
   "root_path": "D:\\opensource\\arch-quality",
-  "standard_overall": 54.46,
-  "dimensions": {},
-  "file_count": 218,
+  "standard_overall": 54.58,
+  "dimensions": {
+    "structural": 57.53,
+    "design": 75.28,
+    "documentation": 33.25,
+    "evolution": 47.4
+  },
+  "file_count": 248,
   "sar_violations": {
     "SAR-002": 1,
     "SAR-004": 1,
-    "SAR-006": 7,
+    "SAR-006": 9,
     "SAR-010": 1
   }
 }

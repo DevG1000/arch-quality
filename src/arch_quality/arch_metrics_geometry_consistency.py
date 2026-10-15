@@ -2,12 +2,12 @@
 """
 arch_metrics_geometry_consistency.py — 几何内核与科学数据结构一致性评估
 
-实现《几何内核与科学数据结构一致性评估指南（1.6版）》定义的 4 维评分模型
+实现《几何内核与科学数据结构一致性评估指南（1.7版）》定义的 4 维评分模型
 和 12 条 GCS 规则（GCS-001~012）的静态分析检测。
 
 版本绑定：
-  - 指南版本：1.6
-  - Skill 版本：1.0
+  - 指南版本：1.7
+  - Skill 版本：1.1
 """
 
 import os
@@ -25,8 +25,8 @@ from arch_quality.arch_core import (
 
 SKILL_PATH = str(Path(__file__).parent / "skills" / "geometry-consistency.md")
 
-GUIDE_VERSION = "1.6"
-SKILL_VERSION = "1.0"
+GUIDE_VERSION = "1.7"
+SKILL_VERSION = "1.1"
 
 # ── 常量定义 ──
 CPP_EXTS = {".cpp", ".cxx", ".cc", ".hpp", ".hxx", ".txx", ".h", ".c", ".ixx", ".cppm"}
@@ -109,9 +109,31 @@ DIRECT_MEMBER_ACCESS_RE = re.compile(
     r"\w+\s*->\s*(?:data_|internal_|private_|coords|vertices_)\w*(?:\[[^\]]*\])?\s*[=;]",
     re.MULTILINE)
 
-# 白名单：内核自身目录名（GCS-002 豁免）
-KERNEL_SELF_DIRS = {"occt", "opencascade", "cascade", "tkg3d", "tktop", "tkbool",
-                    "geom", "brep", "geometric_engine"}
+# 白名单：内核自身目录名（12 条规则全规则路径级排除）
+# 强名：内核发行版/内核模块专有目录名，命中即判定为内核自身
+KERNEL_SELF_DIRS = {"occt", "opencascade", "cascade", "tkg3d", "tktop", "tkbool"}
+# 弱名：通用几何词，可能同时是应用层目录名（如 SALOME 的 src/GEOM 为其封装层）。
+# 保留以维持基线校准，但纳入过度排除守卫（ratio > 30% 告警）以便人工复核。
+WEAK_KERNEL_SELF_DIRS = {"geom", "brep", "geometric_engine"}
+KERNEL_SELF_DIRS = KERNEL_SELF_DIRS | WEAK_KERNEL_SELF_DIRS
+
+# ── 豁免注解（WP-2.5）──
+# @kernel_exempt：文件级，从全部 12 条规则统计中剔除（路径级排除的细粒度补充）
+# 合法格式：/* @kernel_exempt: reason */   reason 必填且非空
+KERNEL_EXEMPT_RE = re.compile(r"/\*\s*@kernel_exempt\s*:\s*(?P<reason>\S[^*\n]*?)\s*\*/")
+# 非法形式 → 豁免无效，仅记录告警（缺 reason / 空 reason）
+KERNEL_EXEMPT_INVALID_RE = re.compile(
+    r"/\*\s*@kernel_exempt\s*(?::\s*)?\*/")
+
+# @gcs_waiver：行尾注释，声明受控裸数组（性能热路径）
+# 合法格式：// @gcs_waiver: reason   reason 必填且非空
+# 语义：GCS-010 密度统计的分子与分母同时剔除该文件（影响 scoring）
+GCS_WAIVER_RE = re.compile(r"//\s*@gcs_waiver\s*:\s*(?P<reason>\S[^\n]*?)\s*$", re.MULTILINE)
+GCS_WAIVER_INVALID_RE = re.compile(r"//\s*@gcs_waiver\s*(?::\s*)?$", re.MULTILINE)
+
+# 反滥用守卫：各排除通道的排除文件数占已扫描文件数上限（超过则输出告警，
+# 防止"全项目标注豁免/大批目录被排除"使 GCS 退化为空评估）
+WAIVER_ABUSE_RATIO_LIMIT = 0.30
 
 THIRD_PARTY_DIR_NAMES = {
     "third_party", "thirdparty", "3rdparty", "external", "vendor",
@@ -146,7 +168,10 @@ class GeometryConsistencyMetrics:
         self.root = root
         self.index = FileIndex(root)
         self.weights = {}
-        self._all_contents = {}        # abs_path → content
+        self._all_contents = {}        # abs_path → content（已剥离注释）
+        self._kernel_exempt = {}       # rel_path → reason（@kernel_exempt，12 规则全排除）
+        self._gcs_waiver = {}          # rel_path → reason（@gcs_waiver，仅 GCS-010 密度）
+        self._invalid_waivers = []     # 缺 reason 的非法豁免注解（告警留痕）
         self._is_geometry = False
         self._dims_cache = {}
         self._init_weights()
@@ -170,17 +195,41 @@ class GeometryConsistencyMetrics:
                 "数据表示与访问规范性": 0.25,
             }
 
+    def _rel_path(self, abs_path: str) -> str:
+        """统一为相对 root 的正斜杠路径（豁免字典的键）"""
+        try:
+            return os.path.relpath(abs_path, self.root).replace("\\", "/")
+        except ValueError:
+            return str(abs_path).replace("\\", "/")
+
     def _scan_files(self):
         for f in self.index.files:
             if f["ext"] not in ALL_GCS_EXTS:
                 continue
             try:
-                self._all_contents[f["abs_path"]] = _strip_comments(read_text_smart(f["abs_path"]))
+                raw = read_text_smart(f["abs_path"])
             except Exception:
-                pass
+                continue
+            rel = self._rel_path(f["abs_path"])
+            # 豁免注解必须从原始内容采集（_strip_comments 会剥离注释）
+            m = KERNEL_EXEMPT_RE.search(raw)
+            if m:
+                self._kernel_exempt[rel] = m.group("reason").strip()
+            elif KERNEL_EXEMPT_INVALID_RE.search(raw):
+                self._invalid_waivers.append(
+                    {"file": rel, "annotation": "@kernel_exempt",
+                     "issue": "缺少 reason，豁免无效"})
+            wm = GCS_WAIVER_RE.search(raw)
+            if wm:
+                self._gcs_waiver[rel] = wm.group("reason").strip()
+            elif GCS_WAIVER_INVALID_RE.search(raw):
+                self._invalid_waivers.append(
+                    {"file": rel, "annotation": "@gcs_waiver",
+                     "issue": "缺少 reason，豁免无效"})
+            self._all_contents[f["abs_path"]] = _strip_comments(raw)
 
     def _is_kernel_self(self, abs_path: str) -> bool:
-        """判断是否内核自身目录（GCS-002 白名单豁免）"""
+        """判断是否内核自身目录（路径级排除，覆盖全部 12 条规则）"""
         try:
             rel = os.path.relpath(abs_path, self.root)
         except ValueError:
@@ -206,19 +255,92 @@ class GeometryConsistencyMetrics:
         parts = Path(rel).parts
         return any(p.lower() in THIRD_PARTY_DIR_NAMES for p in parts)
 
+    def _skip(self, abs_path: str, exclude_kernel_self: bool = True,
+              exclude_test: bool = False) -> bool:
+        """统一排除判定（WP-2.5）
+
+        优先级：第三方目录 > 测试/QA/Draw > @kernel_exempt 注解 > 内核目录（路径级）
+        - @kernel_exempt 对全部 12 条规则生效（文件级）
+        - exclude_kernel_self 控制路径级内核目录排除（GCS-001 经 _any 显式传 True）
+        """
+        if self._is_third_party(abs_path):
+            return True
+        if exclude_test and self._is_test_file(abs_path):
+            return True
+        if self._rel_path(abs_path) in self._kernel_exempt:
+            return True
+        if exclude_kernel_self and self._is_kernel_self(abs_path):
+            return True
+        return False
+
+    def _waiver_audit(self) -> dict:
+        """豁免审计（反滥用守卫）
+
+        三条排除通道：内核目录（路径级）/ @kernel_exempt（12 规则）/ @gcs_waiver（仅 GCS-010）。
+        任一通道排除占比超 WAIVER_ABUSE_RATIO_LIMIT 即告警，防止
+        "全项目标注豁免"或"通用目录名（geom/brep）误伤应用层代码"
+        导致 12 条规则退化为空评估。
+        """
+        total = max(1, len(self._all_contents))
+        ke_count = len(self._kernel_exempt)
+        gw_count = len(self._gcs_waiver)
+        ke_ratio = round(ke_count / total, 4)
+        gw_ratio = round(gw_count / total, 4)
+        kd_files = [p for p in self._all_contents if self._is_kernel_self(p)]
+        kd_ratio = round(len(kd_files) / total, 4)
+        limit = WAIVER_ABUSE_RATIO_LIMIT
+        warnings = []
+        if ke_ratio > limit:
+            warnings.append(
+                f"@kernel_exempt 排除占比 {ke_ratio:.1%} 超过上限 {limit:.0%}，"
+                f"12 条规则覆盖度可能失真，请复核豁免必要性")
+        if gw_ratio > limit:
+            warnings.append(
+                f"@gcs_waiver 排除占比 {gw_ratio:.1%} 超过上限 {limit:.0%}，"
+                f"GCS-010 密度可能被豁免抬高，请复核受控裸数组声明")
+        if kd_ratio > limit:
+            warnings.append(
+                f"内核目录排除占比 {kd_ratio:.1%} 超过上限 {limit:.0%}，"
+                f"通用目录名（{'/'.join(sorted(WEAK_KERNEL_SELF_DIRS))}）可能误伤应用层代码，"
+                f"请确认这些目录确为内核自身实现")
+        return {
+            "kernel_exempt": {
+                "count": ke_count,
+                "ratio": ke_ratio,
+                "scope": "全部 12 条规则",
+                "files": sorted(self._kernel_exempt)[:20],
+            },
+            "gcs_waiver": {
+                "count": gw_count,
+                "ratio": gw_ratio,
+                "scope": "仅 GCS-010 密度（分子分母同时剔除）",
+                "files": sorted(self._gcs_waiver)[:20],
+            },
+            "kernel_dir_exclusion": {
+                "count": len(kd_files),
+                "ratio": kd_ratio,
+                "scope": "全部 12 条规则（路径级）",
+                "strong_names": sorted(KERNEL_SELF_DIRS - WEAK_KERNEL_SELF_DIRS),
+                "weak_names": sorted(WEAK_KERNEL_SELF_DIRS),
+            },
+            "invalid_waivers": self._invalid_waivers[:20],
+            "invalid_count": len(self._invalid_waivers),
+            "abuse_limit": limit,
+            "abuse_warning": "；".join(warnings) if warnings else None,
+        }
+
     def _count(self, pattern: re.Pattern) -> int:
+        """按文件计数匹配次数（排除第三方/豁免/内核目录；测试文件保持原口径计入）"""
         total = 0
         for abs_path, content in self._all_contents.items():
-            if self._is_third_party(abs_path):
+            if self._skip(abs_path, exclude_kernel_self=True):
                 continue
             total += len(pattern.findall(content))
         return total
 
     def _any(self, pattern: re.Pattern, exclude_kernel_self: bool = False) -> bool:
         for abs_path, content in self._all_contents.items():
-            if self._is_third_party(abs_path):
-                continue
-            if exclude_kernel_self and self._is_kernel_self(abs_path):
+            if self._skip(abs_path, exclude_kernel_self=exclude_kernel_self):
                 continue
             if pattern.search(content):
                 return True
@@ -239,7 +361,7 @@ class GeometryConsistencyMetrics:
             detail = {}
 
             # 检查项 1：闭合性校验测试存在（GCS-001 加分项）
-            has_closure = self._any(CLOSURE_CHECK_RE)
+            has_closure = self._any(CLOSURE_CHECK_RE, exclude_kernel_self=True)
             if has_closure:
                 score += 30
             detail["closure_check"] = {"score": 30 if has_closure else 0, "has": has_closure}
@@ -247,7 +369,7 @@ class GeometryConsistencyMetrics:
             # 检查项 2：Handle 一致（无跨作用域裸指针穿越）（GCS-002）
             bare_new_cross = 0
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path) or self._is_kernel_self(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True):
                     continue
                 if BARE_NEW_KERNEL_RE.search(content) and RAW_KERNEL_PTR_FUNC_RE.search(content):
                     bare_new_cross += 1
@@ -262,7 +384,7 @@ class GeometryConsistencyMetrics:
             # 跨函数/封装级(builder IsDone)检查静态不可判 → KNOWN_HOLES
             missing_done = 0
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path) or self._is_test_file(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True, exclude_test=True):
                     continue
                 for m in BOOL_CALL_RE.finditer(content):
                     var = m.group(1)
@@ -305,7 +427,7 @@ class GeometryConsistencyMetrics:
             # GCS-005：硬编码精度魔法数字（文件级：同文件有字面量且无命名常量）
             prec_bad = 0
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True):
                     continue
                 if NAMED_PRECISION_RE.search(content):
                     continue
@@ -319,7 +441,7 @@ class GeometryConsistencyMetrics:
             unit_factors = 0
             unit_func = False
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True):
                     continue
                 unit_factors += len(UNIT_FACTOR_RE.findall(content))
                 if UNIT_FUNC_RE.search(content):
@@ -346,7 +468,7 @@ class GeometryConsistencyMetrics:
             # GCS-007：网格语义混用（≥2 类型 + 交叉索引，窄化）
             mixed = 0
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True):
                     continue
                 types = set(GRID_TYPE_RE.findall(content))
                 if len(types) >= 2 and CROSS_INDEX_RE.search(content):
@@ -358,7 +480,7 @@ class GeometryConsistencyMetrics:
             # GCS-008：场量命名一致性
             inconsistent = 0
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True):
                     continue
                 if FIELD_INCONSISTENT_RE.search(content):
                     inconsistent += 1
@@ -370,7 +492,7 @@ class GeometryConsistencyMetrics:
             # GCS-009：维度匹配（命名分量常量 vs 硬编码因子）
             mismatch = 0
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True):
                     continue
                 consts = dict((m.group(1), int(m.group(2)))
                               for m in COMPONENT_CONST_RE.finditer(content))
@@ -400,10 +522,15 @@ class GeometryConsistencyMetrics:
             detail = {}
 
             # GCS-010：裸数组密度阈值（默认 50%）
+            # @gcs_waiver（受控裸数组/性能热路径）→ 该文件从分子与分母同时剔除
             bare_files = 0
             scidata_files = 0
+            waived_files = 0
             for abs_path, content in self._all_contents.items():
-                if self._is_third_party(abs_path):
+                if self._skip(abs_path, exclude_kernel_self=True):
+                    continue
+                if self._rel_path(abs_path) in self._gcs_waiver:
+                    waived_files += 1
                     continue
                 has_bare = bool(BARE_ARRAY_RE.search(content))
                 has_sci = bool(SCIDATA_REF_RE.search(content))
@@ -414,9 +541,16 @@ class GeometryConsistencyMetrics:
             density = bare_files / max(1, scidata_files)
             if density <= 0.5:
                 score += 35
+            # 分母被 @gcs_waiver 全部豁免清空 → 密度恒为 0，GCS-010 满分不可解读
+            density_undefined = waived_files > 0 and scidata_files == 0
             detail["bare_array"] = {"score": 35 if density <= 0.5 else 0,
                                     "density": round(density, 3), "bare_files": bare_files,
-                                    "scidata_files": scidata_files}
+                                    "scidata_files": scidata_files,
+                                    "waived_files": waived_files,
+                                    "density_undefined": density_undefined,
+                                    "caveat": ("科学数据文件被 @gcs_waiver 全部豁免，"
+                                               "密度恒为 0，本项得分不具参考意义"
+                                               if density_undefined else None)}
 
             # GCS-011：深/浅拷贝
             shallow = self._count(SHALLOW_COPY_RE)
@@ -596,6 +730,7 @@ class GeometryConsistencyMetrics:
                     "data_access_norm": {"score": None, "detail": {}},
                 },
                 "gcs_violations": [],
+                "waiver_audit": {},
             }
 
         d1, dd1 = self.calc_geometry_kernel_consistency()
@@ -623,6 +758,7 @@ class GeometryConsistencyMetrics:
                 "data_access_norm": {"score": d4, "detail": dd4},
             },
             "gcs_violations": self.check_gcs_rules(),
+            "waiver_audit": self._waiver_audit(),
             "version_info": {
                 "guide_version": GUIDE_VERSION,
                 "skill_version": SKILL_VERSION,
@@ -661,6 +797,14 @@ def main():
             for dk, dv in dims.items():
                 print(f"    {dk}: {dv.get('score', 'N/A')}")
             print(f"\n  GCS violations: {len(result.get('gcs_violations', []))}")
+            wa = result.get("waiver_audit", {})
+            if wa:
+                print(f"  Waivers: @kernel_exempt {wa['kernel_exempt']['count']}"
+                      f" / @gcs_waiver {wa['gcs_waiver']['count']}")
+                if wa.get("invalid_count"):
+                    print(f"  [豁免语法缺失] {wa['invalid_count']} 处（缺 reason，豁免无效）")
+                if wa.get("abuse_warning"):
+                    print(f"  [豁免滥用告警] {wa['abuse_warning']}")
         print(f"\nReport saved: {report_path}")
 
 
