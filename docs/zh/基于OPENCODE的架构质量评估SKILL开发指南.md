@@ -2,7 +2,7 @@
 
 > 从数值算法精度保障评估 Skill 的完整开发实践中提炼的可复用方法论
 >
-> **版本**：1.1（H2 实测新增流程项）  
+> **版本**：1.2（专家校对修订：逻辑与内容一致性）  
 > **适用范围**：为 arch-quality 体系创建新的评估维度/Skill  
 > **前置条件**：熟悉 arch-quality 框架、OpenCode 智能体机制
 
@@ -18,8 +18,9 @@
 - [第六章：质量保障检查清单](#第六章质量保障检查清单)
 - [第七章：H2 实测新增流程项 v1](#第七章h2-实测新增流程项-v1)
 - [附录 A：数值精度 Skill 开发复盘](#附录-a数值精度-skill-开发复盘)
-- [附录 B：opencode.jsonc 完整配置示例](#附录-bopencodejsonc-完整配置示例)
+- [附录 B：opencode.json 完整配置示例](#附录-bopencodejson-完整配置示例)
 - [附录 C：参考资源与术语表](#附录-c参考资源与术语表)
+- [附录 D：版本历史](#附录-d版本历史)
 
 ---
 
@@ -45,7 +46,7 @@
 +------------------+    抽象层次最高
 |  指南（Guide）    |    定义"应该评估什么"
 |  文档 .md         |    评分公式（自然语言）
-|                   |    NVR/MLR 规则定义
+|                   |    违规规则定义
 +--------+---------+    行业标准映射
          | 翻译与工程化
          v
@@ -66,9 +67,11 @@
 
 **关键规则**：三者必须保持一致性。修改任一方时，必须同步更新其他两方。
 
+> **规则前缀分配**：本体系按维度分配规则前缀——标准质量 SAR、多语言 MLR、模板 TPL、数值 NVR、求解器/物理场 MPR、几何一致性 GCS、防腐层 ACL。下文示例沿用早期数值域命名（NVR/MLR），新维度应使用对应前缀（如 §7 的 GCS/ACL）。
+
 ### 1.3 Skill 全生命周期
 
-整个开发流程分为 6 个阶段，对应 17 个 OpenCode 交互提示词：
+整个开发流程分为 3 个阶段（A 开发 / B 测试 / C 部署），对应 17 个 OpenCode 交互提示词：
 
 ```
 阶段 A：开发 -------------------------------------------------
@@ -90,7 +93,8 @@
                                      B4 一致性
                                                     |
 阶段 C：部署 -------------------------------------------------
-  C1 注册智能体 --> C2 CI/CD --> C3 用户提示词 --> C4 报告
+  C1 注册智能体 --> C1.5 同步 Agent 定义/README --> C2 CI/CD
+                                                      --> C3 用户提示词 --> C4 报告
 ```
 
 ### 1.4 参考实例概览
@@ -104,7 +108,7 @@
 | 指南版本 | 1.0 --> 1.8 |
 | Skill 版本 | 1.0 --> 1.6 |
 | 工具代码 | 890 行 |
-| 验证项目 | 10 个开源项目 |
+| 验证项目 | 5 个开源项目（回归基线）|
 | 测试用例 | 22 单元 + 6 变异 + 38 回归 |
 | 开发总周期 | ~4 周 |
 
@@ -390,9 +394,11 @@ Skill 翻译结果：
 数值精度 12 条 NVR 规则的 output_level 分布：
 
 ```
-ERROR (4条): NVR-001 稳定性溢出, NVR-003 相消损失, NVR-005 MMS缺失, NVR-006 观察阶偏差
-WARNING (5条): NVR-004 累积误差, NVR-007 离散误差, NVR-008 迭代误差, NVR-010 回归缺失
-INFO (2条): NVR-011 回归断言, NVR-012 债务密度
+ERROR (5条): NVR-001 稳定性溢出, NVR-002 条件数超限, NVR-003 相消性损失,
+            NVR-005 MMS验证缺失, NVR-006 观察阶偏差
+WARNING (4条): NVR-004 累积误差失控, NVR-007 离散误差未控,
+              NVR-008 迭代误差未控, NVR-010 回归测试缺失
+INFO (3条): NVR-009 确认就绪度检查, NVR-011 回归允许值缺失, NVR-012 数值债务密度
 ```
 
 ---
@@ -462,9 +468,11 @@ INFO (2条): NVR-011 回归断言, NVR-012 债务密度
 >
 > | 结果 | 条件 | 后续动作 |
 > |:----:|:-----|:---------|
-> | PASS | 全部 6 项无 FAIL | 进入 A4 工具实现 |
-> | WARNING | 仅 4-5 项有 WARNING | 修复 WARNING 后进入 A4 |
-> | FAIL | 任一项有 FAIL，或 ≥2 项 WARNING | 修复后才能进入 A4 |
+> | PASS | 全部 6 项无 FAIL，且 WARNING ≤ 2 项 | 进入 A4 工具实现 |
+> | WARNING | 无 FAIL，且 WARNING 为 3-4 项 | 修复 WARNING 后进入 A4 |
+> | FAIL | 任一维度有 FAIL，或 WARNING ≥ 5 项 | 修复后才能进入 A4 |
+>
+> （判定优先级：先看 FAIL 条数，再看 WARNING 条数；三档互斥、覆盖全部情形。）
 >
 > **输出格式**
 >
@@ -596,7 +604,7 @@ A4 实现工具代码后，应同步编写**工具设计文档**，将指南算�
 | 1. 设计概览 | 设计目标、架构定位、技术选型 |
 | 2. 整体架构 | 类结构、缓存机制、数据流、性能优化 |
 | 3-6. 四个维度 | 每个维度：指南算法原文 → 工具实现映射（检测正则级）→ 工程化偏差 |
-| 7. MPR 映射 | 11 条 MPR → 对应子项、触发条件与评分档位对齐表 |
+| 7. 规则映射 | 12 条规则 → 对应子项、触发条件与评分档位对齐表（数值域为 MPR，几何域为 GCS，防腐域为 ACL）|
 | 8. 映射总表 | 四维度分值映射总表 + 一致性检查方法 + 已知局限 |
 
 **核心要求**：
@@ -623,6 +631,8 @@ A4 实现工具代码后，应同步编写**工具设计文档**，将指南算�
 > 4. 输出格式：Markdown 文档，与指南放在同一目录
 
 ---
+
+## 第四章：阶段 B — 测试（Testing）
 
 ### 提示词 B1：生成单元测试
 
@@ -982,7 +992,7 @@ B3 的提示词描述的是**初始基线建立**这一一次性动作。但基�
 >
 > **输入**：
 > - 工具代码：[路径]
-> - 基线保存目录：tests/regression/snapshots/[domain]_baselines/
+> - 基线保存目录：tests/regression/snapshots/（快照命名 `<engine>_<project>.json`）
 > - 可用的外部项目列表：[项目1:路径1, 项目2:路径2, ...]
 >
 > **基线建立流程**：
@@ -1223,7 +1233,7 @@ B3 与 B3.5 的区别：
 ```yaml
 ---
 description: [技能描述]
-mode: subagent
+mode: primary
 permission:
   read: allow
   bash:
@@ -1235,7 +1245,7 @@ permission:
 ---
 ```
 
-#### opencode.jsonc 配置示例
+#### opencode.json 配置示例
 
 ```jsonc
 {
@@ -1244,7 +1254,7 @@ permission:
     "my-skill": {
       "description": "我的新评估技能",
       "prompt_file": "~/.config/opencode/skills/my-skill.md",
-      "mode": "subagent",
+      "mode": "primary",
       "permission": {
         "read": "allow",
         "bash": { "*": "ask", "my-tool*": "allow" },
@@ -1252,7 +1262,7 @@ permission:
       }
     }
   },
-  "skill": {
+  "skills": {
     "paths": [".opencode/skills"],
     "my-skill": {
       "enabled": true,
@@ -1312,7 +1322,7 @@ permission:
 | Skill 名称 | solver-physics-architecture | 对应 `.opencode/skills/<name>/` |
 | 增强权重 | 15%（原始）/ 13.64%（归一后） | 与 `skills/*.md` 一致 |
 | 规则前缀 | MPR-001~012 | 与 skill 规则表一致 |
-| 引擎数 | 5 | Core Skills 板块数 == README 核心能力表行数 == 引擎数 |
+| 引擎数 | 7 | Core Skills 板块数 == README 核心能力表行数 == 引擎数（H2 后含 GCS/ACL）|
 
 #### 参考实例
 
@@ -1362,6 +1372,15 @@ jobs:
           print(f'PASS: Overall={r[\"overall\"]}')
           "
 ```
+
+#### 项目实践：脚本门禁（CI 模板的等价替代）
+
+arch-quality 仓库本身**不使用 `.github/workflows/`**（无托管 CI），而采用**脚本门禁**作为等价实现：
+
+- 每个引擎一个门禁脚本 `scripts/ci_gate_<engine>.bat`（如 `ci_gate_geometry_consistency.bat` / `ci_gate_anti_corruption.bat`）
+- 脚本串接：单元/集成/E2E/变异测试 → 外部回归基线 → 三方一致性检查 →（可选）Agent Harness
+- 任一环节失败 `exit /b 1` 阻断合并；`RUN_HARNESS=1` 可选启用 Harness（LLM 成本）
+- 与 GitHub Actions 模板二选一：本地/自托管环境用脚本门禁，托管环境用 Actions
 
 ---
 
@@ -1463,8 +1482,9 @@ jobs:
 | 5 | 工具的 SKILL_VERSION 与 Skill 版本号一致 | grep 检查 |
 | 6 | 每个 calc_xxx() 返回 (score, detail) 元组 | 代码审查 |
 | 6a | **工具设计文档已编写**（指南算法 → 工具实现映射，检测正则级）| 文档验收 |
-| 6b | **设计文档覆盖 4 维度 + MPR 映射 + 工程化偏差** | 文档审查 |
+| 6b | **设计文档覆盖 4 维度 + 规则映射 + 工程化偏差** | 文档审查 |
 | 6c | **LLM 漏报探查已执行**（低分项/未命中项，实测归因后固化）| 验证报告审查 |
+| 6d | **规则可行性分级已标注**（🟢/🟡/🔴 + KNOWN_HOLES；低置信度非 ERROR）| 指南 §五 可行性矩阵审查（§7.1）|
 
 ### 6.2 测试通过检查项
 
@@ -1486,13 +1506,14 @@ jobs:
 | 12 | 三方一致性检查 PASS | scripts/consistency_check.py |
 | 12a | **Agent Harness 验证通过率 100%**（agent 行为：执行评估命令、无越权写、无死循环）| `python scripts/run_agent_harness.py` |
 | 12b | **Harness 断言规则与插件 hook 共享单一事实源**（rules.json）| 代码审查 |
+| 12c | **交叉验证泛化 ≥7/9**（9 折 LOOCV，每维 9 语料 ≥5 健康+≥4 不健康）| `python scripts/cross_validate_<dim>.py`（§7.2）|
 
 ### 6.3 部署就绪检查项
 
 | # | 检查项 | 验证方式 |
 |:-:|:-------|:---------|
 | 13 | OpenCode 智能体配置文件正确 | opencode 可识别 |
-| 14 | opencode.jsonc 中 agent 注册无误 | 配置验证 |
+| 14 | opencode.json 中 agent 注册无误 | 配置验证 |
 | 15 | CI/CD 配置已添加 | git diff |
 | 16 | 用户交互提示词已生成 | 文档验收 |
 | 17 | 报告模板可用 | 执行验收 |
@@ -1660,7 +1681,7 @@ Skill 版本线:
                richardson 误报修复                  FEniCSx 55.67->46.33
                B3.5 开源项目验证                   对照案例集预期校验通过
    第 4 周     P2: 人工评审框架                     3 模板 + 比对脚本
-               P3: k-fold 交叉验证                  5 折 LOOCV: 4/5 泛化
+               P3: k-fold 交叉验证                  5 折 LOOCV: 4/5 泛化（H2 起升级为 9 折 ≥7/9，见 §7.2）
                三方一致性修复                       指南1.8/Skill1.6/工具
                Valgrind 交叉验证                    端到端实验完成
 ```
@@ -1704,7 +1725,7 @@ LLM 行为不稳定（同 prompt 不同工具序列），需重试 + 断言兜�
 
 ---
 
-## 附录 B：opencode.jsonc 完整配置示例
+## 附录 B：opencode.json 完整配置示例
 
 ```jsonc
 {
@@ -1713,7 +1734,7 @@ LLM 行为不稳定（同 prompt 不同工具序列），需重试 + 断言兜�
     "architecture-quality": {
       "description": "架构质量评估智能体 — 系统性分析、评估和改进软件系统架构质量",
       "prompt_file": "~/.config/opencode/agents/architecture-quality.md",
-      "mode": "subagent",
+      "mode": "primary",
       "model": "deepseek/deepseek-v4-flash",
       "permission": {
         "read": "allow",
@@ -1731,8 +1752,7 @@ LLM 行为不稳定（同 prompt 不同工具序列），需重试 + 断言兜�
     "numerical-accuracy": {
       "description": "数值算法精度评估智能体",
       "prompt_file": "~/.config/opencode/skills/numerical-accuracy/SKILL.md",
-      "mode": "subagent",
-      "subtask": true,
+      "mode": "primary",
       "permission": {
         "read": "allow",
         "bash": { "*": "ask", "arch-quality*": "allow" },
@@ -1742,8 +1762,7 @@ LLM 行为不稳定（同 prompt 不同工具序列），需重试 + 断言兜�
     "template-metaprogramming": {
       "description": "模板元编程与编译时依赖膨胀评估",
       "prompt_file": "~/.config/opencode/skills/template-metaprogramming/SKILL.md",
-      "mode": "subagent",
-      "subtask": true,
+      "mode": "primary",
       "permission": {
         "read": "allow",
         "bash": { "*": "ask", "arch-quality*": "allow" },
@@ -1751,7 +1770,7 @@ LLM 行为不稳定（同 prompt 不同工具序列），需重试 + 断言兜�
       }
     }
   },
-  "skill": {
+  "skills": {
     "paths": [".opencode/skills"],
     "numerical-accuracy": {
       "enabled": true,
@@ -1829,3 +1848,14 @@ LLM 行为不稳定（同 prompt 不同工具序列），需重试 + 断言兜�
 | 数值精度验证报告 | `docs/zh/数值算法验证总结报告.md` |
 | 交叉验证报告 | `docs/zh/交叉验证报告.md` |
 | 动态工具交叉验证方案 | `docs/zh/动态工具交叉验证方案.md` |
+
+---
+
+## 附录 D：版本历史
+
+| 版本 | 日期 | 变更说明 |
+|:-----|:-----|:---------|
+| 1.0 | — | 初始版本：从数值算法精度保障评估 Skill 的开发实践提炼（A/B/C 三阶段 17 提示词）|
+| 1.1 | 2026-10-15 | H2 实测新增流程项：新增第七章（规则可行性分级门禁 / 交叉验证 7/9 进入标准 / 标准文档包+交付包清单）|
+| 1.2 | 2026-10-16 | 专家校对修订（逻辑与内容一致性）：补第四章标题；修正 A3.5 判定标准逻辑重叠；agent `mode` 统一 `primary`；阶段数与流程图对齐（3 阶段/17 提示词，补 C1.5）；MPR 11→12 及规则映射泛化；重算 NVR output_level 分布；验证项目数统一；回归基线目录对齐实现；§6 检查清单回填第七章两项；`opencode.jsonc`→`opencode.json`、`skill`→`skills`；引擎数 5→7；§C2 补脚本门禁实践；§1.2 规则前缀说明；交叉验证 5→9 折演进注明 |
+
