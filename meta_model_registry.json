@@ -1,11 +1,13 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "engines": [
     "standard",
     "multilang",
     "template",
     "numerical",
-    "solver_physics"
+    "solver_physics",
+    "geometry_consistency",
+    "anti_corruption"
   ],
   "dimensions": [
     {
@@ -54,6 +56,18 @@
       "id": "dim.solver_physics",
       "name": "求解器/物理场",
       "engine": "solver_physics",
+      "weight": 0.15
+    },
+    {
+      "id": "dim.geometry_consistency",
+      "name": "几何内核与科学数据结构一致性",
+      "engine": "geometry_consistency",
+      "weight": 0.15
+    },
+    {
+      "id": "dim.anti_corruption",
+      "name": "外部科学内核与几何内核的封装与防腐层",
+      "engine": "anti_corruption",
       "weight": 0.15
     }
   ],
@@ -655,6 +669,246 @@
       "dimension": "dim.solver_physics",
       "severity": "LOW",
       "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-001",
+      "name": "内核闭合性校验测试存在性（加分项）",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-002",
+      "name": "Handle 智能指针一致性",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-003",
+      "name": "内核异常/失败状态传播",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-004",
+      "name": "内核对象生命周期",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-005",
+      "name": "硬编码精度/容差魔法数字",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-006",
+      "name": "单位换算魔法因子",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-007",
+      "name": "网格单元类型一致性",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-008",
+      "name": "场量组织一致性",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-009",
+      "name": "网格/场量维度匹配",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-010",
+      "name": "裸数组替代科学数据结构",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-011",
+      "name": "深拷贝 vs 浅拷贝",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "GCS-012",
+      "name": "数据访问封装性",
+      "engine": "geometry_consistency",
+      "dimension": "dim.geometry_consistency",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-001",
+      "name": "直连内核 API",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-002",
+      "name": "核心 API wrapper 覆盖度",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-003",
+      "name": "内核版本守卫",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-004",
+      "name": "内核类型泄漏",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-005",
+      "name": "错误处理封装",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-006",
+      "name": "数据交换往返保真度测试存在性（加分项）",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-007",
+      "name": "STEP/IGES/IFC 读写防腐",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "HIGH",
+      "output_level": "ERROR",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-008",
+      "name": "单位换算魔法因子",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-009",
+      "name": "公差换算魔法因子",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-010",
+      "name": "标准版本守卫",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-011",
+      "name": "导入导出错误处理",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "ACL-012",
+      "name": "格式直连检测",
+      "engine": "anti_corruption",
+      "dimension": "dim.anti_corruption",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
       "waivable": false,
       "waived_output_level": null
     }

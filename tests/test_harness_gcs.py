@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_harness_gcs.py — H2 WP-2 B2.6 Agent Harness 交付物验证
 
 覆盖：
@@ -141,10 +141,12 @@ class TestCrossValidation(unittest.TestCase):
         self.assertTrue(os.path.exists(p), "交叉验证报告缺失")
         with open(p, encoding="utf-8") as f:
             content = f.read()
-        self.assertIn("Leave-One-Out (3-fold)", content)
+        self.assertIn("Leave-One-Out (9-fold)", content)
         self.assertIn("gcs_occt", content)
         self.assertIn("gcs_salome_geom", content)
         self.assertIn("gcs_freecad", content)
+        self.assertIn("gcs_gmsh", content)
+        self.assertIn("gcs_mfem", content)
 
     def test_cross_validate_baselines_used(self):
         # 3 个基线快照被交叉验证使用

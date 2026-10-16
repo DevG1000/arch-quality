@@ -20,7 +20,7 @@ class TestMetaModelValidator(unittest.TestCase):
     def test_registry_exists(self):
         self.assertTrue(os.path.exists(REGISTRY))
         self.assertIn("rules", self.reg)
-        self.assertEqual(len(self.reg["rules"]), 60)
+        self.assertEqual(len(self.reg["rules"]), 84)
 
     def test_validator_passes(self):
         r = subprocess.run([sys.executable, VALIDATOR], capture_output=True,
@@ -41,7 +41,7 @@ class TestMetaModelValidator(unittest.TestCase):
         for rule in self.reg["rules"]:
             rid = rule["id"]
             prefix, num = rid.split("-")
-            self.assertIn(prefix, ["SAR", "MLR", "TPL", "NVR", "MPR"])
+            self.assertIn(prefix, ["SAR", "MLR", "TPL", "NVR", "MPR", "GCS", "ACL"])
             self.assertTrue(1 <= int(num) <= 12)
 
     def test_no_holes(self):

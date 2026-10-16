@@ -21,7 +21,7 @@ import sys
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_REGISTRY = os.path.join(PROJECT, "meta_model_registry.json")
 
-RULE_ID_RE = re.compile(r"^(SAR|MLR|TPL|NVR|MPR)-(\d{3})$")
+RULE_ID_RE = re.compile(r"^(SAR|MLR|TPL|NVR|MPR|GCS|ACL)-(\d{3})$")
 VALID_SEVERITY = {"HIGH", "MEDIUM", "LOW"}
 VALID_LEVEL = {"ERROR", "WARNING", "INFO"}
 RULE_COUNT = 12
