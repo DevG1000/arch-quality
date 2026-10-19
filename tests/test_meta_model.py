@@ -64,5 +64,36 @@ class TestMetaModelValidator(unittest.TestCase):
                               ["ERROR", "WARNING", "INFO"], rule["id"])
 
 
+class TestMetaModelSchema(unittest.TestCase):
+    """元模型 schema 可用性（P0-1 修复校验）"""
+
+    SCHEMA = os.path.join(PROJECT, "standard_meta_model.schema.json")
+
+    def test_schema_parsable(self):
+        with open(self.SCHEMA, encoding="utf-8") as f:
+            schema = json.load(f)
+        self.assertIn("$schema", schema)
+
+    def test_schema_rule_pattern_covers_gcs_acl(self):
+        with open(self.SCHEMA, encoding="utf-8") as f:
+            schema = json.load(f)
+        pattern = schema["properties"]["rules"]["items"]["properties"]["id"]["pattern"]
+        for pref in ("SAR", "MLR", "TPL", "NVR", "MPR", "GCS", "ACL"):
+            self.assertIn(pref, pattern, pref)
+
+    def test_registry_conforms_to_schema(self):
+        with open(self.SCHEMA, encoding="utf-8") as f:
+            schema = json.load(f)
+        with open(REGISTRY, encoding="utf-8") as f:
+            reg = json.load(f)
+        try:
+            import jsonschema
+        except ImportError:
+            self.skipTest("jsonschema 未安装，跳过模式校验")
+        jsonschema.validate(reg, schema)
+
+
 if __name__ == "__main__":
+
+
     unittest.main()

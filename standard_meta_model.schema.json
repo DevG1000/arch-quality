@@ -1,7 +1,7 @@
 {
-  \: https://json-schema.org/draft/2020-12/schema,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Standard Meta Model Registry",
-  "description": "arch-quality 标准元模型 v1.0 注册表 schema",
+  "description": "arch-quality 标准元模型 v1.1 注册表 schema",
   "type": "object",
   "required": [
     "schema_version",
@@ -64,7 +64,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^(SAR|MLR|TPL|NVR|MPR)-[0-9]{3}$"
+            "pattern": "^(SAR|MLR|TPL|NVR|MPR|GCS|ACL)-[0-9]{3}$"
           },
           "name": {
             "type": "string"

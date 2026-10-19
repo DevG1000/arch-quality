@@ -912,5 +912,12 @@
       "waivable": false,
       "waived_output_level": null
     }
-  ]
+  ],
+  "rule_prefix_aliases": {
+    "TPL": {
+      "engine_prefix": "MLR",
+      "engine_ids": "MLR-013~024",
+      "note": "元模型规范前缀 TPL-001~012；模板引擎实现沿用 MLR-013~024（H3-D1 迁移前）"
+    }
+  }
 }
