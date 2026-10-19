@@ -27,6 +27,43 @@
 | 来源标注 | `[third-party]/[test]` 生效 | MLR-024 含来源计数 | ✅ |
 | profile 生效 | 子集仅跑启用引擎 | 5 引擎跳过 | ✅ |
 
+## 2.5 overall 构成拆解（39.29 来源）
+
+**overall 公式**：
+
+```
+overall = structural×30% + design×25% + documentation×20% + evolution×25%
+```
+
+| 维度 | 得分 | 权重 | 贡献 |
+|:-----|:----:|:----:|:----:|
+| structural | 48.81 | 30% | 14.643 |
+| design | 72.37 | 25% | 18.093 |
+| documentation | 28.0 | 20% | 5.600 |
+| evolution | 3.81 | 25% | 0.953 |
+| **合计** | | | **39.29** |
+
+**multilang / template / numerical 等增强引擎如何计入**：它们**不单独出现在 overall 公式**，而是先合并进 `structural`，再以 30% 进入 overall。
+
+`structural = 48.81` 的合并（6 增强全激活：active_count=6 → `base_map[6]=0.45`；增强原始和 0.85，real_w=1.30，scale=1/1.30）：
+
+| 组成 | 子分 | 归一权重 | 贡献 |
+|:-----|:----:|:--------:|:----:|
+| base 标准结构 | ≈30.0 | 0.3462 | 10.39 |
+| multilang | 58.32 | 0.1154 | 6.73 |
+| template | 39.42 | 0.1154 | 4.55 |
+| numerical | 96.0 | 0.0769 | 7.38 |
+| solver_physics | 49.25 | 0.1154 | 5.68 |
+| geometry_consistency (GCS) | 84.0 | 0.1154 | 9.69 |
+| anti_corruption (ACL) | 38.0 | 0.1154 | 4.38 |
+| **合计** | | **1.000** | **48.81** |
+
+> **结论**：overall 39.29 **已包含** multilang/template/numerical（及其余 3 引擎），但经 `structural` 间接计入；`*_enhancement` 分数（58.32/39.42/96.0…）是合并前的子分，不与 design/doc/evolution 直接相加。
+>
+> **偏低主因**：`evolution=3.81`（25%）与 `documentation=28.0`（20%）合计 45% 权重拖累 overall；增强引擎并非主因（numerical 96.0、GCS 84.0 反而拉高 structural）。
+
+---
+
 ## 3. 成本记录（KPI5 时预算）
 
 | 引擎 | 耗时 | 增量预算 ≤120s |
