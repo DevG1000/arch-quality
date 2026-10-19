@@ -1,0 +1,30 @@
+{
+  "geometry-consistency": {
+    "seconds": 326.5,
+    "overall": 36.08,
+    "enhancements_present": [
+      "geometry_consistency_enhancement"
+    ],
+    "skipped": [
+      "multilang",
+      "template",
+      "numerical",
+      "solver-physics",
+      "anti-corruption"
+    ]
+  },
+  "anti-corruption": {
+    "seconds": 316.8,
+    "overall": 34.01,
+    "enhancements_present": [
+      "anti_corruption_enhancement"
+    ],
+    "skipped": [
+      "multilang",
+      "template",
+      "numerical",
+      "solver-physics",
+      "geometry-consistency"
+    ]
+  }
+}

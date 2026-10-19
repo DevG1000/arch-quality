@@ -1,0 +1,37 @@
+{
+  "seconds": 723.3,
+  "overall": 39.29,
+  "structural": 48.81,
+  "design": 72.37,
+  "documentation": 28.0,
+  "evolution": 3.81,
+  "enhancements": {
+    "multilang_enhancement": 58.32,
+    "template_enhancement": 39.42,
+    "numerical_enhancement": 96.0,
+    "solver_physics_enhancement": 49.25,
+    "geometry_consistency_enhancement": 84.0,
+    "anti_corruption_enhancement": 38.0
+  },
+  "violations_total": 95,
+  "violations_by_prefix": {
+    "MLR": 77,
+    "MPR": 2,
+    "NVR": 1,
+    "GCS": 2,
+    "ACL": 5,
+    "SAR": 8
+  },
+  "files": {
+    "total": 7693,
+    "by_lang": {
+      "cpp": 2848,
+      "c": 1946,
+      "python": 1718,
+      "typescript": 1178,
+      "fortran": 2,
+      "javascript": 1
+    },
+    "total_lines": 6847924
+  }
+}
