@@ -1,0 +1,24 @@
+{
+  "project": "unhealthy_load",
+  "label": "unhealthy",
+  "path": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_hpc_load",
+  "is_hpc": true,
+  "overall": 62.0,
+  "applicability_set": [
+    "mpi_halo",
+    "load_topology"
+  ],
+  "dimensions": {
+    "backend_consistency": 100,
+    "mpi_halo": 100,
+    "load_topology": 5,
+    "hybrid_parallel": 100
+  },
+  "violations": [
+    {
+      "rule": "HPC-008",
+      "count": 1,
+      "output_level": "WARNING"
+    }
+  ]
+}

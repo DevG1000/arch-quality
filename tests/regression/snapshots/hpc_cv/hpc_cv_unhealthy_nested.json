@@ -1,0 +1,23 @@
+{
+  "project": "unhealthy_nested",
+  "label": "unhealthy",
+  "path": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_hpc_nested",
+  "is_hpc": true,
+  "overall": 75.0,
+  "applicability_set": [
+    "hybrid_parallel"
+  ],
+  "dimensions": {
+    "backend_consistency": 100,
+    "mpi_halo": 100,
+    "load_topology": 100,
+    "hybrid_parallel": 75
+  },
+  "violations": [
+    {
+      "rule": "HPC-012",
+      "count": 1,
+      "output_level": "WARNING"
+    }
+  ]
+}

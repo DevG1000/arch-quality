@@ -32,7 +32,7 @@ projects:
       repo: https://github.com/OpenFOAM/OpenFOAM-dev.git
       dir: ""
     eval:
-      engine: [multilang, standard, solver_physics, template]
+      engine: [multilang, standard, solver_physics, template, hpc]
       snapshot: [openfoam_v2512, standard_openfoam_apps, sp_openfoam, tpl_openfoam_v2512]
     note: MLR 用全库；SAR 用 applications/ 子目录
   brl-cad:
@@ -282,6 +282,54 @@ projects:
     note: "本仓库自举，无需获取"
 
 # 校验和：首次获取后由脚本生成（`arch-quality` 用 git 分支 commit 作为参考基准）
+  dealii_hpc:
+    desc: deal.II 有限元（MPI + p4est 加权分区 + Kokkos GPU-capable）
+    fetch:
+      method: local
+      repo: local
+      dir: D:\OPENSOURCE\dealii
+      ref: cd748a2c7a170acf863620453572ae2a90040ef9
+    eval:
+      engine: hpc
+      snapshot: []
+    note: HPC healthy sample; ref fixed
+
+  mfem_hpc:
+    desc: MFEM 有限元（统一 GPU 内核 MFEM_FORALL）
+    fetch:
+      method: local
+      repo: local
+      dir: D:\OPENSOURCE\mfem
+      ref: 951cf8886b9c0c33fb36a2f0ede268c8d6a0d8b5
+    eval:
+      engine: hpc
+      snapshot: []
+    note: HPC healthy sample; ref fixed
+
+  su2_hpc:
+    desc: SU2 CFD（MPI + 线程，FUNNELED/MULTIPLE）
+    fetch:
+      method: local
+      repo: local
+      dir: D:\OPENSOURCE\SU2
+      ref: 8e8ea59fe6225c8ec4e94d0e0a4b6690ea4294e5
+    eval:
+      engine: hpc
+      snapshot: []
+    note: HPC healthy sample; ref fixed
+
+  openfoam_v2512_hpc:
+    desc: OpenFOAM v2512 (MPI + Pstream)
+    fetch:
+      method: local
+      repo: local
+      dir: D:\OPENSOURCE\OpenFOAM-v2512
+      ref: v2512
+    eval:
+      engine: hpc
+      snapshot: []
+    note: HPC healthy sample; release tarball (no .git), ref v2512
+
 checksums:
   generated_by: scripts/fetch_project.py (H2 WP-0.5)
   format: "git_ref:<repo>:<commit_sha>"

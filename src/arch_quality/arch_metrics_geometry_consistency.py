@@ -120,7 +120,7 @@ KERNEL_SELF_DIRS = KERNEL_SELF_DIRS | WEAK_KERNEL_SELF_DIRS
 # ── 豁免注解（WP-2.5）──
 # @kernel_exempt：文件级，从全部 12 条规则统计中剔除（路径级排除的细粒度补充）
 # 合法格式：/* @kernel_exempt: reason */   reason 必填且非空
-KERNEL_EXEMPT_RE = re.compile(r"/\*\s*@kernel_exempt\s*:\s*(?P<reason>\S[^*\n]*?)\s*\*/")
+KERNEL_EXEMPT_RE = re.compile(r"/\*\s*@kernel_exempt\s*:\s*(?P<reason>\S(?:[^*]|\*(?!/))*)\s*\*/")
 # 非法形式 → 豁免无效，仅记录告警（缺 reason / 空 reason）
 KERNEL_EXEMPT_INVALID_RE = re.compile(
     r"/\*\s*@kernel_exempt\s*(?::\s*)?\*/")
@@ -148,8 +148,27 @@ def _strip_comments(content: str) -> str:
     return content
 
 
+GEOMETRY_PATH_KEYWORDS = ("occt", "opencascade", "open_cascade", "cascade", "brep")
+
+
+def _path_geometry_signal(root: str, index: FileIndex) -> bool:
+    """路径启发式（H3 G1 / H2-002）：根路径或相对目录名含内核关键词即启用。"""
+    if any(k in str(root).lower() for k in GEOMETRY_PATH_KEYWORDS):
+        return True
+    for f in index.files[:3000]:
+        try:
+            rel = os.path.relpath(f["abs_path"], root)
+        except ValueError:
+            rel = f["abs_path"]
+        if any(k in p.lower() for p in Path(rel).parts for k in GEOMETRY_PATH_KEYWORDS):
+            return True
+    return False
+
+
 def _detect_geometry(root: str, index: FileIndex) -> bool:
-    """启用检测：源码含几何内核或科学数据结构信号"""
+    """启用检测：源码含几何内核/科学数据结构信号，或路径含内核关键词（G1）。"""
+    if _path_geometry_signal(root, index):
+        return True
     source_files = [f for f in index.files if f["ext"] in ALL_GCS_EXTS]
     for f in source_files[:300]:
         try:

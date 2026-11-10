@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.4",
   "engines": [
     "standard",
     "multilang",
@@ -7,68 +7,383 @@
     "numerical",
     "solver_physics",
     "geometry_consistency",
-    "anti_corruption"
+    "anti_corruption",
+    "hpc"
   ],
   "dimensions": [
     {
       "id": "dim.structural",
       "name": "结构质量",
       "engine": "standard",
-      "weight": 0.3
+      "weight": 0.3,
+      "sub_dimensions": [
+        {
+          "id": "dim.structural.1",
+          "name": "模块化",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.structural.2",
+          "name": "耦合度",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.structural.3",
+          "name": "内聚度",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.structural.4",
+          "name": "复杂度",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.structural.5",
+          "name": "测试覆盖度",
+          "weight": 0.2
+        }
+      ],
+      "scope": "global"
     },
     {
       "id": "dim.design",
       "name": "设计质量",
       "engine": "standard",
-      "weight": 0.25
+      "weight": 0.25,
+      "sub_dimensions": [
+        {
+          "id": "dim.design.1",
+          "name": "SOLID原则",
+          "weight": 0.4
+        },
+        {
+          "id": "dim.design.2",
+          "name": "设计模式",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.design.3",
+          "name": "架构风格",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.design.4",
+          "name": "反模式",
+          "weight": 0.25
+        }
+      ],
+      "scope": "global"
     },
     {
       "id": "dim.documentation",
       "name": "文档质量",
       "engine": "standard",
-      "weight": 0.2
+      "weight": 0.2,
+      "sub_dimensions": [
+        {
+          "id": "dim.documentation.1",
+          "name": "README完整性",
+          "weight": 0.25
+        },
+        {
+          "id": "dim.documentation.2",
+          "name": "CHANGELOG完整性",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.documentation.3",
+          "name": "ADR覆盖率",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.documentation.4",
+          "name": "代码注释密度",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.documentation.5",
+          "name": "JSDoc覆盖率",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.documentation.6",
+          "name": "架构文档完整性",
+          "weight": 0.1
+        }
+      ],
+      "scope": "global"
     },
     {
       "id": "dim.evolution",
       "name": "演进质量",
       "engine": "standard",
-      "weight": 0.25
+      "weight": 0.25,
+      "sub_dimensions": [
+        {
+          "id": "dim.evolution.1",
+          "name": "历史可追溯性",
+          "weight": 0.16
+        },
+        {
+          "id": "dim.evolution.2",
+          "name": "技术债务趋势",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.evolution.3",
+          "name": "依赖过时程度",
+          "weight": 0.16
+        },
+        {
+          "id": "dim.evolution.4",
+          "name": "废弃代码比例",
+          "weight": 0.12
+        },
+        {
+          "id": "dim.evolution.5",
+          "name": "增量质量",
+          "weight": 0.16
+        },
+        {
+          "id": "dim.evolution.6",
+          "name": "问题扣分",
+          "weight": 0.2
+        }
+      ],
+      "scope": "global"
     },
     {
       "id": "dim.multilang",
       "name": "多语言混合依赖",
       "engine": "multilang",
-      "weight": 0.15
+      "weight": 0.15,
+      "sub_dimensions": [
+        {
+          "id": "dim.multilang.1",
+          "name": "跨语言调用强度",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.multilang.2",
+          "name": "跨语言影响半径",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.multilang.3",
+          "name": "跨语言回调深度",
+          "weight": 0.1
+        },
+        {
+          "id": "dim.multilang.4",
+          "name": "绑定层接口一致性",
+          "weight": 0.25
+        },
+        {
+          "id": "dim.multilang.5",
+          "name": "脚本越界访问",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.multilang.6",
+          "name": "跨语言循环依赖",
+          "weight": 0.15
+        }
+      ],
+      "scope": "project"
     },
     {
       "id": "dim.template",
       "name": "模板元编程",
       "engine": "template",
-      "weight": 0.15
+      "weight": 0.15,
+      "sub_dimensions": [
+        {
+          "id": "dim.template.1",
+          "name": "编译时扇入",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.template.2",
+          "name": "模板实例化重复率",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.template.3",
+          "name": "头文件影响半径",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.template.4",
+          "name": "模板嵌套深度",
+          "weight": 0.1
+        },
+        {
+          "id": "dim.template.5",
+          "name": "二进制膨胀率",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.template.6",
+          "name": "不必要的模板化",
+          "weight": 0.2
+        }
+      ],
+      "scope": "project"
     },
     {
       "id": "dim.numerical",
       "name": "数值算法精度",
       "engine": "numerical",
-      "weight": 0.1
+      "weight": 0.1,
+      "sub_dimensions": [
+        {
+          "id": "dim.numerical.1",
+          "name": "数值稳定性保障",
+          "weight": 0.25
+        },
+        {
+          "id": "dim.numerical.2",
+          "name": "舍入误差与数值敏感度控制",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.numerical.3",
+          "name": "验证完备性",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.numerical.4",
+          "name": "误差估计与控制",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.numerical.5",
+          "name": "数值回归测试覆盖",
+          "weight": 0.1
+        },
+        {
+          "id": "dim.numerical.6",
+          "name": "数值债务密度",
+          "weight": 0.1
+        }
+      ],
+      "scope": "project"
     },
     {
       "id": "dim.solver_physics",
       "name": "求解器/物理场",
       "engine": "solver_physics",
-      "weight": 0.15
+      "weight": 0.15,
+      "sub_dimensions": [
+        {
+          "id": "dim.solver_physics.1",
+          "name": "物理场模块边界完整性",
+          "weight": 0.25
+        },
+        {
+          "id": "dim.solver_physics.2",
+          "name": "多物理场耦合架构合理性",
+          "weight": 0.3
+        },
+        {
+          "id": "dim.solver_physics.3",
+          "name": "插件式扩展架构支持度",
+          "weight": 0.25
+        },
+        {
+          "id": "dim.solver_physics.4",
+          "name": "跨场数据传递规范性",
+          "weight": 0.2
+        }
+      ],
+      "scope": "project"
     },
     {
       "id": "dim.geometry_consistency",
       "name": "几何内核与科学数据结构一致性",
       "engine": "geometry_consistency",
-      "weight": 0.15
+      "weight": 0.15,
+      "sub_dimensions": [
+        {
+          "id": "dim.geometry_consistency.1",
+          "name": "几何内核数据一致性",
+          "weight": 0.3
+        },
+        {
+          "id": "dim.geometry_consistency.2",
+          "name": "内核精度/单位一致性",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.geometry_consistency.3",
+          "name": "科学数据结构组织一致性",
+          "weight": 0.25
+        },
+        {
+          "id": "dim.geometry_consistency.4",
+          "name": "数据表示与访问规范性",
+          "weight": 0.25
+        }
+      ],
+      "scope": "project"
     },
     {
       "id": "dim.anti_corruption",
       "name": "外部科学内核与几何内核的封装与防腐层",
       "engine": "anti_corruption",
-      "weight": 0.15
+      "weight": 0.15,
+      "sub_dimensions": [
+        {
+          "id": "dim.anti_corruption.1",
+          "name": "外部内核访问防腐",
+          "weight": 0.3
+        },
+        {
+          "id": "dim.anti_corruption.2",
+          "name": "Wrapper 覆盖度与演进守卫",
+          "weight": 0.15
+        },
+        {
+          "id": "dim.anti_corruption.3",
+          "name": "数据交换防腐",
+          "weight": 0.3
+        },
+        {
+          "id": "dim.anti_corruption.4",
+          "name": "保真度与外部标准一致性",
+          "weight": 0.25
+        }
+      ],
+      "scope": "project"
+    },
+    {
+      "id": "dim.hpc",
+      "name": "并行/异构计算架构",
+      "engine": "hpc",
+      "weight": 0.15,
+      "sub_dimensions": [
+        {
+          "id": "dim.hpc.1",
+          "name": "后端接口一致性",
+          "weight": 0.3
+        },
+        {
+          "id": "dim.hpc.2",
+          "name": "MPI 域分解与 halo 交换",
+          "weight": 0.3
+        },
+        {
+          "id": "dim.hpc.3",
+          "name": "负载均衡与进程拓扑",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.hpc.4",
+          "name": "混合并行（MPI×OpenMP）冲突",
+          "weight": 0.2
+        }
+      ],
+      "scope": "project"
     }
   ],
   "rules": [
@@ -911,6 +1226,126 @@
       "output_level": "WARNING",
       "waivable": false,
       "waived_output_level": null
+    },
+    {
+      "id": "HPC-001",
+      "name": "CPU/GPU 双实现一致性",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-002",
+      "name": "设备可用性守卫",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-003",
+      "name": "kernel launch 配置硬编码",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-004",
+      "name": "H2D/D2H 冗余搬运",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-005",
+      "name": "halo 交换配对/宽度",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-006",
+      "name": "热循环集合通信滥用",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-007",
+      "name": "通信/计算未重叠",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "HPC-008",
+      "name": "负载划分未加权（候选）",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-009",
+      "name": "通信域/拓扑未隔离",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": false,
+      "waived_output_level": null
+    },
+    {
+      "id": "HPC-010",
+      "name": "非线程安全 MPI 调用",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-011",
+      "name": "OpenMP 共享变量误用",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "HPC-012",
+      "name": "并行域嵌套违规",
+      "engine": "hpc",
+      "dimension": "dim.hpc",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
     }
   ],
   "rule_prefix_aliases": {

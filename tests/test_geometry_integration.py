@@ -118,30 +118,22 @@ class TestReportMergeIntegration(unittest.TestCase):
             shutil.rmtree(tmp, ignore_errors=True)
 
     def test_structural_weights_normalize_to_100(self):
-        """好几何项目确定性触发 5 增强（ml/tpl/nvr/gcs/acl）→ 权重归一化总和恒 1.0"""
+        """激活子集全局归一化：各激活维度权重和=1（H3 WP-1）。"""
         tmp = _make_good_geometry()
         try:
             data = ComprehensiveReport(tmp).generate()
             s = data["dimensions"]["structural"]
-            ml_w = s.get("multilang_enhancement", {}).get("weight_applied", 0)
-            tpl_w = s.get("template_enhancement", {}).get("weight_applied", 0)
-            nvr_w = s.get("numerical_enhancement", {}).get("weight_applied", 0)
-            sp_w = s.get("solver_physics_enhancement", {}).get("weight_applied", 0)
-            gcs_w = s.get("geometry_consistency_enhancement", {}).get("weight_applied", 0)
-            acl_w = s.get("anti_corruption_enhancement", {}).get("weight_applied", 0)
-            base_w = 1 - (ml_w + tpl_w + nvr_w + sp_w + gcs_w + acl_w)
-            # 精确值断言（防归一化公式回归）：5 增强（ml/tpl/nvr/gcs/acl）等比缩放
-            self.assertAlmostEqual(ml_w, 0.125, places=3)
-            self.assertAlmostEqual(tpl_w, 0.125, places=3)
-            self.assertAlmostEqual(nvr_w, 0.0833, places=3)
-            self.assertAlmostEqual(gcs_w, 0.125, places=3)
-            self.assertAlmostEqual(acl_w, 0.125, places=3)
-            self.assertEqual(sp_w, 0.0)
-            # 总和恒为 1
-            self.assertAlmostEqual(base_w + ml_w + tpl_w + nvr_w + sp_w + gcs_w + acl_w,
-                                   1.0, places=4)
+            norm = data["score_breakdown"]["normalized_weights"]
+            self.assertAlmostEqual(sum(norm.values()), 1.0, places=3)
+            # 5 增强（ml/tpl/nvr/gcs/acl），Σ = 1 + 0.15+0.15+0.10+0.15+0.15 = 1.70
+            self.assertAlmostEqual(s.get("multilang_enhancement", {}).get("weight_applied", 0), 0.15/1.70, places=4)
+            self.assertAlmostEqual(s.get("template_enhancement", {}).get("weight_applied", 0), 0.15/1.70, places=4)
+            self.assertAlmostEqual(s.get("numerical_enhancement", {}).get("weight_applied", 0), 0.10/1.70, places=4)
+            self.assertAlmostEqual(s.get("geometry_consistency_enhancement", {}).get("weight_applied", 0), 0.15/1.70, places=4)
+            self.assertAlmostEqual(s.get("anti_corruption_enhancement", {}).get("weight_applied", 0), 0.15/1.70, places=4)
+            self.assertEqual(s.get("solver_physics_enhancement", {}).get("weight_applied", 0), 0.0)
         finally:
-            shutil.rmtree(tmp, ignore_errors=True)
+            shutil.rmtree(tmp)
 
     def test_profile_schema_includes_gcs(self):
         self.assertIn("geometry-consistency", PROFILE_ENGINE_MAP)

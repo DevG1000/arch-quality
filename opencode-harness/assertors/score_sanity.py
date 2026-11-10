@@ -1,4 +1,4 @@
-"""评分合理性断言：检查评分区间与权重一致性。"""
+﻿"""评分合理性断言：检查评分区间与权重一致性。"""
 
 import re
 
@@ -16,15 +16,25 @@ def _extract_dimension_scores(text: str) -> dict[str, float]:
         "coupling_architecture": ["coupling_architecture", "耦合架构"],
         "extension_support": ["extension_support", "扩展"],
         "data_transfer": ["data_transfer", "数据传递"],
+        "backend_consistency": ["backend_consistency"],
+        "mpi_halo": ["mpi_halo"],
+        "load_topology": ["load_topology"],
+        "hybrid_parallel": ["hybrid_parallel"],
     }
     scores = {}
     for key, aliases in dim_aliases.items():
         found = None
         for alias in aliases:
             # 匹配 "key: 78" 或 "key: 78.9" 或 "key 得 78 分"
+            # JSON: "key": { ... "score": N
             m = re.search(
-                re.escape(alias) + r"[^0-9]{0,15}(\d+(?:\.\d+)?)", text, re.IGNORECASE
+                r'"' + re.escape(alias) + r"\"\s*:\s*\{[^{}]*?\"score\"\s*:\s*(\d+(?:\.\d+)?)",
+                text,
             )
+            if not m:
+                m = re.search(
+                    re.escape(alias) + r"[^0-9]{0,40}(\d+(?:\.\d+)?)", text, re.IGNORECASE
+                )
             if m:
                 found = float(m.group(1))
                 break

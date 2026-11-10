@@ -666,11 +666,12 @@ PROFILE_ENGINE_MAP = {
     "solver-physics": ["standard", "solver-physics"],
     "geometry-consistency": ["standard", "geometry-consistency"],
     "anti-corruption": ["standard", "anti-corruption"],
+    "hpc": ["standard", "hpc"],
 }
 
 # 增强引擎（非 standard）名称列表（配置与报告共用的规范名）
 ENHANCEMENT_ENGINES = ["multilang", "template", "numerical", "solver-physics",
-                       "geometry-consistency", "anti-corruption"]
+                       "geometry-consistency", "anti-corruption", "hpc"]
 ALL_ENGINES = ["standard"] + ENHANCEMENT_ENGINES
 
 _PROFILE_CONFIG_FILENAME = "arch-quality.yaml"
@@ -842,3 +843,56 @@ def write_markdown(out_dir: str, name: str, content: str):
     path = Path(out_dir) / name
     write_text_utf8(path, content)
     return str(path)
+
+
+# ── 激活子集全局归一化（H3 WP-1，决策 1/2/5）──
+# 顶层维度 id ↔ 增强引擎键（标准 4 维恒激活）
+BASE_DIM_IDS = ["dim.structural", "dim.design", "dim.documentation", "dim.evolution"]
+ENH_KEY_TO_DIM = {
+    "ml": "dim.multilang",
+    "tpl": "dim.template",
+    "nvr": "dim.numerical",
+    "sp": "dim.solver_physics",
+    "gcs": "dim.geometry_consistency",
+    "acl": "dim.anti_corruption",
+    "hpc": "dim.hpc",
+}
+DIM_TO_ENH_KEY = {v: k for k, v in ENH_KEY_TO_DIM.items()}
+
+_REGISTRY_CANDIDATES = [
+    Path(__file__).resolve().parent / "meta_model_registry.json",
+    Path(__file__).resolve().parents[2] / "meta_model_registry.json",
+]
+
+
+def load_dimension_weights(registry_path: str = None) -> dict:
+    """从 meta_model_registry.json 读取顶层维度权重 {dim_id: weight}（单一事实源）。"""
+    path = registry_path
+    if path is None:
+        for cand in _REGISTRY_CANDIDATES:
+            if cand.exists():
+                path = str(cand)
+                break
+    if not path or not os.path.exists(path):
+        raise FileNotFoundError("meta_model_registry.json 未找到（维度权重事实源）")
+    reg = json.loads(read_text_smart(path))
+    return {d["id"]: float(d.get("weight", 0.0)) for d in reg.get("dimensions", [])}
+
+
+def calc_activate_subset(active_enh_keys, weights: dict = None) -> dict:
+    """激活子集全局归一化（H3 WP-1）。
+
+    返回激活维度集的归一化权重 {dim_id: w'}，满足 Σw' = 1。
+    标准 4 维恒激活；active_enh_keys 为激活的增强引擎键（'ml'/'tpl'/'nvr'/'sp'/'gcs'/'acl'）。
+    """
+    if weights is None:
+        weights = load_dimension_weights()
+    active = list(BASE_DIM_IDS)
+    for key in active_enh_keys:
+        dim = ENH_KEY_TO_DIM.get(key)
+        if dim and dim not in active:
+            active.append(dim)
+    total = sum(weights.get(d, 0.0) for d in active)
+    if total <= 0:
+        raise ValueError("激活子集权重和 <= 0，无法归一化")
+    return {d: weights.get(d, 0.0) / total for d in active}

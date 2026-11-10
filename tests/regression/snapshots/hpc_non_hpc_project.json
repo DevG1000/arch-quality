@@ -1,0 +1,36 @@
+{
+  "project": "non_hpc_project",
+  "is_hpc": false,
+  "overall": null,
+  "applicability_set": [],
+  "score_scope": "none",
+  "gate_status": "PASS",
+  "dimensions": {
+    "backend_consistency": {
+      "score": null,
+      "applicable": false
+    },
+    "hybrid_parallel": {
+      "score": null,
+      "applicable": false
+    },
+    "load_topology": {
+      "score": null,
+      "applicable": false
+    },
+    "mpi_halo": {
+      "score": null,
+      "applicable": false
+    }
+  },
+  "violations": [],
+  "waiver_counts": {
+    "benchmark_ok": 0,
+    "deferred": 0,
+    "gpu_only": 0
+  },
+  "version_info": {
+    "guide_version": "0.8",
+    "skill_version": "1.0"
+  }
+}

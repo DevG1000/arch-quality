@@ -1,4 +1,4 @@
-"""
+﻿"""
 arch_report_generator.py — 按《架构质量评估报告-temp》模板格式生成报告
 
 14 个章节，按模板顺序依次构造。
@@ -28,6 +28,18 @@ def _score_grade(score: float) -> str:
     if score >= 50:
         return "🟠 需改进"
     return "🔴 差"
+
+
+def _hpc_display_grade(score: float, gate_status: str = "PASS",
+                       confirmed_max_severity=None) -> str:
+    """HPC 维度显示等级：confirmed ERROR/HIGH 时封顶为“需改进”（取较低，不抬升）。"""
+    grade = _score_grade(score)
+    if gate_status == "BLOCK" or confirmed_max_severity == "HIGH":
+        rank = {"🔴 差": 0, "🟠 需改进": 1, "🟡 良好": 2, "🟢 优秀": 3}
+        cap = "🟠 需改进"
+        if rank.get(grade, 0) > rank[cap]:
+            return cap
+    return grade
 
 
 def _trend_icon(delta: float) -> str:
@@ -237,14 +249,23 @@ class ReportGenerator:
         dims = self.m.get("dimensions", {})
         rows = []
         total_weighted = 0
-        for key, label in [("structural", "结构质量"), ("design", "设计质量"),
-                            ("documentation", "文档质量"), ("evolution", "演进质量")]:
-            d = dims.get(key, {})
+        label_map = [
+            ("structural", "结构质量"), ("design", "设计质量"),
+            ("documentation", "文档质量"), ("evolution", "演进质量"),
+            ("multilang", "多语言混合依赖"), ("template", "模板元编程"),
+            ("numerical", "数值算法精度"), ("solver_physics", "求解器/物理场"),
+            ("geometry_consistency", "几何内核一致性"), ("anti_corruption", "外部内核防腐层"),
+            ("hpc", "并行/异构计算架构"),
+        ]
+        for key, label in label_map:
+            d = dims.get(key) or {}
+            if d.get("score") is None:
+                continue
             score = d.get("score", 0)
-            weight = d.get("weight", 0.25)
+            weight = d.get("weight", 0)
             weighted = score * weight
             total_weighted += weighted
-            w_pct = f"{weight*100:.0f}%"
+            w_pct = f"{weight*100:.1f}%"
             rows.append(f"| {label} | {score:.1f} | {w_pct} | {weighted:.1f} |")
 
         trend_line = ""
@@ -498,7 +519,43 @@ class ReportGenerator:
                 ("fidelity", "保真度与标准一致性"),
             ],
         },
+        "hpc_enhancement": {
+            "title": "并行/异构计算架构增强评估",
+            "dims": [
+                ("backend_consistency", "后端接口一致性"),
+                ("mpi_halo", "MPI 域分解与 halo 交换"),
+                ("load_topology", "负载均衡与进程拓扑"),
+                ("hybrid_parallel", "混合并行（MPI×OpenMP）冲突"),
+            ],
+        },
     }
+
+    def _topology_advisory_section(self) -> str:
+        """多级计算结构 advisory（不计分、不改 overall/gate）。"""
+        a = self.m.get("topology_advisory") or {}
+        if not a:
+            return ""
+        labels = [
+            ("multi_level_decomposition", "多级分解（multiLevel）"),
+            ("weighted_partition", "加权分区（weightField/processorWeights）"),
+            ("cpu_binding", "CPU 绑定（--cpu-bind/taskset/numactl）"),
+            ("gpu_binding", "GPU 绑定（CUDA_VISIBLE_DEVICES/--gpus-per-task）"),
+            ("numa_affinity", "NUMA 亲和（numactl/--cpu-bind）"),
+            ("gpu_backend", "GPU 后端信号（Kokkos/CUDA/HIP）"),
+        ]
+        zh = {"present": "存在", "absent": "未发现", "unknown": "未知"}
+        rows = []
+        for key, label in labels:
+            status = zh.get(a.get(key, "unknown"), a.get(key, "unknown"))
+            ev = ", ".join(a.get(key + "_evidence", [])) or "—"
+            rows.append(f"| {label} | {status} | {ev} |")
+        return (
+            "## 拓扑与亲和性建议（advisory）\n\n"
+            "> **不计分**：不改变 overall / grade / gate；仅提示多级计算结构"
+            "（Node/CPU/core/GPU）的可见配置。\n\n"
+            "| 检查项 | 状态 | 证据 |\n"
+            "|:--|:--:|:--|\n" + "\n".join(rows)
+        )
 
     def _enhancement_sections(self) -> str:
         """渲染激活的增强引擎评估章节（数值/模板/求解器/几何）。
@@ -523,11 +580,33 @@ class ReportGenerator:
                     s = 0
                 rows.append(f"| {zh_label} | {s:.1f} |")
             weight_pct = f"{weight*100:.1f}%" if weight else "—"
+            header = (f"## {spec['title']}\n\n"
+                      f"**综合得分**: {score:.1f}/100 — 占总分 {weight_pct}\n\n")
+            if enh_key == "hpc_enhancement":
+                gate = self.m.get("hpc_gate_status", "PASS")
+                app = self.m.get("hpc_applicability_set", []) or []
+                scope = self.m.get("hpc_score_scope", "none")
+                maxsev = self.m.get("hpc_confirmed_max_severity")
+                disp = _hpc_display_grade(score, gate, maxsev)
+                capped = disp != _score_grade(score)
+                header = (f"## {spec['title']}\n\n"
+                          f"**综合得分**: {score:.1f}/100 — {disp}（占总分 {weight_pct}）\n\n"
+                          f"**门禁**: {gate}　**适用集**: {', '.join(app) if app else '—'}"
+                          f"　**评分范围**: {scope}\n\n")
+                if capped:
+                    header += "> 注：项目总分未变，但 HPC 维度受封顶（confirmed HIGH）。\n\n"
+                wa = self.m.get("hpc_waiver_audit") or {}
+                if wa:
+                    header += (
+                        "**豁免审计**: "
+                        f"benchmark_ok={((wa.get('benchmark_ok') or {}).get('count', 0))}"
+                        f" / deferred={((wa.get('deferred') or {}).get('count', 0))}"
+                        f" / gpu_only={((wa.get('gpu_only') or {}).get('count', 0))}"
+                        f" / abuse_warning={wa.get('abuse_warning') or '无'}\n\n")
             blocks.append(
-                f"## {spec['title']}\n\n"
-                f"**综合得分**: {score:.1f}/100 — 占结构质量 {weight_pct}\n\n"
-                f"| 子维度 | 得分 |\n"
-                f"|--------|:----:|\n"
+                header
+                + "| 子维度 | 得分 |\n"
+                + "|--------|:----:|\n"
                 + "\n".join(rows)
             )
         return "\n\n".join(blocks)
@@ -864,6 +943,7 @@ class ReportGenerator:
             self._evolution_quality(),
             self._multilang_section(),
             self._enhancement_sections(),
+            self._topology_advisory_section(),
             self._mlr_violations(),
             self._rule_coverage_matrix(),
             self._scissors_gap_risk(),

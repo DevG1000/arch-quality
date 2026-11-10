@@ -1,0 +1,12 @@
+{
+  "id": "case-9-hpc-non",
+  "name": "并行/异构计算架构评估-非 HPC 项目",
+  "description": "验证 agent 对 non_hpc_project 正确判定为 is_hpc=false",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\non_hpc_project",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\non_hpc_project 目录直接运行并行/异构计算架构评估命令：python -m arch_quality.arch_metrics_hpc D:\\opensource\\arch-quality\\tests\\mutation\\projects\\non_hpc_project --json，并明确说明该项目是否为 HPC 项目；若不是，请写出“非 HPC 项目”。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_hpc": false,
+    "dimension_fields": [],
+    "max_retries": 2
+  }
+}

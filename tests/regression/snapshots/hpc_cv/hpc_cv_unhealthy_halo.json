@@ -1,0 +1,24 @@
+{
+  "project": "unhealthy_halo",
+  "label": "unhealthy",
+  "path": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_hpc_halo",
+  "is_hpc": true,
+  "overall": 67.0,
+  "applicability_set": [
+    "mpi_halo",
+    "load_topology"
+  ],
+  "dimensions": {
+    "backend_consistency": 100,
+    "mpi_halo": 45,
+    "load_topology": 100,
+    "hybrid_parallel": 100
+  },
+  "violations": [
+    {
+      "rule": "HPC-005",
+      "count": 1,
+      "output_level": "WARNING"
+    }
+  ]
+}

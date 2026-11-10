@@ -1,0 +1,21 @@
+{
+  "id": "case-8-hpc-flawed",
+  "name": "并行/异构计算架构评估-缺陷项目",
+  "description": "验证 agent 对 bad_project_hpc 识别为 HPC 项目并给出低分/告警",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_hpc",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_hpc 目录直接运行并行/异构计算架构评估命令：python -m arch_quality.arch_metrics_hpc D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_hpc --json，然后汇报 overall、4 个子维度得分（backend_consistency/mpi_halo/load_topology/hybrid_parallel）与触发的 HPC 规则。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_hpc": true,
+    "overall_range": [
+      0,
+      85
+    ],
+    "dimension_fields": [
+      "backend_consistency",
+      "mpi_halo",
+      "load_topology",
+      "hybrid_parallel"
+    ],
+    "max_retries": 2
+  }
+}

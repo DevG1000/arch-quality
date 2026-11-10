@@ -19,6 +19,7 @@ python -m arch_quality --help     # entry if arch-quality not on PATH
 | via `-m` | `arch_metrics_numerical_accuracy.py:main` | Numerical accuracy (no CLI entry in pyproject) |
 | via `-m` | `arch_metrics_geometry_consistency.py:main` | Geometry consistency (no CLI entry in pyproject) |
 | via `-m` | `arch_metrics_anti_corruption.py:main` | Anti-corruption layer (no CLI entry in pyproject) |
+| via `-m` | `arch_metrics_hpc.py:main` | HPC/GPU architecture (no CLI entry in pyproject) |
 
 ## Architecture
 
@@ -31,6 +32,7 @@ src/arch_quality/
   arch_metrics_numerical_accuracy.py  # NumericalAccuracyMetrics — 6 dims + 12 NVR
 arch_metrics_geometry_consistency.py # GeometryConsistencyMetrics — 4 dims + 12 GCS
 arch_metrics_anti_corruption.py      # AntiCorruptionMetrics — 4 dims + 12 ACL
+  arch_metrics_hpc.py                   # HpcArchitectureMetrics — 4 dims + 12 HPC
 ui/                            # Web panel (Flask): commands_meta + runner + server
   arch_report.py                # ComprehensiveReport — merges all above
   arch_report_generator.py      # Markdown report template (16 sections)
@@ -77,6 +79,9 @@ python -m arch_quality D:\path\to\project --build-dir D:\path\to\build
 - Framework: `unittest` (standard library). Run via `python -m pytest`.
 - No `pytest.ini` or `conftest.py` — test discovery by convention.
 - Regression tests use snapshot JSON files in `tests/regression/snapshots/`. Set `$env:ARCH_REGRESSION_UPDATE=1` to update baselines.
+- HPC regression: `tests/regression/test_hpc_regression.py` (5 baselines) + `opencode-harness/cases/case-7-hpc-good.json`.
+- HPC cross-validation (B3.7): `python scripts/cross_validate_hpc.py` (9-fold LOOCV, 8/9).
+- HPC LLM refinement (optional, §7.7): `python scripts/llm_refine_hpc.py <path> --backend opencode` (does not change score/gate).
 - Mutation tests in `tests/mutation/`.
 - No CI workflows (no `.github/workflows/`).
 - No type checker (`mypy`) or linter (`ruff`) config in the repo.
@@ -105,5 +110,7 @@ python scripts\run_agent_harness.py --case case-1-multiphysics --timeout 600 --v
 - The geometry kernel & scientific data consistency assessment (`docs/zh/几何内核与科学数据结构一致性评估/`) is **fully implemented** — `arch_metrics_geometry_consistency.py` (GeometryConsistencyMetrics, 4 dims + 12 GCS), tests (18 unit + 7 mutation + 12 integration + 12 regression), 3 regression baselines (occt/salome-geom/freecad), agent harness (3 cases: good/flawed/non-geometry), rules.json v1.1 (gcs_dimension_fields + single_engine_prefixes). C-stage deliverables: `scripts/ci_gate_geometry_consistency.bat` (CI gate), user prompt template (`...用户交互提示词模板.md`), report template (`...报告模板.md`).
 
 - The solver/physics field modular architecture assessment (`docs/zh/求解器和物理场模块化架构模式识别评估/`) is **fully implemented** — `arch_metrics_solver_physics.py` (SolverPhysicsMetrics, 4 dims + 12 MPR), tests (97 unit/integration/e2e/mutation), 9 regression baselines, k-fold cross-validation, agent harness. B3.5 enhancements: OpenFOAM config-dict scan, preCICE multi-mode arch detection, FreeFEM src-subdir solver-unit fallback. C-stage deliverables: `scripts/ci_gate_solver_physics.bat` (CI gate), user prompt template (`...用户交互提示词模板.md`), report template (`...报告模板.md`).
+- The HPC/GPU architecture assessment (`docs/zh/并行异构计算架构评估/`) is **fully implemented** — `arch_metrics_hpc.py` (HpcArchitectureMetrics, 4 dims + 12 HPC), tests (13 unit + 5 regression + harness), 5 regression baselines (OpenFOAM/deal.II/MFEM/SU2/non-HPC), registry v1.4 (8 engines / 11 dims / 96 rules), coverage 72/72. C-stage deliverables: `scripts/ci_gate_hpc.bat` (CI gate), `.opencode/skills/hpc-gpu-architecture/SKILL.md`, user prompt template (`...用户交互提示词模板.md`), report template (`...报告模板.md`).
+
 - `package.json` in `.opencode/` is for OpenCode plugin dependency (`@opencode-ai/plugin@1.2.24`), not the project itself.
 - **`.opencode/plugins/`**: Project-level OpenCode plugins (auto-loaded). `agent-assert.js` hooks `tool.execute.before/after` to auto-assert eval-command outputs at the framework level (independent of the external Python harness). Rules shared via `opencode-harness/rules.json`.

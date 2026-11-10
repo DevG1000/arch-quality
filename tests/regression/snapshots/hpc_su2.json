@@ -1,0 +1,40 @@
+{
+  "project": "su2",
+  "is_hpc": true,
+  "overall": 100.0,
+  "applicability_set": [
+    "hybrid_parallel",
+    "load_topology",
+    "mpi_halo"
+  ],
+  "score_scope": "subset",
+  "gate_status": "PASS",
+  "dimensions": {
+    "backend_consistency": {
+      "score": 100,
+      "applicable": false
+    },
+    "hybrid_parallel": {
+      "score": 100,
+      "applicable": true
+    },
+    "load_topology": {
+      "score": 100,
+      "applicable": true
+    },
+    "mpi_halo": {
+      "score": 100,
+      "applicable": true
+    }
+  },
+  "violations": [],
+  "waiver_counts": {
+    "benchmark_ok": 0,
+    "deferred": 0,
+    "gpu_only": 0
+  },
+  "version_info": {
+    "guide_version": "0.8",
+    "skill_version": "1.0"
+  }
+}

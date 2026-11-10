@@ -1,4 +1,4 @@
-"""规则加载：从 rules.json 单一事实源读取断言规则。
+﻿"""规则加载：从 rules.json 单一事实源读取断言规则。
 
 Python 断言器与 opencode 插件 hook（agent-assert.js）共享此文件。
 rules.json 缺失时回退到内置默认值。
@@ -38,6 +38,9 @@ _DEFAULTS = {
         "geometry_kernel_consistency", "precision_unit_consistency",
         "scidata_organization", "data_access_norm",
     ],
+    "hpc_dimension_fields": [
+        "backend_consistency", "mpi_halo", "load_topology", "hybrid_parallel",
+    ],
     "single_engine_prefixes": [
         "python -m arch_quality.arch_metrics_geometry_consistency",
         "python -m arch_quality.arch_metrics_numerical_accuracy",
@@ -45,6 +48,7 @@ _DEFAULTS = {
         "python -m arch_quality.arch_metrics_multilang",
         "python -m arch_quality.arch_metrics_template",
         "python -m arch_quality.arch_metrics_solver_physics",
+        "python -m arch_quality.arch_metrics_hpc",
     ],
     "assert_mode": "log",
 }

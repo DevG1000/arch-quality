@@ -1,13 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
-"""通用一致性检查脚本（多引擎）
+r"""通用一致性检查脚本（多引擎）
 
 验证 Guide <-> Skill <-> Tool 在命名、评分算法、版本号、规则 ID 等方面的一致性。
 
-引擎：standard / multilang / template / numerical / solver_physics
+引擎：standard / multilang / template / numerical / solver_physics / geometry_consistency / anti_corruption / hpc
 配置驱动：每个引擎定义指南、Skill、工具、案例集路径 + 规则前缀 + 版本绑定。
 
 用法：
-    python scripts/consistency_check.py [--engine all|standard|multilang|template|numerical|solver_physics|geometry_consistency|anti_corruption|anti_corruption]
+    python scripts/consistency_check.py [--engine all|standard|multilang|template|numerical|solver_physics|geometry_consistency|anti_corruption|hpc]
 
 退出码：0=全一致, 1=存在不一致
 """
@@ -15,6 +15,12 @@
 import os
 import re
 import sys
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except (AttributeError, ValueError):
+    pass
 
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -110,10 +116,24 @@ ENGINES = {
         "weights": [],
         "case_keywords": ["ACL", "STEPControl", "TopoDS", "OCCT"],
     },
+    "hpc": {
+        "guide": "docs/zh/并行异构计算架构评估/并行异构计算架构评估指南.md",
+        "skill": "src/arch_quality/skills/hpc-architecture.md",
+        "tool": "src/arch_quality/arch_metrics_hpc.py",
+        "case": "docs/zh/并行异构计算架构评估/并行异构计算架构评估验证案例集.md",
+        "rule_prefix": "HPC",
+        "rule_count": 12,
+        "version_pairs": [("GUIDE_VERSION", "0.8"), ("SKILL_VERSION", "1.0")],
+        "dimensions": ["后端接口一致性", "MPI 域分解与 halo 交换",
+                       "负载均衡与进程拓扑", "混合并行（MPI×OpenMP）冲突"],
+        "weights": [],
+        "case_keywords": ["HPC-005", "OpenFOAM", "deal.II"],
+    },
 }
 RULE_ID_VALIDATION_PENDING = True
 # 已知规则空洞（WP-7.1 重编号/补齐后应消除）
-KNOWN_HOLES = {"NVR-009", "MPR-011", "GCS-013", "GCS-014", "ACL-013"}
+KNOWN_HOLES = {"NVR-009", "MPR-011", "GCS-013", "GCS-014", "ACL-013",
+               "HPC-013", "HPC-014"}
 
 
 def read(path):

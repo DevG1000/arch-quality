@@ -1,0 +1,31 @@
+{
+  "project": "healthy_mfem",
+  "label": "healthy",
+  "path": "D:\\OPENSOURCE\\mfem",
+  "is_hpc": true,
+  "overall": 86.5,
+  "applicability_set": [
+    "backend_consistency",
+    "mpi_halo",
+    "load_topology",
+    "hybrid_parallel"
+  ],
+  "dimensions": {
+    "backend_consistency": 100,
+    "mpi_halo": 55,
+    "load_topology": 100,
+    "hybrid_parallel": 100
+  },
+  "violations": [
+    {
+      "rule": "HPC-006",
+      "count": 1,
+      "output_level": "WARNING"
+    },
+    {
+      "rule": "HPC-007",
+      "count": 2,
+      "output_level": "INFO"
+    }
+  ]
+}

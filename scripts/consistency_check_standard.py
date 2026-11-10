@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
+﻿# -*- coding: utf-8 -*-
+r"""
 三方一致性检查脚本（标准架构质量）
 
 验证 Guide <-> Skill <-> Tool 在命名、评分算法、版本号、SAR 规则等方面的一致性。
@@ -13,6 +13,12 @@
 import os
 import re
 import sys
+
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except (AttributeError, ValueError):
+    pass
 
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

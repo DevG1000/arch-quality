@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 arch_metrics_anti_corruption.py — 外部科学内核与几何内核的封装与防腐层评估
 
@@ -139,7 +139,11 @@ WRAPPER_DIR_NAMES = {
 IMPORT_EXPORT_DIR_NAMES = {
     "importexport", "import_export", "io", "exch", "exchange", "dataexchange",
     "step", "iges", "ifc", "data_exchange", "inout", "serialization",
+    "stepplugin", "igesplugin", "brepplugin", "stlplugin", "xaoplugin",
+    "step_plugin", "iges_plugin", "brep_plugin", "dxf",
 }
+# 内核自身目录（H3 G4）：消费项目中 vendored 的内核源码子目录（强名，避免误伤应用层）
+ACL_KERNEL_SELF_DIRS = {"occt", "opencascade", "cascade", "tkg3d", "tktop", "tkbool"}
 # 被评估对象本身即外部内核（vendored 内核源码）目录
 THIRD_PARTY_DIR_NAMES = {
     "third_party", "thirdparty", "3rdparty", "external", "vendor",
@@ -147,7 +151,7 @@ THIRD_PARTY_DIR_NAMES = {
 }
 
 # ── 豁免注解（对齐 Skill §8）──
-ACL_EXEMPT_RE = re.compile(r"/\*\s*@acl_exempt\s*:\s*(?P<reason>\S[^*\n]*?)\s*\*/")
+ACL_EXEMPT_RE = re.compile(r"/\*\s*@acl_exempt\s*:\s*(?P<reason>\S(?:[^*]|\*(?!/))*)\s*\*/")
 ACL_EXEMPT_INVALID_RE = re.compile(r"/\*\s*@acl_exempt\s*(?::\s*)?\*/")
 ACL_WAIVER_RE = re.compile(r"//\s*@acl_waiver\s*:\s*(?P<reason>\S[^\n]*?)\s*$", re.MULTILINE)
 ACL_WAIVER_INVALID_RE = re.compile(r"//\s*@acl_waiver\s*(?::\s*)?$", re.MULTILINE)
@@ -283,7 +287,14 @@ class AntiCorruptionMetrics:
         except ValueError:
             return False
         parts = Path(rel).parts
-        return any(p.lower() in self._import_export_dirs for p in parts)
+        prefixes = {"step", "iges", "brep", "stl", "xao", "ifc", "dxf"}
+        for p in parts:
+            pl = p.lower()
+            if pl in self._import_export_dirs:
+                return True
+            if pl.endswith("plugin") and pl[:-len("plugin")].rstrip("_") in prefixes:
+                return True
+        return False
 
     def _is_third_party(self, abs_path: str) -> bool:
         try:
@@ -292,6 +303,14 @@ class AntiCorruptionMetrics:
             return False
         parts = Path(rel).parts
         return any(p.lower() in THIRD_PARTY_DIR_NAMES for p in parts)
+
+    def _is_kernel_self(self, abs_path: str) -> bool:
+        """内核自身目录排除（H3 G4）：vendored 内核源码子目录，避免把内核自身当消费者计分。"""
+        try:
+            rel = os.path.relpath(abs_path, self.root)
+        except ValueError:
+            return False
+        return any(p.lower() in ACL_KERNEL_SELF_DIRS for p in Path(rel).parts)
 
     def _is_test_file(self, abs_path: str) -> bool:
         try:
@@ -307,6 +326,8 @@ class AntiCorruptionMetrics:
         第三方面目录 > @acl_exempt 注解 > 测试/QA（可选）
         """
         if self._is_third_party(abs_path):
+            return True
+        if self._is_kernel_self(abs_path):
             return True
         if self._rel_path(abs_path) in self._acl_exempt:
             return True

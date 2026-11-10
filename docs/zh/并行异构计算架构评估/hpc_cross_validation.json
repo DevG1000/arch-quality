@@ -1,0 +1,107 @@
+{
+  "dimension": "hpc",
+  "criterion": "LOOCV in-range (train min..max)",
+  "labels": {
+    "healthy_dealii": "healthy",
+    "healthy_good_project": "healthy",
+    "healthy_mfem": "healthy",
+    "healthy_openfoam": "healthy",
+    "healthy_su2": "healthy",
+    "unhealthy_bad_project": "unhealthy",
+    "unhealthy_halo": "unhealthy",
+    "unhealthy_load": "unhealthy",
+    "unhealthy_nested": "unhealthy"
+  },
+  "scores": {
+    "healthy_dealii": 100.0,
+    "healthy_good_project": 100.0,
+    "healthy_mfem": 86.5,
+    "healthy_openfoam": 100.0,
+    "healthy_su2": 100.0,
+    "unhealthy_bad_project": 58.5,
+    "unhealthy_halo": 67.0,
+    "unhealthy_load": 62.0,
+    "unhealthy_nested": 75.0
+  },
+  "result": {
+    "n": 9,
+    "passed": 8,
+    "rate": 0.8889,
+    "threshold": 7,
+    "ok": true,
+    "folds": [
+      {
+        "fold": "healthy_dealii",
+        "label": "healthy",
+        "overall": 100.0,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      },
+      {
+        "fold": "healthy_good_project",
+        "label": "healthy",
+        "overall": 100.0,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      },
+      {
+        "fold": "healthy_mfem",
+        "label": "healthy",
+        "overall": 86.5,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      },
+      {
+        "fold": "healthy_openfoam",
+        "label": "healthy",
+        "overall": 100.0,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      },
+      {
+        "fold": "healthy_su2",
+        "label": "healthy",
+        "overall": 100.0,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      },
+      {
+        "fold": "unhealthy_bad_project",
+        "label": "unhealthy",
+        "overall": 58.5,
+        "train_min": 62.0,
+        "train_max": 100.0,
+        "in_range": false
+      },
+      {
+        "fold": "unhealthy_halo",
+        "label": "unhealthy",
+        "overall": 67.0,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      },
+      {
+        "fold": "unhealthy_load",
+        "label": "unhealthy",
+        "overall": 62.0,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      },
+      {
+        "fold": "unhealthy_nested",
+        "label": "unhealthy",
+        "overall": 75.0,
+        "train_min": 58.5,
+        "train_max": 100.0,
+        "in_range": true
+      }
+    ]
+  }
+}

@@ -14,7 +14,7 @@
       "name": "直连内核 API",
       "severity": "HIGH",
       "output_level": "ERROR",
-      "count": 51137,
+      "count": 47695,
       "detail": "wrapper 目录白名单外引用外部内核符号，建议收敛到防腐边界内"
     },
     {
@@ -30,7 +30,7 @@
       "name": "错误处理封装",
       "severity": "MEDIUM",
       "output_level": "WARNING",
-      "count": 131,
+      "count": 128,
       "detail": "内核调用点紧邻未检查失败状态，建议统一封装"
     },
     {
@@ -38,7 +38,7 @@
       "name": "STEP/IGES/IFC 读写防腐",
       "severity": "HIGH",
       "output_level": "ERROR",
-      "count": 160,
+      "count": 156,
       "detail": "格式符号出现在 import/export 模块白名单外，建议收敛到集中模块"
     },
     {

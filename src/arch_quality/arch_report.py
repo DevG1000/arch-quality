@@ -21,6 +21,7 @@ from arch_quality.arch_core import (
     write_report, write_markdown,
     load_profile_config, resolve_enabled_engines,
     PROFILE_ENGINE_MAP, ENHANCEMENT_ENGINES,
+    calc_activate_subset, ENH_KEY_TO_DIM,
 )
 
 from arch_quality.arch_metrics_standard import StandardMetrics
@@ -30,12 +31,22 @@ from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetric
 from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
 from arch_quality.arch_metrics_geometry_consistency import GeometryConsistencyMetrics
 from arch_quality.arch_metrics_anti_corruption import AntiCorruptionMetrics
+from arch_quality.arch_metrics_hpc import HpcArchitectureMetrics
 from arch_quality.arch_report_generator import ReportGenerator
 
 SKILL_QUALITY = str(Path(__file__).parent / "skills" / "arch-quality.md")
 SKILL_MULTILANG = str(Path(__file__).parent / "skills" / "multilang-dependency.md")
 SKILL_TEMPLATE = str(Path(__file__).parent / "skills" / "template-metaprogramming.md")
 SKILL_SOLVER_PHYSICS = str(Path(__file__).parent / "skills" / "solver-physics-architecture.md")
+
+
+def _registry_path():
+    """meta_model_registry.json 路径（维度权重单一事实源）。"""
+    for c in (Path(__file__).resolve().parent / "meta_model_registry.json",
+              Path(__file__).resolve().parents[2] / "meta_model_registry.json"):
+        if c.exists():
+            return c
+    return ""
 
 
 class ComprehensiveReport:
@@ -59,6 +70,7 @@ class ComprehensiveReport:
         self.solver_physics = SolverPhysicsMetrics(root)
         self.geometry = GeometryConsistencyMetrics(root)
         self.anti_corruption = AntiCorruptionMetrics(root)
+        self.hpc = HpcArchitectureMetrics(root)
 
     def _enabled_enhancement_keys(self) -> set:
         """显式 profile 模式下的启用增强引擎键集；启发式模式返回全量（由检测决定）"""
@@ -81,6 +93,8 @@ class ComprehensiveReport:
                      if ("geometry-consistency" in enabled or not profile_active) else None) if getattr(self, "geometry", None) else None
         acl_result = (getattr(self, "anti_corruption", None).all_metrics()
                      if ("anti-corruption" in enabled or not profile_active) else None) if getattr(self, "anti_corruption", None) else None
+        hpc_result = (getattr(self, "hpc", None).all_metrics()
+                      if ("hpc" in enabled or not profile_active) else None) if getattr(self, "hpc", None) else None
 
         struct_score = std_result["structural"]["score"]
 
@@ -90,6 +104,7 @@ class ComprehensiveReport:
         has_multiphysics = sp_result.get("is_multiphysics", False) if sp_result else False
         has_geometry = gcs_result.get("is_geometry", False) if gcs_result else False
         has_acl = acl_result.get("is_acl", False) if acl_result else False
+        has_hpc = hpc_result.get("is_hpc", False) if hpc_result else False
 
         # 激活增强引擎列表：[(key, base_weight, result)]
         # 启发式模式由检测信号决定；显式 profile 模式由声明引擎集 + 引擎实际产出（overall 非 None）决定
@@ -102,6 +117,7 @@ class ComprehensiveReport:
                 ("sp", "solver-physics", 0.15, sp_result),
                 ("gcs", "geometry-consistency", 0.15, gcs_result),
                 ("acl", "anti-corruption", 0.15, acl_result),
+                ("hpc", "hpc", 0.15, hpc_result),
             ]:
                 if engine in enabled and result is not None and result.get("overall") is not None:
                     enh.append((key, w, result))
@@ -118,59 +134,38 @@ class ComprehensiveReport:
                 enh.append(("gcs", 0.15, gcs_result))
             if has_acl and acl_result is not None and acl_result.get("overall") is not None:
                 enh.append(("acl", 0.15, acl_result))
+            if has_hpc and hpc_result is not None and hpc_result.get("overall") is not None:
+                enh.append(("hpc", 0.15, hpc_result))
 
-        ml_weight_applied = 0.0
-        tpl_weight_applied = 0.0
-        nvr_weight_applied = 0.0
-        sp_weight_applied = 0.0
-        gcs_weight_applied = 0.0
-        acl_weight_applied = 0.0
+        # ── 激活子集全局归一化（H3 WP-1）：registry 单一事实源 ──
+        active_keys = [k for k, _, _ in enh]
+        norm = calc_activate_subset(active_keys)          # {dim_id: w'}，Σ=1
 
-        active_count = len(enh)
-        if active_count == 0:
-            merged_structural = struct_score
-        else:
-            # 基础权重按激活数分档（与既有规则一致）
-            base_map = {1: 0.85, 2: 0.70, 3: 0.60, 4: 0.55, 5: 0.50, 6: 0.45}
-            base_w = base_map.get(active_count, 0.45)
-            enh_raw = dict((k, w) for k, w, _ in enh)
+        ml_weight_applied = norm.get("dim.multilang", 0.0)
+        tpl_weight_applied = norm.get("dim.template", 0.0)
+        nvr_weight_applied = norm.get("dim.numerical", 0.0)
+        sp_weight_applied = norm.get("dim.solver_physics", 0.0)
+        gcs_weight_applied = norm.get("dim.geometry_consistency", 0.0)
+        acl_weight_applied = norm.get("dim.anti_corruption", 0.0)
+        hpc_weight_applied = norm.get("dim.hpc", 0.0)
+        w_structural = norm["dim.structural"]
+        w_design = norm["dim.design"]
+        w_documentation = norm["dim.documentation"]
+        w_evolution = norm["dim.evolution"]
 
-            # 归一化：当基础+增强权重和 > 1 时等比缩放（如 4 增强 110% → 100%）
-            real_w = base_w + sum(enh_raw.values())
-            if active_count >= 3 and real_w > 1.0:
-                scale = 1.0 / real_w
-                base_w *= scale
-                enh_raw = {k: v * scale for k, v in enh_raw.items()}
+        # 顶层维度得分：标准 4 维（纯分，增强已升为同级维度）+ 各激活增强维
+        dim_scores = {
+            "dim.structural": struct_score,
+            "dim.design": std_result["design"]["score"],
+            "dim.documentation": std_result["documentation"]["score"],
+            "dim.evolution": std_result["evolution"]["score"],
+        }
+        for key, _, r in enh:
+            dim_scores[ENH_KEY_TO_DIM[key]] = r["overall"]
 
-            ml_weight_applied = enh_raw.get("ml", 0.0)
-            tpl_weight_applied = enh_raw.get("tpl", 0.0)
-            nvr_weight_applied = enh_raw.get("nvr", 0.0)
-            sp_weight_applied = enh_raw.get("sp", 0.0)
-            gcs_weight_applied = enh_raw.get("gcs", 0.0)
-            acl_weight_applied = enh_raw.get("acl", 0.0)
+        overall = sum(dim_scores[d] * norm[d] for d in norm)
+        merged_structural = struct_score  # 兼容字段：structural 纯分（不再折叠增强）
 
-            enh_overall = {k: r["overall"] for k, _, r in enh}
-            merged_structural = (
-                struct_score * base_w +
-                enh_overall.get("ml", 0) * ml_weight_applied +
-                enh_overall.get("tpl", 0) * tpl_weight_applied +
-                enh_overall.get("nvr", 0) * nvr_weight_applied +
-                enh_overall.get("sp", 0) * sp_weight_applied +
-                enh_overall.get("gcs", 0) * gcs_weight_applied +
-                enh_overall.get("acl", 0) * acl_weight_applied
-            ) / max(base_w + ml_weight_applied + tpl_weight_applied
-                    + nvr_weight_applied + sp_weight_applied
-                    + gcs_weight_applied + acl_weight_applied, 0.01)
-
-        w = {k: v for k, v in self.quality_weights.items()}
-        overall = (
-            merged_structural * w.get("结构质量", 0.30) +
-            std_result["design"]["score"] * w.get("设计质量", 0.25) +
-            std_result["documentation"]["score"] * w.get("文档质量", 0.20) +
-            std_result["evolution"]["score"] * w.get("演进质量", 0.25)
-        )
-
-        # 过渡口径（H2 WP-0，决策 8b）：profile 子集评分标注，与全引擎评分并列展示、禁止混合计分
         skipped_engines = [e for e in ENHANCEMENT_ENGINES if e not in enabled] if profile_active else []
         subset_scoring = profile_active and bool(skipped_engines)
         profile_meta = {
@@ -182,10 +177,12 @@ class ComprehensiveReport:
             "enabled_engines": sorted(enabled),
             "skipped_engines": skipped_engines,
             "subset_scoring": subset_scoring,
+            "normalization": "activation_subset_global（H3 WP-1）：激活维度权重归一化，Σw'=1",
+            "active_dimensions": sorted(norm.keys()),
             "note": (
-                "过渡口径（H2 WP-0，决策 8b）：profile 子集评分仅基于已启用引擎，"
-                "与全引擎评分并列展示、禁止混合计分；激活子集全局归一化实施归 H3。"
-                if subset_scoring else "全引擎评分"
+                "激活子集全局归一化（H3 WP-1）：profile 子集评分即正式语义，"
+                "各激活维度权重之和=1，与全引擎评分同尺度可比。"
+                if subset_scoring else "全引擎评分（激活子集全局归一化）"
             ),
         }
 
@@ -198,51 +195,53 @@ class ComprehensiveReport:
             "profile": profile_meta,
             "weights_source_standard": SKILL_QUALITY,
             "weights_source_multilang": SKILL_MULTILANG,
+            "weights_source_registry": str(_registry_path()),
             "dimensions": {
                 "structural": {
-                    "score": round(merged_structural, 2),
-                    "weight": w.get("结构质量", 0.30),
+                    "score": round(struct_score, 2),
+                    "weight": w_structural,
                     "sub_scores": std_result["structural"]["details"],
                 },
                 "design": {
                     "score": std_result["design"]["score"],
-                    "weight": w.get("设计质量", 0.25),
+                    "weight": w_design,
                     "details": std_result["design"]["details"],
                 },
                 "documentation": {
                     "score": std_result["documentation"]["score"],
-                    "weight": w.get("文档质量", 0.20),
+                    "weight": w_documentation,
                     "details": std_result["documentation"]["details"],
                 },
                 "evolution": {
                     "score": std_result["evolution"]["score"],
-                    "weight": w.get("演进质量", 0.25),
+                    "weight": w_evolution,
                     "details": std_result["evolution"]["details"],
                 },
             },
             "mlr_violations": list(ml_result.get("mlr_violations", [])) if ml_result else [],
+            "hpc_applicability_set": hpc_result.get("applicability_set", []) if hpc_result else [],
+            "hpc_score_scope": hpc_result.get("score_scope", "none") if hpc_result else "none",
+            "hpc_gate_status": hpc_result.get("gate_status", "PASS") if hpc_result else "PASS",
+            "hpc_confirmed_max_severity": hpc_result.get("confirmed_max_severity") if hpc_result else None,
+            "hpc_waiver_audit": hpc_result.get("waiver_audit", {}) if hpc_result else {},
+            "hpc_version_info": hpc_result.get("version_info", {}) if hpc_result else {},
+            "topology_advisory": hpc_result.get("topology_advisory", {}) if hpc_result else {},
             "files": std_result["files"],
             "score_breakdown": {
-                "formula": "overall = structural*30% + design*25% + doc*20% + evolution*25%",
+                "formula": "overall = Σ dim.score × w'_dim（激活子集全局归一化，Σw'=1）",
                 "structural_note": (
-                    f"structural = base*{int((1-ml_weight_applied-tpl_weight_applied-nvr_weight_applied-sp_weight_applied-gcs_weight_applied-acl_weight_applied)*100)}%"
-                    f" + multilang*{int(ml_weight_applied*100)}%"
-                    f" + template*{int(tpl_weight_applied*100)}%"
-                    f" + numerical*{int(nvr_weight_applied*100)}%"
-                    f" + solver_physics*{int(sp_weight_applied*100)}%"
-                    f" + geometry_consistency*{int(gcs_weight_applied*100)}%"
-                    f" + anti_corruption*{int(acl_weight_applied*100)}%"
-                    + (f" [profile 子集评分：启用 {sorted(enabled)}，跳过 {skipped_engines}]" if subset_scoring else "")
-                    if active_count > 0
-                    else "structural = base_structural*100% (no enhancement engine active)"
+                    "overall = "
+                    + " + ".join("%s*%.1f%%" % (d, norm[d] * 100) for d in norm)
+                    + (" [profile 子集评分：启用 %s，跳过 %s]" % (sorted(enabled), skipped_engines) if subset_scoring else "")
                 ),
                 "calculated": {
-                    "merged_structural": round(merged_structural, 2),
+                    "merged_structural": round(struct_score, 2),
                     "design": std_result["design"]["score"],
                     "documentation": std_result["documentation"]["score"],
                     "evolution": std_result["evolution"]["score"],
                     "weighted_sum": round(overall, 2),
                 },
+                "normalized_weights": {d: round(norm[d], 4) for d in norm},
             },
         }
 
@@ -288,6 +287,31 @@ class ComprehensiveReport:
                 "details": acl_result["dimensions"],
             }
 
+        if hpc_result is not None and ("hpc" in (k for k, _, _ in enh)):
+            result["dimensions"]["structural"]["hpc_enhancement"] = {
+                "score": hpc_result["overall"],
+                "weight_applied": hpc_weight_applied,
+                "details": hpc_result["dimensions"],
+            }
+
+        # D-a：增强维升为顶层维度（归一化权重），保留 structural.*_enhancement 别名一版本
+        _enh_meta = [
+            ("multilang", "multilang_enhancement", ml_result, ml_weight_applied),
+            ("template", "template_enhancement", tpl_result, tpl_weight_applied),
+            ("numerical", "numerical_enhancement", nvr_result, nvr_weight_applied),
+            ("solver_physics", "solver_physics_enhancement", sp_result, sp_weight_applied),
+            ("geometry_consistency", "geometry_consistency_enhancement", gcs_result, gcs_weight_applied),
+            ("anti_corruption", "anti_corruption_enhancement", acl_result, acl_weight_applied),
+            ("hpc", "hpc_enhancement", hpc_result, hpc_weight_applied),
+        ]
+        for engine_name, alias_key, res, wapp in _enh_meta:
+            if alias_key in result["dimensions"]["structural"]:
+                result["dimensions"][engine_name] = {
+                    "score": res["overall"],
+                    "weight": wapp,
+                    "details": res["dimensions"],
+                }
+
         # 跳过引擎并列展示（profile 子集模式）：标注未评估维度，禁止与全引擎评分混合
         if profile_active and skipped_engines:
             skipped_labels = {
@@ -297,6 +321,7 @@ class ComprehensiveReport:
                 "solver-physics": "求解器物理场（MPR）",
                 "geometry-consistency": "几何内核一致性（GCS）",
                 "anti-corruption": "外部内核防腐层（ACL）",
+                "hpc": "并行/异构计算架构（HPC）",
             }
             result["dimensions"]["structural"]["skipped_enhancements"] = [
                 {"engine": e, "label": skipped_labels.get(e, e),
@@ -360,6 +385,11 @@ class ComprehensiveReport:
         # 合并 ACL 防腐层违规到报告
         if acl_result is not None:
             for v in acl_result.get("acl_violations", []):
+                result["mlr_violations"].append(v)
+
+        # 合并 HPC 并行/异构违规到报告
+        if hpc_result is not None:
+            for v in hpc_result.get("hpc_violations", []):
                 result["mlr_violations"].append(v)
 
         # 合并标准架构质量 SAR 违规到报告

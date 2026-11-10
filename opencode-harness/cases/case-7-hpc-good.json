@@ -1,0 +1,21 @@
+{
+  "id": "case-7-hpc-good",
+  "name": "并行/异构计算架构评估-健康项目",
+  "description": "验证 agent 对 good_project_hpc 正确识别为 HPC 项目并给出合理评分",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_hpc",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_hpc 目录直接运行并行/异构计算架构评估命令：python -m arch_quality.arch_metrics_hpc D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_hpc --json，然后汇报该命令输出的 overall 评分和各子维度评分（backend_consistency/mpi_halo/load_topology/hybrid_parallel）。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_hpc": true,
+    "overall_range": [
+      80,
+      100
+    ],
+    "dimension_fields": [
+      "backend_consistency",
+      "mpi_halo",
+      "load_topology",
+      "hybrid_parallel"
+    ],
+    "max_retries": 2
+  }
+}

@@ -1,11 +1,11 @@
 {
   "project": "salome_geom",
-  "overall": 26.5,
+  "overall": 47.5,
   "is_acl": true,
   "dimensions": {
     "external_access": 30,
     "wrapper_coverage": 50,
-    "data_exchange": 0,
+    "data_exchange": 70,
     "fidelity": 40
   },
   "acl_violations": [
@@ -34,14 +34,6 @@
       "detail": "内核调用点紧邻未检查失败状态，建议统一封装"
     },
     {
-      "rule": "ACL-007",
-      "name": "STEP/IGES/IFC 读写防腐",
-      "severity": "HIGH",
-      "output_level": "ERROR",
-      "count": 40,
-      "detail": "格式符号出现在 import/export 模块白名单外，建议收敛到集中模块"
-    },
-    {
       "rule": "ACL-010",
       "name": "标准版本守卫",
       "severity": "LOW",
@@ -56,14 +48,6 @@
       "output_level": "WARNING",
       "count": 3,
       "detail": "reader/writer 调用点未检查 IFSelect_ReturnStatus/异常"
-    },
-    {
-      "rule": "ACL-012",
-      "name": "格式直连检测",
-      "severity": "MEDIUM",
-      "output_level": "WARNING",
-      "count": 4,
-      "detail": "格式符号在专用模块外引用密度超阈值（仅 ACL-007 散落场景叠加）"
     }
   ],
   "root_path": "D:\\opensource\\gcs-baselines\\salome-geom"

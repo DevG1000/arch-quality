@@ -1,10 +1,10 @@
 ﻿# arch-quality
 
-软件架构质量评估引擎 — 系统性分析、评估和改进软件系统架构质量。支持标准架构评估、多语言混合依赖评估、C++ 模板元编程专项分析、数值算法精度保障评估、求解器/物理场模块化架构评估、几何内核/科学数据结构一致性评估。
+软件架构质量评估引擎 — 系统性分析、评估和改进软件系统架构质量。支持标准架构评估、多语言混合依赖评估、C++ 模板元编程专项分析、数值算法精度保障评估、求解器/物理场模块化架构评估、几何内核/科学数据结构一致性评估、外部内核防腐层评估、并行/异构计算架构评估（HPC/GPU）。
 
 ## 核心能力
 
-6 个评估引擎，共 72 条规则（每条规则对应一个可机检的架构反模式/质量缺陷）：
+8 个评估引擎，共 96 条规则（每条规则对应一个可机检的架构反模式/质量缺陷）：
 
 | 引擎 | 模块 | CLI 入口 | 维度 | 规则 |
 |------|------|----------|------|------|
@@ -14,8 +14,10 @@
 | 数值算法精度 | arch_metrics_numerical_accuracy | python -m arch_quality.arch_metrics_numerical_accuracy | 6 维 | NVR-001~012 |
 | 求解器/物理场 | arch_metrics_solver_physics | python -m arch_quality.arch_metrics_solver_physics | 4 维 | MPR-001~012 |
 | 几何内核/科学数据 | arch_metrics_geometry_consistency | python -m arch_quality.arch_metrics_geometry_consistency | 4 维 | GCS-001~012 |
+| 外部内核防腐层 | arch_metrics_anti_corruption | python -m arch_quality.arch_metrics_anti_corruption | 4 维 | ACL-001~012 |
+| 并行/异构计算 | arch_metrics_hpc | python -m arch_quality.arch_metrics_hpc | 4 维 | HPC-001~012 |
 
-综合入口 `arch-quality` 自动探测项目语言构成，按需启用多语言/模板/数值/求解器物理/几何内核增强，合并生成 JSON + Markdown 报告。
+综合入口 `arch-quality` 自动探测项目语言构成，按需启用多语言/模板/数值/求解器物理/几何内核/外部内核防腐/并行异构增强，合并生成 JSON + Markdown 报告。
 
 维度与权重定义全部从 `src/arch_quality/skills/*.md` 运行时解析（合计必须 100%）。
 
@@ -124,7 +126,13 @@ cp .opencode/agents/architecture-quality.md ~/.config/opencode/agents/architectu
 ### 几何内核/科学数据结构一致性（GCS-001~012）
 B-Rep 闭合性校验存在性、Handle 智能指针一致性、内核异常/失败状态传播、生命周期、精度/单位魔法因子、网格语义混用、场量组织、维度匹配、裸数组密度、深浅拷贝、数据访问封装。
 
-> 规则覆盖矩阵（KPI1）：`scripts/gen_rule_coverage_matrix.py --check` 校验 60/60 = 100%（SAR/MLR/TPL/NVR/MPR 五引擎；GCS 规则覆盖纳入 WP-8 矩阵扩展）。
+### 外部内核防腐层（ACL-001~012）
+外部内核直连访问、wrapper 覆盖度、类型泄漏、错误处理、STEP/IGES/IFC 数据交换防腐、单位/公差魔法因子、标准版本守卫、格式直连。
+
+### 并行/异构计算架构（HPC-001~012）
+后端接口一致性（CPU/GPU 双实现、设备守卫、launch、搬运）、MPI halo 交换、负载均衡与进程拓扑、混合并行（线程安全 MPI、共享变量、嵌套）。
+
+> 规则覆盖矩阵（KPI1）：`scripts/gen_rule_coverage_matrix.py --check` 校验 72/72 = 100%（8 引擎：SAR/MLR/TPL/NVR/MPR/GCS/ACL/HPC）。
 
 ## 报告存储
 
@@ -194,6 +202,10 @@ arch-quality/
 | [模板元编程与编译时依赖膨胀验证案例库](docs/zh/模板元编程与编译时依赖膨胀验证案例库.md) | 模板验证场景 |
 | [求解器和物理场模块化架构模式识别评估指南](docs/zh/求解器和物理场模块化架构模式识别评估/求解器与物理场模块化架构模式识别评估指南.md) | MPR-001~012 |
 | [几何内核与科学数据结构一致性评估指南](docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估指南.md) | 4 维 + GCS-001~012 |
+| [外部内核防腐层评估指南](docs/zh/外部科学内核与几何内核的封装与防腐层评估/外部科学内核与几何内核的封装与防腐层评估指南.md) | 4 维 + ACL-001~012 |
+| [并行/异构计算架构评估指南](docs/zh/并行异构计算架构评估/并行异构计算架构评估指南.md) | 4 维 + HPC-001~012 |
+| [并行/异构计算架构评估用户提示词模板](docs/zh/并行异构计算架构评估/并行异构计算架构评估用户交互提示词模板.md) | 交互模板 |
+| [并行/异构计算架构评估报告模板](docs/zh/并行异构计算架构评估/并行异构计算架构评估报告模板.md) | 报告模板 |
 | [OpenCode 智能体开发指南](docs/zh/OpenCode 智能体开发指南.md) | 智能体集成 |
 | [基于 OPENCODE 的架构质量评估 SKILL 开发指南](docs/zh/基于OPENCODE的架构质量评估SKILL开发指南.md) | Skill 开发流程（A/B/C 三阶段 + 部署同步 C1.5）|
 | [门禁治理准则](docs/zh/计划/门禁治理准则.md) | CI 升级/回滚/豁免 |

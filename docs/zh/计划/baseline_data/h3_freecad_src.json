@@ -1,0 +1,102 @@
+{
+  "slug": "freecad_src",
+  "root": "D:\\OPENSOURCE\\FreeCAD\\src",
+  "tag": "h3",
+  "engines": {
+    "standard": {
+      "init_s": 31.92,
+      "generate_s": 172.83,
+      "total_s": 204.75,
+      "flags": {
+        "is_single_language": null,
+        "is_cpp_project": null,
+        "is_numerical": null,
+        "is_multiphysics": null
+      },
+      "file_count": 7519
+    },
+    "multilang": {
+      "init_s": 68.64,
+      "generate_s": 195.53,
+      "total_s": 264.17,
+      "flags": {
+        "is_single_language": false,
+        "is_cpp_project": null,
+        "is_numerical": null,
+        "is_multiphysics": null
+      },
+      "file_count": 7519
+    },
+    "template": {
+      "init_s": 7.88,
+      "generate_s": 24.09,
+      "total_s": 31.97,
+      "flags": {
+        "is_single_language": null,
+        "is_cpp_project": true,
+        "is_numerical": null,
+        "is_multiphysics": null
+      },
+      "file_count": 7519
+    },
+    "numerical": {
+      "init_s": 7.88,
+      "generate_s": 111.84,
+      "total_s": 119.72,
+      "flags": {
+        "is_single_language": null,
+        "is_cpp_project": null,
+        "is_numerical": true,
+        "is_multiphysics": null
+      },
+      "file_count": null
+    },
+    "solver_physics": {
+      "init_s": 1.71,
+      "generate_s": 24.76,
+      "total_s": 26.47,
+      "flags": {
+        "is_single_language": null,
+        "is_cpp_project": null,
+        "is_numerical": null,
+        "is_multiphysics": true
+      },
+      "file_count": null
+    },
+    "geometry_consistency": {
+      "init_s": 4.73,
+      "generate_s": 63.95,
+      "total_s": 68.68,
+      "flags": {
+        "is_single_language": null,
+        "is_cpp_project": null,
+        "is_numerical": null,
+        "is_multiphysics": null
+      },
+      "file_count": null
+    },
+    "anti_corruption": {
+      "init_s": 4.59,
+      "generate_s": 50.03,
+      "total_s": 54.62,
+      "flags": {
+        "is_single_language": null,
+        "is_cpp_project": null,
+        "is_numerical": null,
+        "is_multiphysics": null
+      },
+      "file_count": null
+    }
+  },
+  "machine": {
+    "platform": "Windows-10-10.0.18363-SP0",
+    "python": "3.14.3",
+    "cpu": "Intel64 Family 6 Model 142 Stepping 10, GenuineIntel",
+    "machine": "AMD64",
+    "cpu_physical": 2,
+    "cpu_logical": 4,
+    "mem_gb": 11.8
+  },
+  "measured_at": "2026-10-21T10:17:42",
+  "total_s": 770.38
+}

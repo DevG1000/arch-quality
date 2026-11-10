@@ -29,14 +29,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from arch_quality.arch_report import ComprehensiveReport
 
-DEFAULT_PROJECTS = [
-    ("freecad_src", r"D:\OPENSOURCE\FreeCAD\src"),
-    ("openfoam_v2512", r"D:\OPENSOURCE\OpenFOAM-v2512"),
-    ("brl_cad", r"D:\OPENSOURCE\BRL-CAD"),
-    ("freecad_cam", r"D:\OPENSOURCE\FreeCAD\src\Mod\CAM"),
-    ("freecad_fem", r"D:\OPENSOURCE\FreeCAD\src\Mod\Fem"),
-    ("elmerfem", r"D:\OPENSOURCE\ElmerFEM"),
+DEFAULT_BASE = os.environ.get("ARCH_OPENSOURCE", r"D:\OPENSOURCE")
+DEFAULT_PROJECTS_REL = [
+    ("freecad_src", "FreeCAD/src"),
+    ("openfoam_v2512", "OpenFOAM-v2512"),
+    ("brl_cad", "BRL-CAD"),
+    ("freecad_cam", "FreeCAD/src/Mod/CAM"),
+    ("freecad_fem", "FreeCAD/src/Mod/Fem"),
+    ("elmerfem", "ElmerFEM"),
 ]
+
+
+def _default_projects(base: str = None):
+    """按 base 目录解析默认 6 项目相对路径（去硬编码，跨机可复现）。"""
+    base = base or DEFAULT_BASE
+    return [(slug, os.path.join(base, *rel.split("/"))) for slug, rel in DEFAULT_PROJECTS_REL]
 
 
 def _machine_info() -> dict:
@@ -123,6 +130,7 @@ def main():
     ap.add_argument("--project", default=None, help="单项目根路径")
     ap.add_argument("--slug", default=None, help="项目短名（默认取路径末段）")
     ap.add_argument("--all", action="store_true", help="跑默认 6 个项目（FreeCAD src + 5 回归）")
+    ap.add_argument("--base", default=None, help="样本根目录（默认 $ARCH_OPENSOURCE 或 D:\\OPENSOURCE）")
     ap.add_argument("--exclude", default="", help="排除的 slug 逗号分隔（配合 --all）")
     ap.add_argument("--runs", type=int, default=3, help="每个项目运行轮数（默认 3）")
     ap.add_argument("--tag", default="baseline", help="缓存状态标签: cold/hot/baseline")
@@ -131,7 +139,7 @@ def main():
     args = ap.parse_args()
 
     if args.all:
-        projects = DEFAULT_PROJECTS
+        projects = _default_projects(args.base)
         if args.exclude:
             excluded = set(s.strip() for s in args.exclude.split(","))
             projects = [p for p in projects if p[0] not in excluded]

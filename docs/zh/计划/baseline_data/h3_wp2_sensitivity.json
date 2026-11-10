@@ -1,0 +1,389 @@
+{
+  "grid": [
+    0.05,
+    0.08,
+    0.1,
+    0.12,
+    0.15,
+    0.2
+  ],
+  "baseline_weights": {
+    "dim.multilang": 0.15,
+    "dim.template": 0.15,
+    "dim.numerical": 0.1,
+    "dim.solver_physics": 0.15,
+    "dim.geometry_consistency": 0.15,
+    "dim.anti_corruption": 0.15
+  },
+  "projects": {
+    "brl_cad": {
+      "baseline_overall": 46.38,
+      "grade": "D",
+      "active_enh": [
+        "ml",
+        "tpl",
+        "nvr",
+        "sp"
+      ]
+    },
+    "eigen": {
+      "baseline_overall": 47.1,
+      "grade": "D",
+      "active_enh": [
+        "ml",
+        "tpl",
+        "nvr",
+        "sp"
+      ]
+    },
+    "elmerfem": {
+      "baseline_overall": 48.92,
+      "grade": "D",
+      "active_enh": [
+        "ml",
+        "tpl",
+        "nvr",
+        "sp",
+        "gcs",
+        "acl"
+      ]
+    },
+    "freecad_src": {
+      "baseline_overall": 44.58,
+      "grade": "D",
+      "active_enh": [
+        "ml",
+        "tpl",
+        "nvr",
+        "sp",
+        "gcs",
+        "acl"
+      ]
+    },
+    "occt": {
+      "baseline_overall": 48.51,
+      "grade": "D",
+      "active_enh": [
+        "ml",
+        "tpl",
+        "nvr",
+        "sp",
+        "gcs",
+        "acl"
+      ]
+    },
+    "openfoam_v2512": {
+      "baseline_overall": 49.51,
+      "grade": "D",
+      "active_enh": [
+        "ml",
+        "tpl",
+        "nvr",
+        "sp",
+        "gcs"
+      ]
+    },
+    "salome_geom": {
+      "baseline_overall": 45.11,
+      "grade": "D",
+      "active_enh": [
+        "ml",
+        "tpl",
+        "nvr",
+        "sp",
+        "gcs",
+        "acl"
+      ]
+    }
+  },
+  "sensitivity": {
+    "dim.multilang": {
+      "current": 0.15,
+      "rows": [
+        {
+          "w": 0.05,
+          "max_abs_delta": 2.47,
+          "kendall_tau": 0.905,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.08,
+          "max_abs_delta": 1.69,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.1,
+          "max_abs_delta": 1.19,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.12,
+          "max_abs_delta": 0.71,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.15,
+          "max_abs_delta": 0.0,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.2,
+          "max_abs_delta": 1.12,
+          "kendall_tau": 1.0,
+          "grade_changes": 1
+        }
+      ],
+      "stable_values": [
+        0.08,
+        0.1,
+        0.12,
+        0.15
+      ],
+      "critical": true
+    },
+    "dim.template": {
+      "current": 0.15,
+      "rows": [
+        {
+          "w": 0.05,
+          "max_abs_delta": 2.0,
+          "kendall_tau": 0.714,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.08,
+          "max_abs_delta": 1.37,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.1,
+          "max_abs_delta": 0.97,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.12,
+          "max_abs_delta": 0.57,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.15,
+          "max_abs_delta": 0.0,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.2,
+          "max_abs_delta": 0.91,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        }
+      ],
+      "stable_values": [
+        0.08,
+        0.1,
+        0.12,
+        0.15,
+        0.2
+      ],
+      "critical": true
+    },
+    "dim.numerical": {
+      "current": 0.1,
+      "rows": [
+        {
+          "w": 0.05,
+          "max_abs_delta": 1.65,
+          "kendall_tau": 0.905,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.08,
+          "max_abs_delta": 0.65,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.1,
+          "max_abs_delta": 0.0,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.12,
+          "max_abs_delta": 0.63,
+          "kendall_tau": 1.0,
+          "grade_changes": 1
+        },
+        {
+          "w": 0.15,
+          "max_abs_delta": 1.55,
+          "kendall_tau": 0.905,
+          "grade_changes": 2
+        },
+        {
+          "w": 0.2,
+          "max_abs_delta": 3.01,
+          "kendall_tau": 0.905,
+          "grade_changes": 3
+        }
+      ],
+      "stable_values": [
+        0.08,
+        0.1
+      ],
+      "critical": true
+    },
+    "dim.solver_physics": {
+      "current": 0.15,
+      "rows": [
+        {
+          "w": 0.05,
+          "max_abs_delta": 0.75,
+          "kendall_tau": 0.81,
+          "grade_changes": 1
+        },
+        {
+          "w": 0.08,
+          "max_abs_delta": 0.52,
+          "kendall_tau": 0.905,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.1,
+          "max_abs_delta": 0.36,
+          "kendall_tau": 0.905,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.12,
+          "max_abs_delta": 0.22,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.15,
+          "max_abs_delta": 0.0,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.2,
+          "max_abs_delta": 0.34,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        }
+      ],
+      "stable_values": [
+        0.12,
+        0.15,
+        0.2
+      ],
+      "critical": true
+    },
+    "dim.geometry_consistency": {
+      "current": 0.15,
+      "rows": [
+        {
+          "w": 0.05,
+          "max_abs_delta": 2.26,
+          "kendall_tau": 0.905,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.08,
+          "max_abs_delta": 1.56,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.1,
+          "max_abs_delta": 1.1,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.12,
+          "max_abs_delta": 0.65,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.15,
+          "max_abs_delta": 0.0,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.2,
+          "max_abs_delta": 1.03,
+          "kendall_tau": 1.0,
+          "grade_changes": 1
+        }
+      ],
+      "stable_values": [
+        0.08,
+        0.1,
+        0.12,
+        0.15
+      ],
+      "critical": true
+    },
+    "dim.anti_corruption": {
+      "current": 0.15,
+      "rows": [
+        {
+          "w": 0.05,
+          "max_abs_delta": 1.06,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.08,
+          "max_abs_delta": 0.73,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.1,
+          "max_abs_delta": 0.52,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.12,
+          "max_abs_delta": 0.31,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.15,
+          "max_abs_delta": 0.0,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        },
+        {
+          "w": 0.2,
+          "max_abs_delta": 0.49,
+          "kendall_tau": 1.0,
+          "grade_changes": 0
+        }
+      ],
+      "stable_values": [
+        0.05,
+        0.08,
+        0.1,
+        0.12,
+        0.15,
+        0.2
+      ],
+      "critical": false
+    }
+  }
+}

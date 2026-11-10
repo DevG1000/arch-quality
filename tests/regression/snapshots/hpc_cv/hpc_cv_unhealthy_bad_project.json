@@ -1,0 +1,46 @@
+{
+  "project": "unhealthy_bad_project",
+  "label": "unhealthy",
+  "path": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_hpc",
+  "is_hpc": true,
+  "overall": 58.5,
+  "applicability_set": [
+    "backend_consistency",
+    "mpi_halo",
+    "load_topology",
+    "hybrid_parallel"
+  ],
+  "dimensions": {
+    "backend_consistency": 70,
+    "mpi_halo": 45,
+    "load_topology": 95,
+    "hybrid_parallel": 25
+  },
+  "violations": [
+    {
+      "rule": "HPC-002",
+      "count": 1,
+      "output_level": "WARNING"
+    },
+    {
+      "rule": "HPC-005",
+      "count": 1,
+      "output_level": "WARNING"
+    },
+    {
+      "rule": "HPC-009",
+      "count": 1,
+      "output_level": "INFO"
+    },
+    {
+      "rule": "HPC-010",
+      "count": 1,
+      "output_level": "WARNING"
+    },
+    {
+      "rule": "HPC-011",
+      "count": 1,
+      "output_level": "WARNING"
+    }
+  ]
+}

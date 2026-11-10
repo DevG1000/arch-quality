@@ -1,0 +1,30 @@
+{
+  "case_id": "case-7-hpc-good",
+  "name": "并行/异构计算架构评估-健康项目",
+  "status": "PASS",
+  "attempts": [
+    {
+      "attempt": 1,
+      "returncode": 0,
+      "event_count": 7
+    }
+  ],
+  "errors": [],
+  "passed": [
+    "全部断言通过"
+  ],
+  "timestamp": "2026-11-04T17:23:55.611331",
+  "tool_calls": [
+    {
+      "tool": "bash",
+      "state": "completed",
+      "input": {
+        "command": "python -m arch_quality.arch_metrics_hpc D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_hpc --json",
+        "timeout": 180000
+      },
+      "output": "{\r\n  \"overall\": 100.0,\r\n  \"is_hpc\": true,\r\n  \"applicability_set\": [\r\n    \"backend_consistency\",\r\n    \"mpi_halo\",\r\n    \"load_topology\",\r\n    \"hybrid_parallel\"\r\n  ],\r\n  \"score_scope\": \"subset\",\r\n  \"dimensions\": {\r\n    \"backend_consistency\": {\r\n      \"score\": 100,\r\n      \"applicable\": true,\r\n      \"detail\": {\r\n        \"triggered\": [],\r\n        \"penalty\": 0\r\n      }\r\n    },\r\n    \"mpi_halo\": {\r\n      \"score\": 100,\r\n      \"applicable\": true,\r\n      \"detail\": {\r\n        \"triggered\": [],\r\n        \"penalty\": 0\r\n      }\r\n    },\r\n    \"load_topology\": {\r\n      \"score\": 100,\r\n      \"applicable\": true,\r\n      \"detail\": {\r\n        \"triggered\": [],\r\n        \"penalty\": 0\r\n      }\r\n    },\r\n    \"hybrid_parallel\": {\r\n      \"score\": 100,\r\n      \"applicable\": true,\r\n      \"detail\": {\r\n        \"triggered\": [],\r\n        \"penalty\": 0\r\n      }\r\n    }\r\n  },\r\n  \"hpc_violations\": [],\r\n  \"gate_status\": \"PASS\",\r\n  \"confirmed_max_severity\": null,\r\n  \"waiver_audit\": {\r\n    \"benchmark_ok\": {\r\n      \"count\": 0,\r\n      \"ratio\": 0.0,\r\n      \"scope\": \"HPC-003 ��������Ӱ�� scoring��\",\r\n      \"files\": []\r\n    },\r\n    \"deferred\": {\r\n      \"count\": 0,\r\n      \"ratio\": 0.0,\r\n      \"scope\": \"��һ������ output_level��\",\r\n      \"files\": []\r\n    },\r\n    \"gpu_only\": {\r\n      \"count\": 0,\r\n      \"ratio\": 0.0,\r\n      \"scope\": \"HPC-002 �� INFO���� output_level��\",\r\n      \"files\": []\r\n    },\r\n    \"invalid_waivers\": [],\r\n    \"abuse_limit\": 0.3,\r\n    \"abuse_warning\": null\r\n  },\r\n  \"version_info\": {\r\n    \"guide_version\": \"0.8\",\r\n    \"skill_version\": \"1.0\"\r\n  }\r\n}\r\n"
+    }
+  ],
+  "final_text": "我会运行所请求的 HPC 评估命令并报告结果。\n{\n  \"overall\": 100.0,\n  \"is_hpc\": true,\n  \"applicability_set\": [\n    \"backend_consistency\",\n    \"mpi_halo\",\n    \"load_topology\",\n    \"hybrid_parallel\"\n  ],\n  \"score_scope\": \"subset\",\n  \"dimensions\": {\n    \"backend_consistency\": {\n      \"score\": 100,\n      \"applicable\": true,\n      \"detail\": {\n        \"triggered\": [],\n        \"penalty\": 0\n      }\n    },\n    \"mpi_halo\": {\n      \"score\": 100,\n      \"applicable\": true,\n      \"detail\": {\n        \"triggered\": [],\n        \"penalty\": 0\n      }\n    },\n    \"load_topology\": {\n      \"score\": 100,\n      \"applicable\": true,\n      \"detail\": {\n        \"triggered\": [],\n        \"penalty\": 0\n      }\n    },\n    \"hybrid_parallel\": {\n      \"score\": 100,\n      \"applicable\": true,\n      \"detail\": {\n        \"triggered\": [],\n        \"penalty\": 0\n      }\n    }\n  },\n  \"hpc_violations\": [],\n  \"gate_status\": \"PASS\",\n  \"confirmed_max_severity\": null,\n  \"waiver_audit\": {\n    \"benchmark_ok\": {\n      \"count\": 0,\n      \"ratio\": 0.0,\n      \"scope\": \"HPC-003 ��������Ӱ�� scoring��\",\n      \"files\": []\n    },\n    \"deferred\": {\n      \"count\": 0,\n      \"ratio\": 0.0,\n      \"scope\": \"��һ������ output_level��\",\n      \"files\": []\n    },\n    \"gpu_only\": {\n      \"count\": 0,\n      \"ratio\": 0.0,\n      \"scope\": \"HPC-002 �� INFO���� output_level��\",\n      \"files\": []\n    },\n    \"invalid_waivers\": [],\n    \"abuse_limit\": 0.3,\n    \"abuse_warning\": null\n  },\n  \"version_info\": {\n    \"guide_version\": \"0.8\",\n    \"skill_version\": \"1.0\"\n  }\n}\n\n评估命令已成功运行。结果如下：\n\n## HPC 评估结果 — `good_project_hpc`\n\n| 项目 | 评分 |\n|------|------|\n| **overall** | **100.0** |\n| backend_consistency | 100 |\n| mpi_halo | 100 |\n| load_topology | 100 |\n| hybrid_parallel | 100 |\n\n**其他关键信息：**\n- `is_hpc`: true（已识别为 HPC 项目）\n- `applicability_set`: 4 个维度全部适用（backend_consistency / mpi_halo / load_topology / hybrid_parallel）\n- `score_scope`: subset\n- **hpc_violations**: 无（空列表）\n- **gate_status**: PASS\n- `confirmed_max_severity`: null\n- `waiver_audit`: 所有豁免计数均为 0，无滥用告警\n\n即该 fixture 项目在并行/异构计算架构评",
+  "retries_used": 0
+}

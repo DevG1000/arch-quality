@@ -5,6 +5,9 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -84,3 +87,26 @@ jobs:
         with:
           name: perf-baseline
           path: perf_baseline.json
+
+  # ── 运行时内核检测（专用 job：schedule/dispatch，不阻塞 PR）──
+  # G0 结论：方法 C（预构建 OCCT V8.0.1 缓存）+ 专用 job。禁用 apt（7.6.3 版本漂移）。
+  # 承载 H3 WP-5 的 B2/B3/B5（欧拉公式/B-Rep 闭合/ACL 内核升级兼容）运行时检测底座。
+  runtime-kernel:
+    name: Runtime Kernel (OCCT V8.0.1)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    env:
+      OCCT_REF: b8f597c677811d1f9f4d8a97f5ae2825c0353a42
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache OCCT V8.0.1 build
+        id: occt-cache
+        uses: actions/cache@v4
+        with:
+          path: .occt-cache/install
+          key: occt-v8.0.1-${{ runner.os }}-${{ hashFiles('scripts/ci/build_occt.sh') }}
+      - name: Build OCCT V8.0.1
+        if: steps.occt-cache.outputs.cache-hit != 'true'
+        run: bash scripts/ci/build_occt.sh
+      - name: Kernel smoke probe
+        run: bash scripts/ci/run_kernel_smoke.sh

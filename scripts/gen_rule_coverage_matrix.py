@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 gen_rule_coverage_matrix.py — 规则覆盖矩阵自动生成器（WP-2）
 
@@ -41,14 +41,19 @@ ALL_RULES = [
     # 标准（12）
     "SAR-001", "SAR-002", "SAR-003", "SAR-004", "SAR-005", "SAR-006",
     "SAR-007", "SAR-008", "SAR-009", "SAR-010", "SAR-011", "SAR-012",
+    # HPC（12）
+    "HPC-001", "HPC-002", "HPC-003", "HPC-004", "HPC-005", "HPC-006",
+    "HPC-007", "HPC-008", "HPC-009", "HPC-010", "HPC-011", "HPC-012",
 ]
 
-RULE_PAT = re.compile(r"\b(MLR|NVR|MPR|TPL|SAR)-(\d+)([a-z]?)\b")
+RULE_PAT = re.compile(r"\b(MLR|NVR|MPR|TPL|SAR|HPC)-(\d+)([a-z]?)\b")
 
 # 合成项目 → 触发规则映射（WP-2 新增）
 SYNTHETIC_MAP = {
     "mlr002_no_binding": ["MLR-002"],
     "mlr002_with_binding": [],
+    "mlr004_ctypes": ["MLR-004"],
+    "mlr004_with_binding": [],
     "mlr007_tnt": ["MLR-007"],
     "mlr009_generic": ["MLR-009"],
     "mlr011_loop_calls": ["MLR-011"],

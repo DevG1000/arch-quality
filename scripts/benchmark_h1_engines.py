@@ -1,8 +1,8 @@
-"""
-benchmark_h1_engines.py - H1 WP-0 分引擎耗时定位
+﻿"""
+benchmark_h1_engines.py - 分引擎耗时定位
 
-单进程内依次对 5 个指标引擎 init + all_metrics 计时，
-输出 JSON，用于定位 FreeCAD src 4h 热点在哪个引擎。
+单进程内依次对 7 个指标引擎 init + all_metrics 计时，
+输出 JSON，用于定位热点在哪个引擎（H1 用于 FreeCAD src 4h 热点；H3 扩展至 7 引擎含 GCS/ACL）。
 
 用法:
     python scripts/benchmark_h1_engines.py D:\\OPENSOURCE\\FreeCAD\\src --tag hot
@@ -24,6 +24,9 @@ from arch_quality.arch_metrics_multilang import MultilangMetrics
 from arch_quality.arch_metrics_template import TemplateMetaprogrammingMetrics
 from arch_quality.arch_metrics_numerical_accuracy import NumericalAccuracyMetrics
 from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
+from arch_quality.arch_metrics_geometry_consistency import GeometryConsistencyMetrics
+from arch_quality.arch_metrics_anti_corruption import AntiCorruptionMetrics
+from arch_quality.arch_metrics_hpc import HpcArchitectureMetrics
 
 
 def _machine_info() -> dict:
@@ -47,6 +50,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("root", help="项目根路径")
     ap.add_argument("--tag", default="engines")
+    ap.add_argument("--slug", default=None, help="输出短名（默认取路径末段）")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -56,9 +60,12 @@ def main():
         ("template", TemplateMetaprogrammingMetrics),
         ("numerical", NumericalAccuracyMetrics),
         ("solver_physics", SolverPhysicsMetrics),
+        ("geometry_consistency", GeometryConsistencyMetrics),
+        ("anti_corruption", AntiCorruptionMetrics),
+        ("hpc", HpcArchitectureMetrics),
     ]
 
-    result = {"slug": Path(args.root.rstrip("\\/")).name, "root": args.root,
+    result = {"slug": args.slug or Path(args.root.rstrip("\\/")).name, "root": args.root,
               "tag": args.tag, "engines": {}, "machine": _machine_info(),
               "measured_at": datetime.now().isoformat(timespec="seconds")}
     for name, cls in engines:

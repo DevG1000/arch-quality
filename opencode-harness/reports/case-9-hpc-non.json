@@ -1,0 +1,30 @@
+{
+  "case_id": "case-9-hpc-non",
+  "name": "并行/异构计算架构评估-非 HPC 项目",
+  "status": "PASS",
+  "attempts": [
+    {
+      "attempt": 1,
+      "returncode": 0,
+      "event_count": 7
+    }
+  ],
+  "errors": [],
+  "passed": [
+    "全部断言通过"
+  ],
+  "timestamp": "2026-11-05T09:16:20.953573",
+  "tool_calls": [
+    {
+      "tool": "bash",
+      "state": "completed",
+      "input": {
+        "command": "python -m arch_quality.arch_metrics_hpc D:\\opensource\\arch-quality\\tests\\mutation\\projects\\non_hpc_project --json",
+        "timeout": 120000
+      },
+      "output": "{\r\n  \"overall\": null,\r\n  \"is_hpc\": false,\r\n  \"applicability_set\": [],\r\n  \"score_scope\": \"none\",\r\n  \"dimensions\": {\r\n    \"backend_consistency\": {\r\n      \"score\": null,\r\n      \"applicable\": false,\r\n      \"detail\": {}\r\n    },\r\n    \"mpi_halo\": {\r\n      \"score\": null,\r\n      \"applicable\": false,\r\n      \"detail\": {}\r\n    },\r\n    \"load_topology\": {\r\n      \"score\": null,\r\n      \"applicable\": false,\r\n      \"detail\": {}\r\n    },\r\n    \"hybrid_parallel\": {\r\n      \"score\": null,\r\n      \"applicable\": false,\r\n      \"detail\": {}\r\n    }\r\n  },\r\n  \"hpc_violations\": [],\r\n  \"gate_status\": \"PASS\",\r\n  \"confirmed_max_severity\": null,\r\n  \"waiver_audit\": {},\r\n  \"version_info\": {\r\n    \"guide_version\": \"0.8\",\r\n    \"skill_version\": \"1.0\"\r\n  }\r\n}\r\n"
+    }
+  ],
+  "final_text": "I'll run the HPC architecture assessment command on the specified directory.\n{\n  \"overall\": null,\n  \"is_hpc\": false,\n  \"applicability_set\": [],\n  \"score_scope\": \"none\",\n  \"dimensions\": {\n    \"backend_consistency\": {\n      \"score\": null,\n      \"applicable\": false,\n      \"detail\": {}\n    },\n    \"mpi_halo\": {\n      \"score\": null,\n      \"applicable\": false,\n      \"detail\": {}\n    },\n    \"load_topology\": {\n      \"score\": null,\n      \"applicable\": false,\n      \"detail\": {}\n    },\n    \"hybrid_parallel\": {\n      \"score\": null,\n      \"applicable\": false,\n      \"detail\": {}\n    }\n  },\n  \"hpc_violations\": [],\n  \"gate_status\": \"PASS\",\n  \"confirmed_max_severity\": null,\n  \"waiver_audit\": {},\n  \"version_info\": {\n    \"guide_version\": \"0.8\",\n    \"skill_version\": \"1.0\"\n  }\n}\n\n已直接运行评估命令，未阅读源码实现。结果如下：\n\n## 评估结果\n\n| 字段 | 值 |\n|---|---|\n| `is_hpc` | **false** |\n| `overall` | `null`（不评分） |\n| `score_scope` | `none` |\n| `applicability_set` | `[]`（无适用维度） |\n| `gate_status` | `PASS` |\n| `hpc_violations` | `[]`（无违规） |\n| `confirmed_max_severity` | `null` |\n| 指南版本 / 技能版本 | 0.8 / 1.0 |\n\n## 维度明细\n\n| 维度 | 得分 | 是否适用 |\n|---|---|---|\n| 后端接口一致性（backend_consistency） | null | 否 |\n| MPI 域分解与 halo 交换（mpi_halo） | null | 否 |\n| 负载均衡与进程拓扑（load_topology） | null | 否 |\n| 混合并行（hybrid_parallel） | null | 否 |\n\n## 结论\n\n该项目**未检测到任何并行/异构计算信号**（无 MPI/OpenMP/线程池/GPU 后端等特征），`is_hpc = false`，`applicability_set` 为空，因此引擎不输出任何维度评分与违规项，`gate_status` 为 `PASS`（无门禁可触发）。\n\n**该项目不是 HPC 项目。**\n\n> 结论：**非 HPC 项目**",
+  "retries_used": 0
+}

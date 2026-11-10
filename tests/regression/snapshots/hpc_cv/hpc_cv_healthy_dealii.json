@@ -1,0 +1,20 @@
+{
+  "project": "healthy_dealii",
+  "label": "healthy",
+  "path": "D:\\OPENSOURCE\\dealii",
+  "is_hpc": true,
+  "overall": 100.0,
+  "applicability_set": [
+    "backend_consistency",
+    "mpi_halo",
+    "load_topology",
+    "hybrid_parallel"
+  ],
+  "dimensions": {
+    "backend_consistency": 100,
+    "mpi_halo": 100,
+    "load_topology": 100,
+    "hybrid_parallel": 100
+  },
+  "violations": []
+}

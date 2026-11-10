@@ -1,0 +1,19 @@
+{
+  "project": "healthy_openfoam",
+  "label": "healthy",
+  "path": "D:\\OPENSOURCE\\OpenFOAM-v2512",
+  "is_hpc": true,
+  "overall": 100.0,
+  "applicability_set": [
+    "mpi_halo",
+    "load_topology",
+    "hybrid_parallel"
+  ],
+  "dimensions": {
+    "backend_consistency": 100,
+    "mpi_halo": 100,
+    "load_topology": 100,
+    "hybrid_parallel": 100
+  },
+  "violations": []
+}

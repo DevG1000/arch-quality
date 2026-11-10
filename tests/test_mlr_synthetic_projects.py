@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_mlr_synthetic_projects.py — WP-2 规则回归补全：合成项目单元测试
 
 验证 3 个此前无真实项目覆盖的 MLR 规则：
@@ -89,6 +89,24 @@ class TestMlr011LoopCalls(unittest.TestCase):
         self.assertGreaterEqual(len(mlr011), 1)
         self.assertEqual(mlr011[0]["severity"], "LOW")
         self.assertIn("循环内", mlr011[0]["detail"])
+
+
+class TestMlr004ScriptDirectAccess(unittest.TestCase):
+    """MLR-004 脚本直接访问内部（ctypes.CDLL）"""
+
+    def test_ctypes_cdll_triggers(self):
+        m = MultilangMetrics(os.path.join(PROJECTS, "mlr004_ctypes"))
+        d = m.all_metrics()
+        mlr004 = [v for v in d["mlr_violations"] if v["rule"] == "MLR-004"]
+        self.assertGreaterEqual(len(mlr004), 1)
+        self.assertEqual(mlr004[0]["severity"], "HIGH")
+        self.assertIn("ctypes.CDLL", mlr004[0]["detail"])
+
+    def test_with_binding_no_trigger(self):
+        m = MultilangMetrics(os.path.join(PROJECTS, "mlr004_with_binding"))
+        d = m.all_metrics()
+        mlr004 = [v for v in d["mlr_violations"] if v["rule"] == "MLR-004"]
+        self.assertEqual(len(mlr004), 0)
 
 
 if __name__ == "__main__":
