@@ -1,0 +1,30 @@
+{
+  "baseline_commit": "a3168bb",
+  "files": {
+    "guide": {
+      "file": "guide.md",
+      "source": "docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估指南.md",
+      "sha256": "f5276ceb5ac0c8ccc9d9591bffc7006a2c9584df1170a7b28d5f8f8a4637670a"
+    },
+    "cases": {
+      "file": "cases.md",
+      "source": "docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估验证案例集.md",
+      "sha256": "99c8c15b2f0a4adaebf31a0f3b4fb6be62e5e062518e8740e987f02467fd21c3"
+    },
+    "rationale": {
+      "file": "rationale.md",
+      "source": "docs/zh/几何内核与科学数据结构一致性评估/几何内核与科学数据结构一致性评估的设计依据.md",
+      "sha256": "7b2a72a9dbd58791fc757709780e96553aa1d8097a3d4e007d2b81a27505c2ea"
+    },
+    "skill": {
+      "file": "skill.md",
+      "source": "src/arch_quality/skills/geometry-consistency.md",
+      "sha256": "399f2d52b4c3a24f227c8aa875510fd392221bf14d235849840740ba960b1028"
+    },
+    "opencode_skill": {
+      "file": "opencode-skill.md",
+      "source": ".opencode/skills/geometry-consistency/SKILL.md",
+      "sha256": "e29c6c8fbd3d283701f23c65c076d6296d11153868d30df156d92b77832ea82b"
+    }
+  }
+}

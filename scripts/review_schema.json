@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "架构评估文档 PR 审核报告",
+  "description": "Reviewer Agent 的输出契约：每条意见必须带文件、行号、证据引用与可执行建议。",
+  "type": "object",
+  "required": ["pr_id", "reviewer", "verdict", "p0", "p1", "p2", "comments"],
+  "additionalProperties": false,
+  "properties": {
+    "pr_id": {"type": "string", "minLength": 1},
+    "reviewer": {
+      "type": "object",
+      "required": ["model", "provider", "role"],
+      "additionalProperties": false,
+      "properties": {
+        "model": {"type": "string", "minLength": 1},
+        "provider": {"type": "string", "minLength": 1},
+        "role": {"type": "string", "enum": ["reviewer"]},
+        "session_id": {"type": "string"}
+      }
+    },
+    "verdict": {"type": "string", "enum": ["approved", "changes_requested"]},
+    "p0": {"type": "integer", "minimum": 0},
+    "p1": {"type": "integer", "minimum": 0},
+    "p2": {"type": "integer", "minimum": 0},
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["file", "line", "severity", "evidence", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "file": {"type": "string", "minLength": 1},
+          "line": {"type": "integer", "minimum": 1},
+          "severity": {"type": "string", "enum": ["P0", "P1", "P2"]},
+          "evidence": {"type": "string", "minLength": 1},
+          "message": {"type": "string", "minLength": 1},
+          "suggestion": {"type": "string"}
+        }
+      }
+    }
+  }
+}
