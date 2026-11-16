@@ -202,3 +202,4 @@ python scripts\pr_state.py reeval  --pr-id PR-X
 - 植入缺陷集：`scripts/seeded_defects.py`（基线冻结于 `opencode-harness/seeded/baseline/`）
 - 模型对比：`scripts/compare_reviewers.py`
 - PR 模板：`docs/zh/几何内核与科学数据结构一致性评估/pr-template.md`
+- 实战示例 / QA：`docs/zh/几何内核与科学数据结构一致性评估/Proposer&Reviewer Agent QA集.md`
