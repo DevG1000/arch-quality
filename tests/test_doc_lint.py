@@ -246,6 +246,21 @@ class TestReviewContract(unittest.TestCase):
             rep = doc_lint.lint_review_file(self._write(d, data))
             self.assertIn("R-schema", codes(rep))
 
+    def test_changes_requested_requires_comment(self):
+        with tempfile.TemporaryDirectory() as d:
+            data = self._valid()
+            data["comments"] = []
+            data["p0"] = data["p1"] = data["p2"] = 0
+            rep = doc_lint.lint_review_file(self._write(d, data))
+            self.assertIn("R-verdict", codes(rep))
+
+    def test_comment_count_must_match(self):
+        with tempfile.TemporaryDirectory() as d:
+            data = self._valid()
+            data["p1"] = 3  # 实际只有 1 条 P0
+            rep = doc_lint.lint_review_file(self._write(d, data))
+            self.assertIn("R-count", codes(rep))
+
     def test_approve_with_p0_rejected(self):
         with tempfile.TemporaryDirectory() as d:
             data = self._valid()

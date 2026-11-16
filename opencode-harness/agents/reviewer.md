@@ -59,4 +59,5 @@ permission:
 - 每条意见必须有 `file` + `line` + `evidence`，否则视为无效；
 - `p0/p1/p2` 必须与 comments 中对应 severity 的条数一致；
 - **只要存在 P0，`verdict` 只能是 `changes_requested`**；
+- **`changes_requested` 必须至少给出 1 条 comment**（无问题就判 `approved`，不要空意见拒绝）；
 - 不要修改任何文件（你没有写权限），只输出上面的 JSON。
