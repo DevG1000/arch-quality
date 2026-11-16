@@ -2,12 +2,12 @@
 """
 arch_metrics_geometry_consistency.py — 几何内核与科学数据结构一致性评估
 
-实现《几何内核与科学数据结构一致性评估指南（1.7版）》定义的 4 维评分模型
+实现《几何内核与科学数据结构一致性评估指南（1.8版）》定义的 4 维评分模型
 和 12 条 GCS 规则（GCS-001~012）的静态分析检测。
 
 版本绑定：
-  - 指南版本：1.7
-  - Skill 版本：1.1
+  - 指南版本：1.8
+  - Skill 版本：1.2
 """
 
 import os
@@ -25,8 +25,8 @@ from arch_quality.arch_core import (
 
 SKILL_PATH = str(Path(__file__).parent / "skills" / "geometry-consistency.md")
 
-GUIDE_VERSION = "1.7"
-SKILL_VERSION = "1.1"
+GUIDE_VERSION = "1.8"
+SKILL_VERSION = "1.2"
 
 # ── 常量定义 ──
 CPP_EXTS = {".cpp", ".cxx", ".cc", ".hpp", ".hxx", ".txx", ".h", ".c", ".ixx", ".cppm"}
