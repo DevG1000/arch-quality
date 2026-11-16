@@ -562,13 +562,20 @@ def lint_review_file(review_path: Path, schema_path: Path = SCHEMA_PATH) -> Repo
         return rep
 
     p0_comments = [c for c in data["comments"] if c["severity"] == "P0"]
-    if data["p0"] != len(p0_comments):
-        rep.add("R", "ERROR", "R-p0-count",
-                f"p0 字段为 {data['p0']}，但 P0 评论有 {len(p0_comments)} 条",
-                _rel(review_path))
+    p1_comments = [c for c in data["comments"] if c["severity"] == "P1"]
+    p2_comments = [c for c in data["comments"] if c["severity"] == "P2"]
+    for key, items in (("p0", p0_comments), ("p1", p1_comments), ("p2", p2_comments)):
+        if data[key] != len(items):
+            rep.add("R", "ERROR", "R-count",
+                    f"{key} 字段为 {data[key]}，但对应评论有 {len(items)} 条",
+                    _rel(review_path))
     if data["verdict"] == "approved" and (data["p0"] > 0 or p0_comments):
         rep.add("R", "ERROR", "R-approve-with-p0",
                 "verdict=approved 但仍有 P0 问题，禁止批准", _rel(review_path))
+    if data["verdict"] == "changes_requested" and not data["comments"]:
+        rep.add("R", "ERROR", "R-verdict",
+                "verdict=changes_requested 但没有任何 comment；无问题应判 approved",
+                _rel(review_path))
     dup = len({(c["file"], c["line"], c["message"]) for c in data["comments"]})
     if dup != len(data["comments"]):
         rep.add("R", "WARNING", "R-dup", "存在重复评论", _rel(review_path))
