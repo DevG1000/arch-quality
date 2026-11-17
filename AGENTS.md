@@ -1,4 +1,4 @@
-# AGENTS.md — arch-quality repo guide
+﻿# AGENTS.md — arch-quality repo guide
 
 ## Install & Setup
 
@@ -15,6 +15,7 @@ python -m arch_quality --help     # entry if arch-quality not on PATH
 | `arch-quality-standard` | `arch_metrics_standard.py:main` | Standard 4-dimension metrics only |
 | `arch-quality-multilang` | `arch_metrics_multilang.py:main` | Multilang 6-dim + MLR rules only |
 | `arch-quality-template` | `arch_metrics_template.py:main` | Template metaprogramming only |
+| `arch-quality-fossil` | `arch_metrics_fossil_code.py:main` | Fossil code / technical debt only |
 | `arch-quality-ui` | `arch_quality.ui.server:main` | Web operation panel (browser UI for all CLI entries) |
 | via `-m` | `arch_metrics_numerical_accuracy.py:main` | Numerical accuracy (no CLI entry in pyproject) |
 | via `-m` | `arch_metrics_geometry_consistency.py:main` | Geometry consistency (no CLI entry in pyproject) |
@@ -33,6 +34,7 @@ src/arch_quality/
 arch_metrics_geometry_consistency.py # GeometryConsistencyMetrics — 4 dims + 12 GCS
 arch_metrics_anti_corruption.py      # AntiCorruptionMetrics — 4 dims + 12 ACL
   arch_metrics_hpc.py                   # HpcArchitectureMetrics — 4 dims + 12 HPC
+  arch_metrics_fossil_code.py           # FossilCodeMetrics — 4 dims + 12 FOS
 ui/                            # Web panel (Flask): commands_meta + runner + server
   arch_report.py                # ComprehensiveReport — merges all above
   arch_report_generator.py      # Markdown report template (16 sections)

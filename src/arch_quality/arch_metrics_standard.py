@@ -81,9 +81,14 @@ def _resolve_weights():
 class StandardMetrics:
     """标准架构质量指标计算"""
 
-    def __init__(self, root: str, build_dir: str = "", test_dirs: list = None):
+    def __init__(self, root: str, build_dir: str = "", test_dirs: list = None,
+                 exclude_test_coverage_dirs: list = None):
         self.root = root
         self.test_dirs = test_dirs or []
+        self.exclude_test_coverage_dirs = [
+            str(d).replace("\\", "/").strip("/").lower()
+            for d in (exclude_test_coverage_dirs or []) if d
+        ]
         self.weights = _resolve_weights()
         self.index = FileIndex(root, build_dir=build_dir)
         self.graph = DepGraph()
@@ -109,6 +114,16 @@ class StandardMetrics:
         test_files = [f for f in self.index.files if self._is_test_file(f)]
         indexed_paths = {f["path"].lower().replace("\\", "/") for f in self.index.files}
         source_files = [f for f in self.index.files if not self._is_test_file(f)]
+
+        # D3（WP-4）：FOS-012 命中的遗留无测试模块从覆盖率分母剔除，
+        # 避免与 FOS-012 重复扣分；仅在显式传入 exclude_test_coverage_dirs 时生效。
+        if self.exclude_test_coverage_dirs:
+            def _excluded(path: str) -> bool:
+                p = path.lower().replace("\\", "/")
+                return any(p == d or p.startswith(d + "/")
+                           for d in self.exclude_test_coverage_dirs)
+            source_files = [f for f in source_files if not _excluded(f["path"])]
+            test_files = [f for f in test_files if not _excluded(f["path"])]
 
         # out-of-tree 测试根目录：声明在 test_dirs 下的文件计入测试文件
         for td in self.test_dirs:
@@ -151,6 +166,18 @@ class StandardMetrics:
             return 0.0, {"dir_coverage": 0, "lang_coverage": 0, "file_ratio": 0,
                          "binding_coverage": 0, "dir_score": 0, "lang_score": 0,
                          "file_score": 0, "binding_score": 0}
+        if not source_files:
+            # 没有生产源码（只有测试/文档/配置）→ 测试覆盖度不适用，而非 0 分。
+            return None, {
+                "applicable": False, "reason": "no_source_files",
+                "dir_coverage": None, "lang_coverage": None, "file_ratio": None,
+                "binding_coverage": None, "dir_score": None, "lang_score": None,
+                "file_score": None, "binding_score": None,
+                "test_files_by_lang": dict(_lang_count(test_files)),
+                "source_files_by_lang": {},
+                "is_multilang": False,
+                "excluded_legacy_modules": list(self.exclude_test_coverage_dirs),
+            }
 
         # L1 目录覆盖：有测试的源码目录占比（模块级一一对应语义）
         # 对齐《软件架构质量评估验证案例集（1.3版)》1.5 案例：
@@ -166,6 +193,8 @@ class StandardMetrics:
             test_dirs.add(d)
         for f in source_files:
             d = os.path.dirname(f["path"]).replace("\\", "/")
+            if not d:
+                d = "."  # 根目录源码不应被当成“无源码目录”
             if d and not self._is_test_file(f):
                 source_dirs.add(d)
         # 忽略非源码测试目录自身（如顶层 tests/、test/）
@@ -201,7 +230,14 @@ class StandardMetrics:
             return False
 
         covered_src_dirs = set(sd for sd in source_dirs if _dir_covered(sd, test_dirs))
-        dir_coverage = len(covered_src_dirs) / len(source_dirs) if source_dirs else 0
+        # 若遗留模块被全部剔除，分母为空 → 视为无需覆盖（1.0），避免 0 分误导；
+        # 普通项目无源码目录时保持原语义（0.0）。
+        if source_dirs:
+            dir_coverage = len(covered_src_dirs) / len(source_dirs)
+        elif self.exclude_test_coverage_dirs:
+            dir_coverage = 1.0
+        else:
+            dir_coverage = 0.0
 
         # L2 语言覆盖：有测试文件的语言占比
         test_langs = {f["lang"] for f in test_files}
@@ -248,6 +284,7 @@ class StandardMetrics:
             "test_files_by_lang": dict(_lang_count(test_files)),
             "source_files_by_lang": dict(_lang_count(source_files)),
             "is_multilang": is_multilang,
+            "excluded_legacy_modules": list(self.exclude_test_coverage_dirs),
         }
         return max(0, min(100, score)), detail
 
@@ -367,14 +404,14 @@ class StandardMetrics:
             "test_coverage": tc_score,
             "test_coverage_detail": tc_detail,
         }
-        total = 0
         score_keys = ["modularity", "coupling", "cohesion", "complexity", "test_coverage"]
-        for key in score_keys:
-            weight_key = {"modularity": "模块化", "coupling": "耦合度",
-                          "cohesion": "内聚度", "complexity": "复杂度",
-                          "test_coverage": "测试覆盖度"}[key]
-            total += scores[key] * w.get(weight_key, 0.2)
-        return total, scores
+        weight_keys = {"modularity": "模块化", "coupling": "耦合度",
+                       "cohesion": "内聚度", "complexity": "复杂度",
+                       "test_coverage": "测试覆盖度"}
+        active = [k for k in score_keys if scores.get(k) is not None]
+        total_w = sum(w.get(weight_keys[k], 0.2) for k in active)
+        total = sum(scores[k] * w.get(weight_keys[k], 0.2) for k in active)
+        return (total / total_w if total_w else 0), scores
 
     # ── 设计质量辅助 ──
     _DESIGN_PATTERNS = [
@@ -1024,16 +1061,10 @@ class StandardMetrics:
                 if fn.lower().endswith(self._DEAD_BACKUP_EXTS):
                     detail["backup_files"] += 1
                     score -= 10
-        # 被注释的大段代码（启发式）
-        for f in self.index.files:
-            try:
-                content = read_text_smart(f["abs_path"])
-            except Exception:
-                continue
-            blocks = re.findall(r"/\*[^*]*(?:\bif\b|\bfor\b|\bclass\b|\breturn\b)[^*]*\*/", content)
-            if blocks:
-                detail["commented_blocks"] += len(blocks)
-                score -= 5 * min(3, len(blocks))
+        # D1 裁决（WP-4）：注释代码统一归 FOS-006，标准侧只保留备份文件。
+        # 保留 commented_blocks 字段用于报告兼容，但不再扣分。
+        detail["commented_blocks"] = 0
+        detail["delegated_to"] = "FOS-006"
         score = max(0, score)
         return score, detail
 
@@ -1072,7 +1103,8 @@ class StandardMetrics:
             score -= 3
             detail["medium_issues"] += 1
             detail["low_cohesion"] = True
-        if struct_detail.get("test_coverage", 100) < 50:
+        tc = struct_detail.get("test_coverage")
+        if tc is not None and tc < 50:
             score -= 3
             detail["medium_issues"] += 1
             detail["low_test_coverage"] = True

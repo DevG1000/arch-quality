@@ -1,0 +1,13 @@
+{
+  "id": "case-12-fossil-non",
+  "name": "化石代码评估-非化石项目",
+  "description": "验证 agent 对 good_project_fossil 正确判定 is_fossil=false",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_fossil",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_fossil 直接运行化石代码评估：python -m arch_quality.arch_metrics_fossil_code D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_fossil --json，然后报告 is_fossil 和 overall。不要阅读源码实现，直接运行命令并报告结果。",
+  "expect": {
+    "is_fossil": false,
+    "overall_range": null,
+    "dimension_fields": [],
+    "max_retries": 2
+  }
+}

@@ -32,6 +32,7 @@ from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
 from arch_quality.arch_metrics_geometry_consistency import GeometryConsistencyMetrics
 from arch_quality.arch_metrics_anti_corruption import AntiCorruptionMetrics
 from arch_quality.arch_metrics_hpc import HpcArchitectureMetrics
+from arch_quality.arch_metrics_fossil_code import FossilCodeMetrics
 from arch_quality.arch_report_generator import ReportGenerator
 
 SKILL_QUALITY = str(Path(__file__).parent / "skills" / "arch-quality.md")
@@ -63,7 +64,12 @@ class ComprehensiveReport:
         self.multilang_weights = load_weights_from_skill(SKILL_MULTILANG)
         self.template_weights = load_weights_from_skill(SKILL_TEMPLATE)
 
-        self.standard = StandardMetrics(root, build_dir=build_dir, test_dirs=self.test_dirs)
+        # D3：先取 FOS-012 的遗留无测试模块，再构造标准指标（覆盖率分母剔除）
+        self.fossil = FossilCodeMetrics(root)
+        _fossil_excluded = self.fossil.legacy_untested_modules()
+        self.standard = StandardMetrics(
+            root, build_dir=build_dir, test_dirs=self.test_dirs,
+            exclude_test_coverage_dirs=_fossil_excluded)
         self.multilang = MultilangMetrics(root, build_dir=build_dir)
         self.template = TemplateMetaprogrammingMetrics(root, build_dir=build_dir)
         self.numerical = NumericalAccuracyMetrics(root)
@@ -95,6 +101,8 @@ class ComprehensiveReport:
                      if ("anti-corruption" in enabled or not profile_active) else None) if getattr(self, "anti_corruption", None) else None
         hpc_result = (getattr(self, "hpc", None).all_metrics()
                       if ("hpc" in enabled or not profile_active) else None) if getattr(self, "hpc", None) else None
+        fos_result = (getattr(self, "fossil", None).all_metrics()
+                      if ("fossil" in enabled or not profile_active) else None) if getattr(self, "fossil", None) else None
 
         struct_score = std_result["structural"]["score"]
 
@@ -105,6 +113,7 @@ class ComprehensiveReport:
         has_geometry = gcs_result.get("is_geometry", False) if gcs_result else False
         has_acl = acl_result.get("is_acl", False) if acl_result else False
         has_hpc = hpc_result.get("is_hpc", False) if hpc_result else False
+        has_fossil = fos_result.get("is_fossil", False) if fos_result else False
 
         # 激活增强引擎列表：[(key, base_weight, result)]
         # 启发式模式由检测信号决定；显式 profile 模式由声明引擎集 + 引擎实际产出（overall 非 None）决定
@@ -118,6 +127,7 @@ class ComprehensiveReport:
                 ("gcs", "geometry-consistency", 0.15, gcs_result),
                 ("acl", "anti-corruption", 0.15, acl_result),
                 ("hpc", "hpc", 0.15, hpc_result),
+                ("fos", "fossil", 0.15, fos_result),
             ]:
                 if engine in enabled and result is not None and result.get("overall") is not None:
                     enh.append((key, w, result))
@@ -136,6 +146,8 @@ class ComprehensiveReport:
                 enh.append(("acl", 0.15, acl_result))
             if has_hpc and hpc_result is not None and hpc_result.get("overall") is not None:
                 enh.append(("hpc", 0.15, hpc_result))
+            if has_fossil and fos_result is not None and fos_result.get("overall") is not None:
+                enh.append(("fos", 0.15, fos_result))
 
         # ── 激活子集全局归一化（H3 WP-1）：registry 单一事实源 ──
         active_keys = [k for k, _, _ in enh]
@@ -148,6 +160,7 @@ class ComprehensiveReport:
         gcs_weight_applied = norm.get("dim.geometry_consistency", 0.0)
         acl_weight_applied = norm.get("dim.anti_corruption", 0.0)
         hpc_weight_applied = norm.get("dim.hpc", 0.0)
+        fos_weight_applied = norm.get("dim.fossil", 0.0)
         w_structural = norm["dim.structural"]
         w_design = norm["dim.design"]
         w_documentation = norm["dim.documentation"]
@@ -226,6 +239,13 @@ class ComprehensiveReport:
             "hpc_waiver_audit": hpc_result.get("waiver_audit", {}) if hpc_result else {},
             "hpc_version_info": hpc_result.get("version_info", {}) if hpc_result else {},
             "topology_advisory": hpc_result.get("topology_advisory", {}) if hpc_result else {},
+            "fossil_applicability_set": fos_result.get("applicability_set", []) if fos_result else [],
+            "fossil_score_scope": fos_result.get("score_scope", "none") if fos_result else "none",
+            "fossil_gate_status": fos_result.get("gate_status", "PASS") if fos_result else "PASS",
+            "fossil_confirmed_max_severity": fos_result.get("confirmed_max_severity") if fos_result else None,
+            "fossil_waiver_audit": fos_result.get("waiver_audit", {}) if fos_result else {},
+            "fossil_version_info": fos_result.get("version_info", {}) if fos_result else {},
+            "legacy_untested_modules": fos_result.get("legacy_untested_modules", []) if fos_result else [],
             "files": std_result["files"],
             "score_breakdown": {
                 "formula": "overall = Σ dim.score × w'_dim（激活子集全局归一化，Σw'=1）",
@@ -294,6 +314,13 @@ class ComprehensiveReport:
                 "details": hpc_result["dimensions"],
             }
 
+        if fos_result is not None and ("fos" in (k for k, _, _ in enh)):
+            result["dimensions"]["structural"]["fossil_enhancement"] = {
+                "score": fos_result["overall"],
+                "weight_applied": fos_weight_applied,
+                "details": fos_result["dimensions"],
+            }
+
         # D-a：增强维升为顶层维度（归一化权重），保留 structural.*_enhancement 别名一版本
         _enh_meta = [
             ("multilang", "multilang_enhancement", ml_result, ml_weight_applied),
@@ -303,6 +330,7 @@ class ComprehensiveReport:
             ("geometry_consistency", "geometry_consistency_enhancement", gcs_result, gcs_weight_applied),
             ("anti_corruption", "anti_corruption_enhancement", acl_result, acl_weight_applied),
             ("hpc", "hpc_enhancement", hpc_result, hpc_weight_applied),
+            ("fossil", "fossil_enhancement", fos_result, fos_weight_applied),
         ]
         for engine_name, alias_key, res, wapp in _enh_meta:
             if alias_key in result["dimensions"]["structural"]:
@@ -322,6 +350,7 @@ class ComprehensiveReport:
                 "geometry-consistency": "几何内核一致性（GCS）",
                 "anti-corruption": "外部内核防腐层（ACL）",
                 "hpc": "并行/异构计算架构（HPC）",
+                "fossil": "化石代码与技术债（FOS）",
             }
             result["dimensions"]["structural"]["skipped_enhancements"] = [
                 {"engine": e, "label": skipped_labels.get(e, e),
@@ -390,6 +419,11 @@ class ComprehensiveReport:
         # 合并 HPC 并行/异构违规到报告
         if hpc_result is not None:
             for v in hpc_result.get("hpc_violations", []):
+                result["mlr_violations"].append(v)
+
+        # 合并 FOS 化石代码/技术债违规到报告
+        if fos_result is not None:
+            for v in fos_result.get("fossil_violations", []):
                 result["mlr_violations"].append(v)
 
         # 合并标准架构质量 SAR 违规到报告

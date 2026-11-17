@@ -44,9 +44,18 @@ ALL_RULES = [
     # HPC（12）
     "HPC-001", "HPC-002", "HPC-003", "HPC-004", "HPC-005", "HPC-006",
     "HPC-007", "HPC-008", "HPC-009", "HPC-010", "HPC-011", "HPC-012",
+    # 化石代码（12条）
+    "FOS-001", "FOS-002", "FOS-003", "FOS-004", "FOS-005", "FOS-006",
+    "FOS-007", "FOS-008", "FOS-009", "FOS-010", "FOS-011", "FOS-012",
+    # 几何一致性（12条）
+    "GCS-001", "GCS-002", "GCS-003", "GCS-004", "GCS-005", "GCS-006",
+    "GCS-007", "GCS-008", "GCS-009", "GCS-010", "GCS-011", "GCS-012",
+    # 防腐层（12条）
+    "ACL-001", "ACL-002", "ACL-003", "ACL-004", "ACL-005", "ACL-006",
+    "ACL-007", "ACL-008", "ACL-009", "ACL-010", "ACL-011", "ACL-012",
 ]
 
-RULE_PAT = re.compile(r"\b(MLR|NVR|MPR|TPL|SAR|HPC)-(\d+)([a-z]?)\b")
+RULE_PAT = re.compile(r"\b(MLR|NVR|MPR|TPL|SAR|HPC|FOS|GCS|ACL)-(\d+)([a-z]?)\b")
 
 # 合成项目 → 触发规则映射（WP-2 新增）
 SYNTHETIC_MAP = {

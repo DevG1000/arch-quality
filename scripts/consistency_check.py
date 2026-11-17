@@ -129,11 +129,24 @@ ENGINES = {
         "weights": [],
         "case_keywords": ["HPC-005", "OpenFOAM", "deal.II"],
     },
+    "fossil": {
+        "guide": "docs/zh/化石代码与技术债评估/化石代码与技术债评估指南.md",
+        "skill": "src/arch_quality/skills/fossil-code-debt.md",
+        "tool": "src/arch_quality/arch_metrics_fossil_code.py",
+        "case": "docs/zh/化石代码与技术债评估/化石代码与技术债评估验证案例集.md",
+        "rule_prefix": "FOS",
+        "rule_count": 12,
+        "version_pairs": [("GUIDE_VERSION", "0.2"), ("SKILL_VERSION", "1.0")],
+        "dimensions": ["历史遗留 API 与语言方言", "死代码与不可达逻辑",
+                       "重复代码与重复实现", "技术债密度与可维护性"],
+        "weights": [],
+        "case_keywords": ["FOS-001", "Code_Aster", "FOS-007"],
+    },
 }
 RULE_ID_VALIDATION_PENDING = True
 # 已知规则空洞（WP-7.1 重编号/补齐后应消除）
 KNOWN_HOLES = {"NVR-009", "MPR-011", "GCS-013", "GCS-014", "ACL-013",
-               "HPC-013", "HPC-014"}
+               "HPC-013", "HPC-014", "FOS-013", "FOS-014"}
 
 
 def read(path):

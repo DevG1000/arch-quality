@@ -1,0 +1,30 @@
+{
+  "is_fossil": false,
+  "overall": null,
+  "applicability_set": [],
+  "score_scope": "none",
+  "gate_status": "PASS",
+  "dimensions": {
+    "clone": {
+      "score": null,
+      "applicable": false
+    },
+    "dead": {
+      "score": null,
+      "applicable": false
+    },
+    "debt": {
+      "score": null,
+      "applicable": false
+    },
+    "legacy": {
+      "score": null,
+      "applicable": false
+    }
+  },
+  "violations": [],
+  "version_info": {
+    "guide_version": "0.2",
+    "skill_version": "1.0"
+  }
+}

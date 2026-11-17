@@ -1,0 +1,275 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>机票预订表单 — Schema 渲染 Demo</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; max-width: 720px; margin: 0 auto; padding: 24px; background: #f7f8fa; color: #1f2329; }
+  h1 { font-size: 20px; }
+  .panel { background: #fff; border: 1px solid #e5e6eb; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+  textarea { width: 100%; min-height: 120px; font-family: Consolas, monospace; font-size: 12px; border: 1px solid #d0d3d9; border-radius: 6px; padding: 8px; box-sizing: border-box; }
+  .row { margin-bottom: 14px; }
+  label.lbl { display: block; margin-bottom: 4px; font-weight: 600; font-size: 14px; }
+  input[type=text], input[type=date] { width: 100%; padding: 8px 10px; border: 1px solid #c9cdd4; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+  .inline-radio label { margin-right: 18px; font-size: 14px; }
+  .err { color: #d54941; font-size: 12px; margin-top: 4px; }
+  button { background: #3370ff; color: #fff; border: 0; padding: 9px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  button.ghost { background: #fff; color: #3370ff; border: 1px solid #3370ff; margin-left: 8px; }
+  pre { background: #1f2329; color: #d7dae0; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; }
+  .meta { font-size: 12px; color: #646a73; }
+  .hidden { display: none !important; }
+  .ok { color: #00b42a; font-size: 14px; font-weight: 600; }
+  fieldset { border: 0; padding: 0; margin: 0; }
+</style>
+</head>
+<body>
+<h1>🧭 机票预订表单 — Schema 渲染 Demo</h1>
+<p class="meta">渲染层 + 显隐规则 + 客户端校验在浏览器完成；NLU/Schema 生成在 Python（flight_form.py），服务端二次校验在 validate_payload()。一次提交完成全部字段。</p>
+
+<div class="panel">
+  <div class="lbl" style="margin-bottom:6px">用户输入 → 生成的 Schema（可编辑后点“重新渲染”）：</div>
+  <textarea id="schemaSrc"></textarea>
+  <div style="margin-top:10px">
+    <button onclick="render()">渲染表单</button>
+    <button class="ghost" onclick="loadExample()">恢复示例</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="lbl">🎫 表单</div>
+  <div id="formArea"><span class="meta">点击“渲染表单”查看。</span></div>
+</div>
+
+<div class="panel">
+  <div class="lbl">📤 提交结果（一次提交）</div>
+  <pre id="result">尚未提交</pre>
+</div>
+
+<div class="panel">
+  <div class="lbl">🔎 意图解析结果（NLU 输出，来自 schema.meta）</div>
+  <pre id="nluMeta">—</pre>
+</div>
+
+<script>
+var EXAMPLE_SCHEMA = {
+  "form_id": "flight_booking",
+  "title": "机票预订",
+  "intent": "book_flight",
+  "submit_once": true,
+  "fields": [
+    {
+      "name": "origin", "label": "出发城市", "type": "text", "required": true,
+      "placeholder": "如: 上海",
+      "prefill_value": null,
+      "validate": [{"rule": "required"}, {"rule": "in_city_db"}]
+    },
+    {
+      "name": "destination", "label": "到达城市", "type": "text", "required": true,
+      "placeholder": "如: 北京",
+      "prefill_value": "北京",
+      "validate": [{"rule": "required"}, {"rule": "in_city_db"}]
+    },
+    {
+      "name": "depart_date", "label": "出发日期", "type": "date", "required": true,
+      "prefill_value": null,
+      "validate": [{"rule": "required"}, {"rule": "date_min", "value": "2026-10-10"}]
+    },
+    {
+      "name": "travel_type", "label": "旅行类型", "type": "radio", "required": true,
+      "options": [
+        {"value": "single", "label": "单程"},
+        {"value": "round_trip", "label": "往返"}
+      ],
+      "default": "single",
+      "validate": [{"rule": "required"}]
+    },
+    {
+      "name": "return_date", "label": "返程日期", "type": "date", "required": false,
+      "visible_when": {"field": "travel_type", "equals": "round_trip"},
+      "validate": [{"rule": "date_after", "value": "depart_date"}]
+    }
+  ],
+  "meta": {
+    "utterance": "我想订一张去北京的机票",
+    "slots": {
+      "origin": null, "destination": "北京", "depart_date": null, "travel_type": null
+    },
+    "missing": ["origin", "depart_date", "travel_type"],
+    "warnings": []
+  }
+};
+
+var CITY_DB = ["北京", "上海", "广州", "深圳", "成都", "杭州", "南京", "武汉", "西安",
+  "重庆", "长沙", "天津", "青岛", "厦门", "昆明", "三亚", "哈尔滨", "乌鲁木齐",
+  "郑州", "济南", "福州", "沈阳", "大连"];
+
+function loadExample() {
+  document.getElementById("schemaSrc").value = JSON.stringify(EXAMPLE_SCHEMA, null, 2);
+  render();
+}
+
+function render() {
+  var schema;
+  try { schema = JSON.parse(document.getElementById("schemaSrc").value); }
+  catch (e) { alert("Schema JSON 解析失败: " + e.message); return; }
+
+  var area = document.getElementById("formArea");
+  area.innerHTML = "";
+  var controls = {};
+  schema.fields.forEach(function (f) {
+    var div = document.createElement("div");
+    div.className = "row";
+    div.id = "row_" + f.name;
+    div.dataset.field = f.name;
+
+    var lbl = document.createElement("label");
+    lbl.className = "lbl";
+    lbl.textContent = f.label + (f.required ? " *" : "");
+    div.appendChild(lbl);
+
+    var container = document.createElement("div");
+    if (f.type === "radio") {
+      container.className = "inline-radio";
+      f.options.forEach(function (opt) {
+        var id = "f_" + f.name + "_" + opt.value;
+        var r = document.createElement("input");
+        r.type = "radio"; r.name = f.name; r.value = opt.value; r.id = id;
+        r.checked = (opt.value === (controls[f.name] || f.default));
+        var l = document.createElement("label");
+        l.htmlFor = id; l.textContent = opt.label;
+        l.prepend(r);
+        container.appendChild(l);
+      });
+    } else {
+      var input = document.createElement("input");
+      input.type = f.type;
+      input.name = f.name;
+      input.id = "f_" + f.name;
+      if (f.placeholder) input.placeholder = f.placeholder;
+      if (f.prefill_value) input.value = f.prefill_value;
+      if (f.type === "date" && f.validate) {
+        var min = f.validate.filter(function (r) { return r.rule === "date_min"; })[0];
+        if (min) input.min = min.value;
+      }
+      container.appendChild(input);
+    }
+    div.appendChild(container);
+
+    var err = document.createElement("div");
+    err.className = "err"; err.id = "err_" + f.name;
+    div.appendChild(err);
+
+    area.appendChild(div);
+
+    if (f.type === "radio") {
+      var rads = area.querySelectorAll('input[name="' + f.name + '"]');
+      for (var i = 0; i < rads.length; i++) {
+        rads[i].addEventListener("change", function () { applyVisibility(schema); });
+      }
+    }
+  });
+
+  document.getElementById("nluMeta").textContent = JSON.stringify(schema.meta, null, 2);
+  window.__schema = schema;
+  applyVisibility(schema);
+  clearAllErrors();
+
+  // 表单容器上放一个提交按钮
+  var sub = document.createElement("div");
+  sub.style.marginTop = "8px";
+  var btn = document.createElement("button");
+  btn.textContent = "一次提交";
+  btn.onclick = function () { submitForm(); };
+  sub.appendChild(btn);
+  area.appendChild(sub);
+}
+
+function applyVisibility(schema) {
+  schema.fields.forEach(function (f) {
+    var row = document.getElementById("row_" + f.name);
+    if (!row) return;
+    if (f.visible_when) {
+      var target = valueOfField(f.visible_when.field);
+      if (target === f.visible_when.equals) {
+        row.classList.remove("hidden");
+      } else {
+        row.classList.add("hidden");
+        clearField(f.name);   // 隐藏即清空，避免脏数据混进提交
+      }
+    }
+  });
+}
+
+function valueOfField(name) {
+  var radio = document.querySelector('input[name="' + name + '"]:checked');
+  if (radio) return radio.value;
+  var input = document.getElementById("f_" + name);
+  return input ? input.value : "";
+}
+
+function clearField(name) {
+  var input = document.getElementById("f_" + name);
+  if (input) input.value = "";
+}
+
+function clearAllErrors() {
+  var errs = document.querySelectorAll(".err");
+  for (var i = 0; i < errs.length; i++) errs[i].textContent = "";
+}
+
+function validateField(f, value) {
+  var errors = [];
+  (f.validate || []).forEach(function (rule) {
+    if (rule.rule === "required" && !value) {
+      errors.push("请填写" + f.label);
+    } else if (rule.rule === "in_city_db" && value && CITY_DB.indexOf(value) < 0) {
+      errors.push("航点库中不存在「" + value + "」");
+    } else if (rule.rule === "date_min" && value && value < rule.value) {
+      errors.push("不能早于 " + rule.value);
+    } else if (rule.rule === "date_after" && value && rule.value) {
+      var ref = valueOfField(rule.value);
+      if (ref && value <= ref) errors.push("必须晚于" + rule.value);
+    }
+  });
+  return errors;
+}
+
+function collectPayload(schema) {
+  var payload = {};
+  schema.fields.forEach(function (f) {
+    var row = document.getElementById("row_" + f.name);
+    if (!row || row.classList.contains("hidden")) return;  // 隐藏字段不提交
+    payload[f.name] = valueOfField(f.name);
+  });
+  return payload;
+}
+
+function submitForm() {
+  var schema = window.__schema;
+  if (!schema) return;
+  clearAllErrors();
+  var payload = collectPayload(schema);
+  var hasError = false;
+  schema.fields.forEach(function (f) {
+    var row = document.getElementById("row_" + f.name);
+    if (!row || row.classList.contains("hidden")) return;
+    var errs = validateField(f, payload[f.name]);
+    if (errs.length) {
+      hasError = true;
+      document.getElementById("err_" + f.name).textContent = errs.join("；");
+    }
+  });
+
+  var result = document.getElementById("result");
+  if (hasError) {
+    result.textContent = JSON.stringify({ valid: false, errors: "见字段下方提示" }, null, 2);
+    return;
+  }
+  // 客户端校验通过 -> 模拟一次提交(真实场景发到服务端, 由 validate_payload 二次校验)
+  result.textContent = JSON.stringify({ valid: true, submitted_once: true, payload: payload }, null, 2);
+}
+
+loadExample();
+</script>
+</body>
+</html>

@@ -667,11 +667,12 @@ PROFILE_ENGINE_MAP = {
     "geometry-consistency": ["standard", "geometry-consistency"],
     "anti-corruption": ["standard", "anti-corruption"],
     "hpc": ["standard", "hpc"],
+    "fossil": ["standard", "fossil"],
 }
 
 # 增强引擎（非 standard）名称列表（配置与报告共用的规范名）
 ENHANCEMENT_ENGINES = ["multilang", "template", "numerical", "solver-physics",
-                       "geometry-consistency", "anti-corruption", "hpc"]
+                       "geometry-consistency", "anti-corruption", "hpc", "fossil"]
 ALL_ENGINES = ["standard"] + ENHANCEMENT_ENGINES
 
 _PROFILE_CONFIG_FILENAME = "arch-quality.yaml"
@@ -856,6 +857,7 @@ ENH_KEY_TO_DIM = {
     "gcs": "dim.geometry_consistency",
     "acl": "dim.anti_corruption",
     "hpc": "dim.hpc",
+    "fos": "dim.fossil",
 }
 DIM_TO_ENH_KEY = {v: k for k, v in ENH_KEY_TO_DIM.items()}
 

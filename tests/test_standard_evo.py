@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_standard_evo.py — 标准架构质量 · 演进质量维度单元测试
 
 对照指南 2.3 §6.1-6.7 算法，验证 6 子维度检测：
@@ -142,6 +142,15 @@ class TestEvoQuality(unittest.TestCase):
         score, detail = self.m.calc_dead_code()
         self.assertGreaterEqual(detail["backup_files"], 1)
         self.assertLess(score, 100)
+
+    def test_dead_code_commented_block_delegated_to_fossil(self):
+        # D1：注释代码归 FOS-006，标准 calc_dead_code 不再扣分
+        self._mk("src/a.c", "/* if (x) { old(); } */\n")
+        self.m = StandardMetrics(self.root)
+        score, detail = self.m.calc_dead_code()
+        self.assertEqual(score, 100)
+        self.assertEqual(detail["commented_blocks"], 0)
+        self.assertEqual(detail["delegated_to"], "FOS-006")
 
     # 5. 增量质量
     def test_incremental_no_git(self):
