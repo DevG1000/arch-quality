@@ -131,9 +131,10 @@ class TestRules(unittest.TestCase):
 
     def test_fos009_same_algorithm(self):
         body_a = ("void rk4(){ double a=1; double b=2; double c=a+b; "
-                  "double d=c*c; double e=d+a; double f=e+b; }\n")
-        body_b = ("void rk4(){ double x=3; double y=4; double z=x+y; "
-                  "double w=z*z; double v=w+x; double u=v+y; }\n")
+                  "double d=c*c; double e=d+a; double f=e+b; return f; }\n")
+        body_b = ("void rk4(){ double a=1; double b=2; double c=a-b; "
+                  "if(a>b){c=c+a;} for(int i=0;i<3;i++){c=c+i;} "
+                  "double d=c+c; double e=d-a; double f=e-b; return f; }\n")
         self.assertIn("FOS-009", _rules({
             "a.cpp": FOSSIL + body_a, "b.cpp": body_b}))
         self.assertNotIn("FOS-009", _rules({

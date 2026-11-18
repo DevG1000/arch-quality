@@ -3,7 +3,7 @@
 提供 F77/固定格式 Fortran、废弃 C++ API、K&R C、死代码/克隆、技术债密度的静态检测知识：4 个子维度、12 条 FOS 规则（FOS-001~012）、评分与豁免体系。
 
 > **版本信息**
-> - 对应指南：`化石代码与技术债评估指南.md` **v0.2**
+> - 对应指南：`化石代码与技术债评估指南.md` **v0.3**
 > - 对应实现：`arch_metrics_fossil_code.py`
 > - 技能版本：**1.0**
 > - 一致性约束：指南 §2.x ↔ Skill §x ↔ Tool `_rule_xxx()` 的规则/分值必须一致；修改一处时同步其余两处。
@@ -50,13 +50,15 @@
 | FOS-003 | K&R C/非标准方言 | MEDIUM | WARNING | 中 | 2.1 |
 | FOS-004 | 未引用函数/变量/文件 | MEDIUM | WARNING | 中低 | 2.2 |
 | FOS-005 | 不可达分支 | MEDIUM | WARNING | 中 | 2.2 |
-| FOS-006 | 成块注释代码 | LOW | INFO/WARNING | 中低 | 2.2 |
+| FOS-006 | 成块注释代码 | LOW | INFO/WARNING（>10 行） | 中低 | 2.2 |
 | FOS-007 | 函数/文件级克隆 | MEDIUM | WARNING | 中低 | 2.3 |
 | FOS-008 | 跨文件重复常量 | LOW | INFO | 中低 | 2.3 |
 | FOS-009 | 同一算法多份实现 | MEDIUM | WARNING | 中低 | 2.3 |
 | FOS-010 | 债务标记密度 | LOW | INFO | 中 | 2.4 |
 | FOS-011 | SQALE 修复成本比率 | MEDIUM | WARNING | 中低 | 2.4 |
 | FOS-012 | 遗留模块无测试 | MEDIUM | WARNING | 中低 | 2.4 |
+
+> FOS-013/014 为 KNOWN_HOLES，不计分，不进入规则表。
 
 ## 四、豁免体系
 

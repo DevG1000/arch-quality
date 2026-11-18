@@ -136,7 +136,7 @@ ENGINES = {
         "case": "docs/zh/化石代码与技术债评估/化石代码与技术债评估验证案例集.md",
         "rule_prefix": "FOS",
         "rule_count": 12,
-        "version_pairs": [("GUIDE_VERSION", "0.2"), ("SKILL_VERSION", "1.0")],
+        "version_pairs": [("GUIDE_VERSION", "0.3"), ("SKILL_VERSION", "1.0")],
         "dimensions": ["历史遗留 API 与语言方言", "死代码与不可达逻辑",
                        "重复代码与重复实现", "技术债密度与可维护性"],
         "weights": [],

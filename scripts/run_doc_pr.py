@@ -80,7 +80,7 @@ def review_prompt(ws: Path, pr_file: str, pr_id: str, dimension: str) -> str:
         f"PR 文件：{pr_file}（含 front-matter 与变更说明）。\n"
         "工作区就是当前目录；请用 read/glob/grep 读取 PR 文件与 changes.files 列出的文件。"
         "工作区里其他未提交修改与本次 PR 无关（例如预先存在的无关文件），不要评论。"
-        "并运行 `python scripts/doc_lint.py --dimension gcs` 复核机器门禁。\n"
+        f"并运行 `python scripts/doc_lint.py --dimension {dimension}` 复核机器门禁。\n"
         "按 .opencode/agents/assessment-reviewer.md 的检查清单独立审核：证据是否支持新断言、"
         "是否丢限定条件、跨文档口径是否一致、是否有过度修改、关键决策是否有人类批准。\n"
         f"只输出一个符合 scripts/review_schema.json 的 JSON 对象（pr_id 用 {pr_id}）；"

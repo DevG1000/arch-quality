@@ -86,7 +86,7 @@
     },
     {
       "rule": "FOS-009",
-      "count": 160,
+      "count": 35,
       "output_level": "WARNING",
       "candidate": true,
       "confirmed": false

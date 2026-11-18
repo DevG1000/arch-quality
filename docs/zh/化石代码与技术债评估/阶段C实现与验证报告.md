@@ -3,7 +3,7 @@
 > **版本**：0.1（阶段 C 首轮）
 > **日期**：2026-11-05
 > **对象**：维度⑦ 化石代码与技术债（FOS-001~012）
-> **依据**：设计依据 v0.3、指南 v0.2、验证案例集 v0.2、阶段 B 专家校对报告
+> **依据**：设计依据 v0.3、指南 v0.3、验证案例集 v0.3、阶段 B 专家校对报告
 
 ---
 
@@ -38,6 +38,7 @@
 | 注册表 | `validate_meta_model.py` **PASS**（9/12/108） |
 | 覆盖矩阵 | **108/108（KPI1 100%）** |
 | Harness | **3 passed**（case-10/11/12） |
+| Doc PR Reviewer | **approved**（opencode/hy4-flash-free，P0/P1/P2=0）；signoff/merge/reeval → **closed** |
 | CI gate | **PASS**（不含 LLM Harness） |
 
 ## 三、真实样本结果
@@ -65,12 +66,11 @@
 3. FOS-012 以目录名 `legacy/old/deprecated/fossil` + 无测试近似，未接 git 年龄。
 4. FOS-011 以 `max(KLOC,1.0)` 计算，极小项目不触发；阈值 8h/KLOC 待校准。
 5. FOS-007 克隆相似度 0.80、FOS-010 5/KLOC、FOS-012 5 年均为候选阈值。
-6. FOS-007/009 在大型项目中触发较多（OpenFOAM FOS-007 462、FOS-009 200 上限），需抽样复核。
+6. FOS-007/009 已抽样：多为样板/同名 helper，均为 candidate；FOS-007 已排除入口函数，FOS-009 已加签名过滤。
 
 ## 六、下一步
 
-1. 对 FOS-007/009 抽样评估误报率；
-2. 阶段 C 复核 + 版本收口。
+1. 阶段 C 复核 + 版本收口。
 
 ---
 

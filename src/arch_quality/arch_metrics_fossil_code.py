@@ -1,11 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 """arch_metrics_fossil_code.py — 化石代码与技术债（维度⑦）评估
 
-实现《化石代码与技术债评估指南》v0.2 的 4 子维、12 条 FOS 规则
+实现《化石代码与技术债评估指南》v0.3 的 4 子维、12 条 FOS 规则
 （FOS-001~012）静态检测。
 
 版本绑定：
-  - 指南版本：0.2
+  - 指南版本：0.3
   - Skill 版本：1.0
 """
 
@@ -23,7 +23,7 @@ from arch_quality.arch_core import (
 )
 
 SKILL_PATH = str(Path(__file__).parent / "skills" / "fossil-code-debt.md")
-GUIDE_VERSION = "0.2"
+GUIDE_VERSION = "0.3"
 SKILL_VERSION = "1.0"
 
 CPP_EXTS = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".hxx",
@@ -175,7 +175,7 @@ def _brace_end(content, start):
 
 FUNC_DEF_RE = re.compile(
     r"(?m)^[ \t]*(?:(?:static|inline|extern|virtual|constexpr|explicit|friend)[ \t]+)*"
-    r"(?:[A-Za-z_][\w:<>,\*&]*[ \t]+)+([A-Za-z_]\w*)[ \t]*\([^;{}]*\)"
+    r"(?:[A-Za-z_][\w:<>,\*&]*[ \t]+)+([A-Za-z_]\w*)[ \t]*\(([^;{}]*)\)"
     r"[ \t]*(?:const[ \t]*)?(?:noexcept[ \t]*)?(?:\r?\n[ \t]*)?\{"
 )
 CONTROL_NAMES = {"if", "for", "while", "switch", "catch", "return", "sizeof",
@@ -237,6 +237,9 @@ class FossilCodeMetrics:
         self._invalid_waivers = []
         self._is_fossil = False
         self._clone_pairs = set()
+        self._clone_funcs = []
+        self._clone_pair_details = []
+        self._fos009_pair_details = []
         self._legacy_untested_modules = []
         self._defs_cache = None
         self._init_weights()
@@ -416,12 +419,14 @@ class FossilCodeMetrics:
                     body = code[m.end() - 1:end]
                     funcs.append({"name": name, "file": rel, "body": body,
                                   "start": m.start(), "ext": ext,
+                                  "signature": re.sub(r"\s+", "", m.group(2)),
                                   "is_static": bool(re.search(r'\bstatic\b', m.group(0)))})
             elif ext in FORTRAN_EXTS:
                 for m in FORTRAN_PROC_RE.finditer(code):
                     funcs.append({"name": m.group(1), "file": rel,
                                   "body": code[m.start():m.start() + 2000],
-                                  "start": m.start(), "ext": ext})
+                                  "start": m.start(), "ext": ext,
+                                  "signature": ""})
         self._defs_cache = funcs
         return funcs
 
@@ -515,6 +520,8 @@ class FossilCodeMetrics:
     def _rule_007(self):
         funcs = []
         for f in self._definitions()[:3000]:
+            if f["name"] in ENTRY_NAMES:
+                continue
             toks = self._tokenize(f["body"])
             if len(toks) < MIN_CLONE_TOKENS:
                 continue
@@ -522,6 +529,7 @@ class FossilCodeMetrics:
                    for i in range(0, len(toks) - CLONE_K + 1)}
             if fps:
                 funcs.append({"name": f["name"], "file": f["file"],
+                              "body": f["body"], "signature": f.get("signature", ""),
                               "toks": toks, "fps": fps})
         funcs = funcs[:3000]
         if len(funcs) < 2:
@@ -556,6 +564,11 @@ class FossilCodeMetrics:
         if not pairs:
             return []
         self._clone_pairs = pairs
+        self._clone_funcs = funcs
+        self._clone_pair_details = [
+            (funcs[i]["file"], funcs[i]["name"], funcs[j]["file"], funcs[j]["name"])
+            for i, j in sorted(pairs)
+        ]
         files = sorted({funcs[i]["file"] for pair in pairs for i in pair})
         return [{"rule": "FOS-007", "file": files[0], "count": len(pairs),
                  "candidate": True,
@@ -582,7 +595,8 @@ class FossilCodeMetrics:
         return []
 
     def _rule_009(self):
-        funcs = self._definitions()[:3000]
+        # 与 FOS-007 使用同一过滤后列表，保证 _clone_pairs 的索引一致。
+        funcs = self._clone_funcs or self._definitions()[:3000]
         common = {"main", "init", "run", "size", "begin", "end", "get", "set",
                   "operator", "data", "clone", "copy", "clear", "reset",
                   "read", "write", "update", "apply", "execute", "solve"}
@@ -590,9 +604,9 @@ class FossilCodeMetrics:
         for i, f in enumerate(funcs):
             if f["name"] in common:
                 continue
-            by_name.setdefault(f["name"], []).append(i)
+            by_name.setdefault((f["name"], f.get("signature", "")), []).append(i)
         hits = 0
-        for name, ids in by_name.items():
+        for (name, _sig), ids in by_name.items():
             files = {funcs[i]["file"] for i in ids}
             if len(files) < 2:
                 continue
@@ -605,6 +619,9 @@ class FossilCodeMetrics:
                     if len(self._tokenize(funcs[i]["body"])) < MIN_CLONE_TOKENS:
                         continue
                     hits += 1
+                    if len(self._fos009_pair_details) < 50:
+                        self._fos009_pair_details.append(
+                            (name, funcs[i]["file"], funcs[j]["file"]))
                     if hits >= MAX_CLONE_PAIRS:
                         break
                 if hits >= MAX_CLONE_PAIRS:
