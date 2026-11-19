@@ -95790,7 +95790,7 @@
         "detail": "3rdParty\\salomesmesh\\src\\MEFISTO2\\trte.for: Fortran 代码未使用 ISO_C_BINDING，第三方代码，建议标注 @third_party 豁免"
       },
       {
-        "rule": "MLR-013",
+        "rule": "TPL-001",
         "name": "热模板头文件",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -95798,17 +95798,17 @@
         "detail": "438 个头文件影响 >50 编译单元: FCGlobal.h(2013); 3rdParty\\salomesmesh\\inc\\SMESH_SMDS.hxx(1930); FCConfig.h(1892); 3rdParty\\PyCXX\\CXX\\Python3\\Config.hxx(1842); 3rdParty\\PyCXX\\CXX\\Python2\\Config.hxx(1842); 3rdParty\\PyCXX\\CXX\\WrapPython.h(1842); 3rdParty\\PyCXX\\CXX\\Config.hxx(1842); 3rdParty\\PyCXX\\CXX\\Python2\\IndirectPythonInterface.hxx(1838); 3rdParty\\PyCXX\\CXX\\Python3\\IndirectPythonInterface.hxx(1838); 3rdParty\\PyCXX\\CXX\\Version.hxx(1838)"
       },
       {
-        "rule": "MLR-014",
+        "rule": "TPL-002",
         "name": "模板重复实例化",
         "severity": "HIGH",
         "output_level": "WARNING",
         "count": 306,
-        "detail": "306 个模板被 >2 个编译单元重复实例化: Mayer<wmayer[at]users.sourceforge.net>×519; Riegel<juergen.riegel@web.de>×318; Vector3<Real>×233; WandererFan<wandererfan@gmail.com>×140; QList<QAction*>×114; Vector3<float_type>×113; Vector2<Real>×86; Smits<ruben dot smits at mech dot kuleuven dot be>×79; Riegel<FreeCAD@juergen-riegel.net>×73; Carter<dcarter@david.carter.ca>×62; 另有 4614 处多处重复实例化（MLR-023 已合并）",
+        "detail": "306 个模板被 >2 个编译单元重复实例化: Mayer<wmayer[at]users.sourceforge.net>×519; Riegel<juergen.riegel@web.de>×318; Vector3<Real>×233; WandererFan<wandererfan@gmail.com>×140; QList<QAction*>×114; Vector3<float_type>×113; Vector2<Real>×86; Smits<ruben dot smits at mech dot kuleuven dot be>×79; Riegel<FreeCAD@juergen-riegel.net>×73; Carter<dcarter@david.carter.ca>×62; 另有 4614 处多处重复实例化（TPL-011 已合并）",
         "waivable": true,
         "merged_with_023": true
       },
       {
-        "rule": "MLR-015",
+        "rule": "TPL-003",
         "name": "头文件传染链过长",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95816,7 +95816,7 @@
         "detail": "1139 个头文件存在 >3 层传播链 (影响 >20 文件): Mod\\Sketcher\\Gui\\DrawSketchHandlerExternal.h(194); Mod\\Sketcher\\Gui\\DrawSketchHandlerArc.h(188); Mod\\Sketcher\\Gui\\DrawSketchHandlerCarbonCopy.h(185); Mod\\Sketcher\\Gui\\DrawSketchHandlerEllipse.h(179); Mod\\Sketcher\\Gui\\DrawSketchHandlerTrimming.h(178); Mod\\Sketcher\\Gui\\DrawSketchHandlerLineSet.h(178); Mod\\Sketcher\\Gui\\DrawSketchHandlerSlot.h(177); Mod\\Sketcher\\Gui\\DrawSketchHandlerFillet.h(173); Mod\\Sketcher\\Gui\\DrawSketchHandlerExtend.h(173); Mod\\Sketcher\\Gui\\DrawSketchHandlerSplitting.h(173)"
       },
       {
-        "rule": "MLR-016",
+        "rule": "TPL-004",
         "name": "模板嵌套深度过高",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95824,7 +95824,7 @@
         "detail": "最大模板嵌套深度 24，50 个文件嵌套 >6: 3rdParty\\3Dconnexion\\inc\\SpaceMouse\\CActionInput.hpp(D=14); 3rdParty\\3Dconnexion\\inc\\SpaceMouse\\CNavigation3D.hpp(D=14); 3rdParty\\3Dconnexion\\inc\\SpaceMouse\\CNavlibInterface.hpp(D=16); 3rdParty\\3Dconnexion\\inc\\navlib\\navlib_types.h(D=8); 3rdParty\\Clipper2\\Clipper2Lib\\include\\clipper2\\clipper.core.h(D=18); 3rdParty\\Clipper2\\Clipper2Lib\\include\\clipper2\\clipper.h(D=12); 3rdParty\\FastSignals\\tests\\catch2\\catch.hpp(D=12); 3rdParty\\PyCXX\\CXX\\Python2\\ExtensionType.hxx(D=12); 3rdParty\\PyCXX\\CXX\\Python2\\Objects.hxx(D=10); 3rdParty\\PyCXX\\CXX\\Python3\\ExtensionType.hxx(D=12)"
       },
       {
-        "rule": "MLR-018",
+        "rule": "TPL-006",
         "name": "虚泛型（镀金模板）",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -95833,7 +95833,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95841,7 +95841,7 @@
         "detail": "3rdParty\\3Dconnexion\\inc\\SpaceMouse\\CNavlibInterface.hpp: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95849,7 +95849,7 @@
         "detail": "3rdParty\\3Dconnexion\\inc\\navlib\\navlib_templates.h: 54 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95857,7 +95857,7 @@
         "detail": "3rdParty\\FastSignals\\libfastsignals\\include\\fastsignals\\signal.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95865,7 +95865,7 @@
         "detail": "3rdParty\\lru-cache\\include\\lru\\internal\\base-cache.hpp: 23 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95873,7 +95873,7 @@
         "detail": "3rdParty\\lru-cache\\include\\lru\\internal\\last-accessed.hpp: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95881,7 +95881,7 @@
         "detail": "3rdParty\\lru-cache\\include\\lru\\internal\\optional.hpp: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95889,7 +95889,7 @@
         "detail": "3rdParty\\lru-cache\\include\\lru\\statistics.hpp: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95897,7 +95897,7 @@
         "detail": "3rdParty\\lru-cache\\tests\\move-aware-dummies.hpp: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95905,7 +95905,7 @@
         "detail": "3rdParty\\salomesmesh\\inc\\MED_TStructures.hxx: 17 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95913,7 +95913,7 @@
         "detail": "3rdParty\\salomesmesh\\inc\\SMDS_SetIterator.hxx: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95921,7 +95921,7 @@
         "detail": "3rdParty\\salomesmesh\\inc\\SMESH_tree.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95929,7 +95929,7 @@
         "detail": "App\\PropertyOverrides.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95937,7 +95937,7 @@
         "detail": "Base\\Reader.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95945,7 +95945,7 @@
         "detail": "Base\\ServiceProvider.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95953,7 +95953,7 @@
         "detail": "Gui\\DAGView\\DAGModelGraph.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95961,7 +95961,7 @@
         "detail": "Gui\\ParamHandler.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95969,7 +95969,7 @@
         "detail": "Mod\\Fem\\App\\VTKExtensions\\vtkSMPTools.h: 35 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95977,7 +95977,7 @@
         "detail": "Mod\\Robot\\App\\kdl_cp\\utilities\\rall1d.h: 38 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95985,7 +95985,7 @@
         "detail": "Mod\\Robot\\App\\kdl_cp\\utilities\\rall2d.h: 37 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -95993,7 +95993,7 @@
         "detail": "Mod\\Robot\\App\\kdl_cp\\utilities\\traits.h: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96001,7 +96001,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerArc.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96009,7 +96009,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerArcSlot.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96017,7 +96017,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerBSpline.h: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96025,7 +96025,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerCircle.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96033,7 +96033,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerEllipse.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96041,7 +96041,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerLine.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96049,7 +96049,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerLineSet.h: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96057,7 +96057,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerOffset.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96065,7 +96065,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerPoint.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96073,7 +96073,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerPolygon.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96081,7 +96081,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerRectangle.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96089,7 +96089,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerRotate.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96097,7 +96097,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerScale.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96105,7 +96105,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerSlot.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96113,7 +96113,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerText.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96121,7 +96121,7 @@
         "detail": "Mod\\Sketcher\\Gui\\DrawSketchHandlerTranslate.h: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -96129,7 +96129,7 @@
         "detail": "Mod\\Sketcher\\Gui\\EditModeInformationOverlayCoinConverter.h: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -96137,7 +96137,7 @@
         "detail": "3rdParty\\lru-cache\\include\\lru\\internal\\hash.hpp: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -96145,7 +96145,7 @@
         "detail": "3rdParty\\lru-cache\\tests\\move-aware-dummies.hpp: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -96153,7 +96153,7 @@
         "detail": "App\\ObjectIdentifier.h: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -96161,7 +96161,7 @@
         "detail": "3rdParty\\FastSignals\\tests\\catch2\\catch.hpp: 检测到递归模板模式，嵌套深度 12"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -96169,7 +96169,7 @@
         "detail": "3rdParty\\FastSignals\\tests\\libfastsignals_unit_tests\\Function_tests.cpp: 检测到递归模板模式，嵌套深度 0"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -96177,7 +96177,7 @@
         "detail": "3rdParty\\json\\single_include\\nlohmann\\json.hpp: 检测到递归模板模式，嵌套深度 8"
       },
       {
-        "rule": "MLR-024",
+        "rule": "TPL-012",
         "name": "头文件包含循环依赖",
         "severity": "LOW",
         "output_level": "LOW",
@@ -133955,10 +133955,10 @@
         "weighted_sum": 38.18
       }
     },
-    "structural_note_cross_concern": "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
+    "structural_note_cross_concern": "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
     "sme_waiver_summary": [
-      "MLR-014: severity=HIGH, output_level=WARNING",
-      "MLR-018: severity=HIGH, output_level=WARNING"
+      "TPL-002: severity=HIGH, output_level=WARNING",
+      "TPL-006: severity=HIGH, output_level=WARNING"
     ],
     "output_level_summary": {
       "ERROR": 3,

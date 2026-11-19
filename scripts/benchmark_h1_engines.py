@@ -27,6 +27,7 @@ from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
 from arch_quality.arch_metrics_geometry_consistency import GeometryConsistencyMetrics
 from arch_quality.arch_metrics_anti_corruption import AntiCorruptionMetrics
 from arch_quality.arch_metrics_hpc import HpcArchitectureMetrics
+from arch_quality.arch_metrics_fossil_code import FossilCodeMetrics
 
 
 def _machine_info() -> dict:
@@ -63,6 +64,7 @@ def main():
         ("geometry_consistency", GeometryConsistencyMetrics),
         ("anti_corruption", AntiCorruptionMetrics),
         ("hpc", HpcArchitectureMetrics),
+        ("fossil", FossilCodeMetrics),
     ]
 
     result = {"slug": args.slug or Path(args.root.rstrip("\\/")).name, "root": args.root,

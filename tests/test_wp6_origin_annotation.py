@@ -4,7 +4,7 @@ test_wp6_origin_annotation.py — WP-6 违规来源标注（[third-party] / [tes
 
 覆盖：
 1. 来源分类器 arch_origin.classify_path / classify_paths / origin_tag
-2. template MLR-024 origin_counts（第三方/测试/自有循环分类）
+2. template TPL-012 origin_counts（第三方/测试/自有循环分类）
 3. ReportGenerator 渲染（[third-party×N] / [test×N] 标记 + 来源汇总）
 """
 
@@ -84,7 +84,7 @@ class TestMLR024OriginCounts(unittest.TestCase):
         try:
             m = TemplateMetaprogrammingMetrics(tmp)
             viol = [v for v in m.all_metrics().get("mlr_violations", [])
-                    if v["rule"] == "MLR-024"]
+                    if v["rule"] == "TPL-012"]
             self.assertEqual(len(viol), 1)
             oc = viol[0].get("origin_counts", {})
             self.assertEqual(oc.get("third_party"), 1)
@@ -107,7 +107,7 @@ class TestReportRendering(unittest.TestCase):
 
     def test_origin_counts_tag(self):
         md = self._render([{
-            "rule": "MLR-024", "name": "头文件包含循环依赖", "severity": "HIGH",
+            "rule": "TPL-012", "name": "头文件包含循环依赖", "severity": "HIGH",
             "output_level": "ERROR", "count": 3,
             "origin_counts": {"third_party": 1, "test": 1, "first_party": 1},
             "detail": "x",
@@ -125,7 +125,7 @@ class TestReportRendering(unittest.TestCase):
 
     def test_first_party_no_tag(self):
         md = self._render([{
-            "rule": "MLR-014", "name": "重复实例化", "severity": "HIGH",
+            "rule": "TPL-002", "name": "重复实例化", "severity": "HIGH",
             "output_level": "WARNING", "count": 1, "detail": "x",
         }])
         self.assertNotIn("[third-party", md)

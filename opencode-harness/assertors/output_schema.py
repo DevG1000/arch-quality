@@ -110,6 +110,10 @@ def assert_not_applicable(text: str, engine_key: str = "solver_physics") -> list
             r'"is_hpc"\s*:\s*false|is_hpc\s*=\s*(?:False|false)|Is HPC project\s*:\s*False',
             text, re.IGNORECASE):
         return []
+    if engine_key == "fossil" and re.search(
+            r'"is_fossil"\s*:\s*false|is_fossil\s*=\s*(?:False|false)',
+            text, re.IGNORECASE):
+        return []
     markers = []
     for key in NON_MULTIPHYSICS_MARKERS:
         markers.append(key)
@@ -120,6 +124,7 @@ def assert_not_applicable(text: str, engine_key: str = "solver_physics") -> list
                      "无几何内核特征", "几何评估不适用", "非几何项目"],
         "numerical": ["非数值", "非数值密集型", "not numerical", "无数值特征"],
         "hpc": ["非 HPC", "非并行", "not an hpc", "无并行/异构特征", "HPC 评估不适用"],
+        "fossil": ["非化石", "not a fossil", "is_fossil=false", "化石评估不适用"],
     }
     for key in engine_markers.get(engine_key, []):
         markers.append(key)
@@ -132,6 +137,7 @@ def assert_not_applicable(text: str, engine_key: str = "solver_physics") -> list
         "geometry": "geometry_consistency_enhancement",
         "numerical": "numerical_enhancement",
         "hpc": "hpc_enhancement",
+        "fossil": "fossil_enhancement",
     }.get(engine_key, engine_key + "_enhancement")
     if re.search(r"(?i)" + engine_key.replace("_", "").replace("physics", "physics"),
                  text) and engine_key + "*?0%" in text:

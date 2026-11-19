@@ -15,17 +15,17 @@
     "unnecessary_templating": 0
   },
   "mlr_violations": {
-    "MLR-013|HIGH|WARNING": 148,
-    "MLR-014|HIGH|WARNING": 173,
-    "MLR-015|MEDIUM|WARNING": 159,
-    "MLR-016|MEDIUM|WARNING": 25,
-    "MLR-017|MEDIUM|WARNING": 1,
-    "MLR-018|HIGH|WARNING": 951,
-    "MLR-020|MEDIUM|WARNING": 43,
-    "MLR-021|LOW|INFO": 2,
-    "MLR-022|HIGH|ERROR": 21,
-    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 1631,
-    "MLR-024|HIGH|ERROR": 7
+    "TPL-001|HIGH|WARNING": 148,
+    "TPL-002|HIGH|WARNING": 173,
+    "TPL-003|MEDIUM|WARNING": 159,
+    "TPL-004|MEDIUM|WARNING": 25,
+    "TPL-005|MEDIUM|WARNING": 1,
+    "TPL-006|HIGH|WARNING": 951,
+    "TPL-008|MEDIUM|WARNING": 43,
+    "TPL-009|LOW|INFO": 2,
+    "TPL-010|HIGH|ERROR": 21,
+    "TPL-011+merge_to_TPL-002|MEDIUM|WARNING": 1631,
+    "TPL-012|HIGH|ERROR": 7
   },
   "required_mlr_rules": [],
   "forced_merge_rules": []

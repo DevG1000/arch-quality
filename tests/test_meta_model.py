@@ -20,7 +20,7 @@ class TestMetaModelValidator(unittest.TestCase):
     def test_registry_exists(self):
         self.assertTrue(os.path.exists(REGISTRY))
         self.assertIn("rules", self.reg)
-        self.assertEqual(len(self.reg["rules"]), 84)
+        self.assertEqual(len(self.reg["rules"]), 108)
 
     def test_validator_passes(self):
         r = subprocess.run([sys.executable, VALIDATOR], capture_output=True,
@@ -34,14 +34,14 @@ class TestMetaModelValidator(unittest.TestCase):
         for rule in self.reg["rules"]:
             prefix = rule["id"].split("-")[0]
             c[prefix] += 1
-        for prefix in ["SAR", "MLR", "TPL", "NVR", "MPR"]:
+        for prefix in ["SAR", "MLR", "TPL", "NVR", "MPR", "GCS", "ACL", "HPC", "FOS"]:
             self.assertEqual(c.get(prefix, 0), 12)
 
     def test_rule_id_format(self):
         for rule in self.reg["rules"]:
             rid = rule["id"]
             prefix, num = rid.split("-")
-            self.assertIn(prefix, ["SAR", "MLR", "TPL", "NVR", "MPR", "GCS", "ACL"])
+            self.assertIn(prefix, ["SAR", "MLR", "TPL", "NVR", "MPR", "GCS", "ACL", "HPC", "FOS"])
             self.assertTrue(1 <= int(num) <= 12)
 
     def test_no_holes(self):
@@ -78,7 +78,7 @@ class TestMetaModelSchema(unittest.TestCase):
         with open(self.SCHEMA, encoding="utf-8") as f:
             schema = json.load(f)
         pattern = schema["properties"]["rules"]["items"]["properties"]["id"]["pattern"]
-        for pref in ("SAR", "MLR", "TPL", "NVR", "MPR", "GCS", "ACL"):
+        for pref in ("SAR", "MLR", "TPL", "NVR", "MPR", "GCS", "ACL", "HPC", "FOS"):
             self.assertIn(pref, pattern, pref)
 
     def test_registry_conforms_to_schema(self):

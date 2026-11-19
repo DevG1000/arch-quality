@@ -41651,7 +41651,7 @@
         "detail": "umfpack\\src\\amd\\amdbar.f: Fortran 代码未使用 ISO_C_BINDING，Fortran 77 固定格式不支持 iso_c_binding，确认未被 C 直接调用后可豁免"
       },
       {
-        "rule": "MLR-013",
+        "rule": "TPL-001",
         "name": "热模板头文件",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -41659,17 +41659,17 @@
         "detail": "60 个头文件影响 >50 编译单元: elmergrid\\src\\metis-5.1.0\\include\\metis.h(121); ElmerGUI\\netgen\\libsrc\\include\\mystdlib.h(121); ElmerGUI\\netgen\\libsrc\\include\\meshing.hpp(119); ElmerGUI\\netgen\\libsrc\\general\\template.hpp(84); ElmerGUI\\netgen\\libsrc\\general\\spbita2d.hpp(84); ElmerGUI\\netgen\\libsrc\\general\\flags.hpp(84); ElmerGUI\\netgen\\libsrc\\general\\bitarray.hpp(84); ElmerGUI\\netgen\\libsrc\\general\\dynamicmem.hpp(84); ElmerGUI\\netgen\\libsrc\\general\\hashtabl.hpp(84); ElmerGUI\\netgen\\libsrc\\general\\table.hpp(84)"
       },
       {
-        "rule": "MLR-014",
+        "rule": "TPL-002",
         "name": "模板重复实例化",
         "severity": "HIGH",
         "output_level": "WARNING",
         "count": 71,
-        "detail": "71 个模板被 >2 个编译单元重复实例化: Point<3>×383; Vec<3>×339; ARRAY<int>×166; Point<2>×67; Vec<2>×50; ARRAY<double>×39; ARRAY<Point<3>×27; INDEX_2_HASHTABLE<int>×26; BoxSphere<3>×25; SplineGeometry<D>×25; 另有 1513 处多处重复实例化（MLR-023 已合并）",
+        "detail": "71 个模板被 >2 个编译单元重复实例化: Point<3>×383; Vec<3>×339; ARRAY<int>×166; Point<2>×67; Vec<2>×50; ARRAY<double>×39; ARRAY<Point<3>×27; INDEX_2_HASHTABLE<int>×26; BoxSphere<3>×25; SplineGeometry<D>×25; 另有 1513 处多处重复实例化（TPL-011 已合并）",
         "waivable": true,
         "merged_with_023": true
       },
       {
-        "rule": "MLR-015",
+        "rule": "TPL-003",
         "name": "头文件传染链过长",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -41677,7 +41677,7 @@
         "detail": "62 个头文件存在 >3 层传播链 (影响 >20 文件): ElmerGUI\\netgen\\libsrc\\csg\\geoml.hpp(64); ElmerGUI\\netgen\\libsrc\\meshing\\meshing.hpp(63); ElmerGUI\\netgen\\libsrc\\include\\stepgeom.hpp(61); ElmerGUI\\netgen\\libsrc\\include\\csg.hpp(60); ElmerGUI\\netgen\\libsrc\\geom2d\\splinegeometry.hpp(60); ElmerGUI\\netgen\\libsrc\\csg\\csg.hpp(60); ElmerGUI\\netgen\\libsrc\\geom2d\\geometry2d.hpp(60); ElmerGUI\\netgen\\libsrc\\geom2d\\splinegeometry2.hpp(51); ElmerGUI\\netgen\\libsrc\\include\\geometry2d.hpp(41); ElmerGUI\\netgen\\libsrc\\stlgeom\\stlgeom.hpp(38)"
       },
       {
-        "rule": "MLR-016",
+        "rule": "TPL-004",
         "name": "模板嵌套深度过高",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -41685,7 +41685,7 @@
         "detail": "最大模板嵌套深度 14，7 个文件嵌套 >6: ElmerGUI\\Application\\src\\meshutils.cpp(D=12); ElmerGUI\\netgen\\libsrc\\general\\array.hpp(D=14); ElmerGUI\\netgen\\libsrc\\general\\hashtabl.hpp(D=8); ElmerGUI\\netgen\\libsrc\\geom2d\\spline.hpp(D=10); ElmerGUI\\netgen\\libsrc\\geom2d\\splinegeometry.cpp(D=10); ElmerGUI\\netgen\\libsrc\\meshing\\curvedelems_new.cpp(D=10); fem\\src\\rocalution.cpp(D=8)"
       },
       {
-        "rule": "MLR-018",
+        "rule": "TPL-006",
         "name": "虚泛型（镀金模板）",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -41694,7 +41694,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-019",
+        "rule": "TPL-007",
         "name": "未使用 extern template 优化",
         "severity": "LOW",
         "output_level": "INFO",
@@ -41702,7 +41702,7 @@
         "detail": "项目有 278 个模板实例化但未发现 extern template 声明"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -41710,7 +41710,7 @@
         "detail": "ElmerGUI\\netgen\\libsrc\\geom2d\\spline.hpp: 35 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -41718,7 +41718,7 @@
         "detail": "ElmerGUI\\netgen\\libsrc\\gprim\\geomobjects.hpp: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-024",
+        "rule": "TPL-012",
         "name": "头文件包含循环依赖",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -58061,10 +58061,10 @@
         "weighted_sum": 41.48
       }
     },
-    "structural_note_cross_concern": "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
+    "structural_note_cross_concern": "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
     "sme_waiver_summary": [
-      "MLR-014: severity=HIGH, output_level=WARNING",
-      "MLR-018: severity=HIGH, output_level=WARNING"
+      "TPL-002: severity=HIGH, output_level=WARNING",
+      "TPL-006: severity=HIGH, output_level=WARNING"
     ],
     "output_level_summary": {
       "ERROR": 1,

@@ -42,6 +42,18 @@ def _hpc_display_grade(score: float, gate_status: str = "PASS",
     return grade
 
 
+def _fossil_display_grade(score: float, gate_status: str = "PASS",
+                          confirmed_max_severity=None) -> str:
+    """化石维度显示等级：confirmed HIGH 时封顶为“需改进”（取较低，不抬升）。"""
+    grade = _score_grade(score)
+    if gate_status == "BLOCK" or confirmed_max_severity == "HIGH":
+        rank = {"🔴 差": 0, "🟠 需改进": 1, "🟡 良好": 2, "🟢 优秀": 3}
+        cap = "🟠 需改进"
+        if rank.get(grade, 0) > rank[cap]:
+            return cap
+    return grade
+
+
 def _trend_icon(delta: float) -> str:
     if delta > 0:
         return "↑"
@@ -216,7 +228,7 @@ class ReportGenerator:
         lines = [title, "",
                  "| 规则 | 覆盖来源 | 回归 | 合成 | 单元 |",
                  "|:-----|:--------|:----:|:----:|:----:|"]
-        for prefix in ["MLR", "NVR", "MPR", "TPL", "SAR"]:
+        for prefix in ["MLR", "NVR", "MPR", "TPL", "SAR", "HPC", "GCS", "ACL", "FOS"]:
             rules = sorted(groups.get(prefix, []))
             if not rules:
                 continue
@@ -256,6 +268,7 @@ class ReportGenerator:
             ("numerical", "数值算法精度"), ("solver_physics", "求解器/物理场"),
             ("geometry_consistency", "几何内核一致性"), ("anti_corruption", "外部内核防腐层"),
             ("hpc", "并行/异构计算架构"),
+            ("fossil", "化石代码与技术债"),
         ]
         for key, label in label_map:
             d = dims.get(key) or {}
@@ -330,7 +343,8 @@ class ReportGenerator:
             if isinstance(sub_score, dict):
                 sub_score = sub_score.get("score", 0)
             if sub_score is None:
-                sub_score = 0
+                rows.append(f"| {zh_key} | {w_pct} | N/A | 不适用（无生产源码） |")
+                continue
             rationale = ""
             if sub_formatters and eng_key in sub_formatters:
                 rationale = sub_formatters[eng_key](sub_score)
@@ -363,6 +377,8 @@ class ReportGenerator:
         tc = sub.get("test_coverage_detail", {})
         if not isinstance(tc, dict) or not tc:
             return base
+        if tc.get("applicable") is False or tc.get("dir_coverage") is None:
+            return base + "\n\n> **测试覆盖度：不适用**（无生产源码，不计入结构质量权重）。"
         rows = [
             f"| L1 目录覆盖 | {tc.get('dir_score', 0):.1f} | {tc.get('dir_coverage', 0)*100:.1f}%（有测试的源码目录占比）|",
             f"| L2 语言覆盖 | {tc.get('lang_score', 0):.1f} | {tc.get('lang_coverage', 0)*100:.1f}%（有测试文件的语言占比）|",
@@ -528,6 +544,15 @@ class ReportGenerator:
                 ("hybrid_parallel", "混合并行（MPI×OpenMP）冲突"),
             ],
         },
+        "fossil_enhancement": {
+            "title": "化石代码与技术债增强评估",
+            "dims": [
+                ("legacy", "历史遗留 API 与语言方言"),
+                ("dead", "死代码与不可达逻辑"),
+                ("clone", "重复代码与重复实现"),
+                ("debt", "技术债密度与可维护性"),
+            ],
+        },
     }
 
     def _topology_advisory_section(self) -> str:
@@ -603,6 +628,27 @@ class ReportGenerator:
                         f" / deferred={((wa.get('deferred') or {}).get('count', 0))}"
                         f" / gpu_only={((wa.get('gpu_only') or {}).get('count', 0))}"
                         f" / abuse_warning={wa.get('abuse_warning') or '无'}\n\n")
+            if enh_key == "fossil_enhancement":
+                gate = self.m.get("fossil_gate_status", "PASS")
+                app = self.m.get("fossil_applicability_set", []) or []
+                scope = self.m.get("fossil_score_scope", "none")
+                maxsev = self.m.get("fossil_confirmed_max_severity")
+                disp = _fossil_display_grade(score, gate, maxsev)
+                capped = disp != _score_grade(score)
+                header = (f"## {spec['title']}\n\n"
+                          f"**综合得分**: {score:.1f}/100 — {disp}（占总分 {weight_pct}）\n\n"
+                          f"**门禁**: {gate}　**适用集**: {', '.join(app) if app else '—'}"
+                          f"　**评分范围**: {scope}\n\n")
+                if capped:
+                    header += "> 注：项目总分未变，但化石维度受封顶（confirmed HIGH）。\n\n"
+                wa = self.m.get("fossil_waiver_audit") or {}
+                if wa:
+                    header += (
+                        "**豁免审计**: "
+                        f"legacy_ok={((wa.get('legacy_ok') or {}).get('count', 0))}"
+                        f" / deferred={((wa.get('deferred') or {}).get('count', 0))}"
+                        f" / not_dead={((wa.get('not_dead') or {}).get('count', 0))}"
+                        f" / abuse_warning={wa.get('abuse_warning') or '无'}\n\n")
             blocks.append(
                 header
                 + "| 子维度 | 得分 |\n"
@@ -615,7 +661,7 @@ class ReportGenerator:
     def _origin_annotation(v: dict) -> str:
         """WP-6：违规来源标注 [third-party]/[test]（计数感知）。
 
-        优先使用 origin_counts（如 MLR-024 循环依赖按成员归类），
+        优先使用 origin_counts（如 TPL-012 循环依赖按成员归类），
         回退到 origin 单值。first_party（项目自身）不标注。
         """
         counts = v.get("origin_counts") or {}

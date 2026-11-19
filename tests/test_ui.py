@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_ui.py — arch-quality Web 操作界面（Flask）单元测试
 
 覆盖：
@@ -29,7 +29,7 @@ class TestCommandsMeta(unittest.TestCase):
 
     def test_all_entries_present(self):
         expected = {"comprehensive", "standard", "multilang", "template",
-                    "numerical", "solver", "geometry", "anti_corruption"}
+                    "numerical", "solver", "geometry", "anti_corruption", "fossil"}
         self.assertEqual(set(COMMANDS.keys()), expected)
 
     def test_all_entries_in_order(self):

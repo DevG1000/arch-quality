@@ -1,4 +1,4 @@
-"""commands_meta.py — 7 个评估 CLI 入口的参数元数据（单一事实源）。
+﻿"""commands_meta.py — 7 个评估 CLI 入口的参数元数据（单一事实源）。
 
 界面据此自动渲染表单，避免硬编码 UI。每个入口定义：
 - entry / module: 命令调用形式（pyproject 命令或 python -m 模块）
@@ -35,7 +35,8 @@ COMMANDS = {
              "help": "集中模式下的项目名（默认从根目录推断）"},
             {"name": "profile", "flag": "--profile", "type": "multicheck",
              "choices": ["standard", "multilang", "numerical", "template",
-                         "solver-physics", "geometry-consistency", "anti-corruption"],
+                         "solver-physics", "geometry-consistency", "anti-corruption",
+                         "hpc", "fossil"],
              "help": "显式 profile（可多选，多个 profile 的引擎集取并集）"},
             {"name": "json", "flag": "--json", "type": "bool",
              "help": "输出 JSON 格式报告"},
@@ -146,11 +147,24 @@ COMMANDS = {
         ],
         "mutex": [],
     },
+    "fossil": {
+        "entry": "python -m arch_quality.arch_metrics_fossil_code",
+        "module": "arch_quality.arch_metrics_fossil_code:main",
+        "label": "化石代码评估",
+        "description": "化石代码与技术债（FOS-001~012）",
+        "params": [
+            {"name": "root", "type": "path", "default": ".", "required": True,
+             "help": "项目根目录"},
+            {"name": "json", "flag": "--json", "type": "bool", "help": "输出 JSON 格式"},
+            {"name": "fossil_only", "flag": "--fossil-only", "type": "bool", "help": "仅输出 FOS 规则"},
+        ],
+        "mutex": [],
+    },
 }
 
 # 各命令顺序（界面 Tab 展示顺序）
 COMMAND_ORDER = ["comprehensive", "standard", "multilang", "template",
-                 "numerical", "solver", "geometry", "anti_corruption"]
+                 "numerical", "solver", "geometry", "anti_corruption", "fossil"]
 
 
 def get_command(cmd_id: str) -> dict:

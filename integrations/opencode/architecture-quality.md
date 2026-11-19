@@ -73,9 +73,9 @@ permission:
 - 二进制膨胀率（15%）— 模板代码占总代码比
 - 不必要的模板化（20%）— 镀金模板：可用普通函数替代却使用了模板
 
-**12 条 MLR 规则**：MLR-013 至 MLR-024，覆盖热模板头文件、重复实例化、头文件传染、嵌套深度、二进制膨胀、镀金模板、extern template 缺失、不必要模板定义、命名空间污染、递归模板、多重实例化合并、头文件循环依赖。
+**12 条 MLR 规则**：TPL-001 至 TPL-012，覆盖热模板头文件、重复实例化、头文件传染、嵌套深度、二进制膨胀、镀金模板、extern template 缺失、不必要模板定义、命名空间污染、递归模板、多重实例化合并、头文件循环依赖。
 
-**3 种豁免注解**：`@template_specialization_required`（MLR-014）、`@allow_binary_bloat`（MLR-017，4 字段必填）、`@reserved_for_future_extension`（MLR-018）
+**3 种豁免注解**：`@template_specialization_required`（TPL-002）、`@allow_binary_bloat`（TPL-005，4 字段必填）、`@reserved_for_future_extension`（TPL-006）
 
 ### 数值算法正确性与精度保障评估
 
@@ -168,7 +168,7 @@ python -m arch_quality.arch_report <项目路径> [--json] [--md] [--build-dir <
     "evolution": { "score": 60.0, "weight": 0.25 }
   },
   "mlr_violations": [
-    { "rule": "MLR-013", "name": "热模板头文件", "severity": "HIGH", "output_level": "WARNING", "count": 256, "detail": "...", "waivable": true }
+    { "rule": "TPL-001", "name": "热模板头文件", "severity": "HIGH", "output_level": "WARNING", "count": 256, "detail": "...", "waivable": true }
   ],
   "output_level_summary": { "ERROR": 1, "WARNING": 11, "INFO": 7 },
   "files": { "total": 1000, "cpp_files": 868 }
@@ -233,7 +233,7 @@ python -m arch_quality.arch_report <项目路径> [--json] [--md] [--build-dir <
 评估结果和知识沉淀存放于 Obsidian 知识库：
 
 - **位置**：`D:\opensource\knowledge-base`
-- **技术卡片**：`arch-quality/` 目录下 12 张卡片（MLR-014过滤优化、FileIndex性能优化、include图O1哈希匹配、_read_cached统一缓存、per-template-extern模板过滤、output_level体系、豁免注解验证体系、基线校准统计方法、跨规则协调机制、MLR-022正则修复、Include图反向BFS、性能优化O(n²)→O(n)）
+- **技术卡片**：`arch-quality/` 目录下 12 张卡片（TPL-002过滤优化、FileIndex性能优化、include图O1哈希匹配、_read_cached统一缓存、per-template-extern模板过滤、output_level体系、豁免注解验证体系、基线校准统计方法、跨规则协调机制、TPL-010正则修复、Include图反向BFS、性能优化O(n²)→O(n)）
 - **每日亮点**：`daily-highlights/` 目录
 - **提取脚本**：`scripts/extract_highlights.py`（从日报自动生成知识库条目）
 - **打开方式**：`Obsidian → 打开本地仓库 → 选择 D:\opensource\knowledge-base`
