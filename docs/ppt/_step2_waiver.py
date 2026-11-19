@@ -3,9 +3,9 @@
 print('===== 三种豁免类型 =====')
 print()
 types = [
-    ('@template_specialization_required', 'MLR-014', '多精度/多维度模板特化豁免'),
-    ('@allow_binary_bloat', 'MLR-017', '性能优化导致的模板膨胀豁免 (4字段必填)'),
-    ('@reserved_for_future_extension', 'MLR-018', '预留将来扩展的模板豁免'),
+    ('@template_specialization_required', 'TPL-002', '多精度/多维度模板特化豁免'),
+    ('@allow_binary_bloat', 'TPL-005', '性能优化导致的模板膨胀豁免 (4字段必填)'),
+    ('@reserved_for_future_extension', 'TPL-006', '预留将来扩展的模板豁免'),
 ]
 for name, rule, desc in types:
     print('  %-40s %-10s %s' % (name, rule, desc))

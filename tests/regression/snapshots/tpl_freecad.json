@@ -15,16 +15,16 @@
     "unnecessary_templating": 0
   },
   "mlr_violations": {
-    "MLR-013|HIGH|WARNING": 445,
-    "MLR-014|HIGH|WARNING": 309,
-    "MLR-015|MEDIUM|WARNING": 1162,
-    "MLR-016|MEDIUM|WARNING": 50,
-    "MLR-018|HIGH|WARNING": 888,
-    "MLR-020|MEDIUM|WARNING": 37,
-    "MLR-021|LOW|INFO": 3,
-    "MLR-022|HIGH|ERROR": 3,
-    "MLR-023+merge_to_MLR-014|MEDIUM|WARNING": 4656,
-    "MLR-024|LOW|LOW": 8
+    "TPL-001|HIGH|WARNING": 445,
+    "TPL-002|HIGH|WARNING": 309,
+    "TPL-003|MEDIUM|WARNING": 1162,
+    "TPL-004|MEDIUM|WARNING": 50,
+    "TPL-006|HIGH|WARNING": 888,
+    "TPL-008|MEDIUM|WARNING": 37,
+    "TPL-009|LOW|INFO": 3,
+    "TPL-010|HIGH|ERROR": 3,
+    "TPL-011+merge_to_TPL-002|MEDIUM|WARNING": 4656,
+    "TPL-012|LOW|LOW": 8
   },
   "required_mlr_rules": [],
   "forced_merge_rules": []

@@ -46,10 +46,10 @@ class TestConsistencyCheck(unittest.TestCase):
         spec = importlib.util.spec_from_file_location("cc", SCRIPT)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
-        ids = mod.extract_rule_ids("SAR-001 与 SAR-002b 和 MLR-013", "SAR")
+        ids = mod.extract_rule_ids("SAR-001 与 SAR-002b 和 TPL-001", "SAR")
         self.assertIn("SAR-001", ids)
         self.assertIn("SAR-002b", ids)
-        self.assertNotIn("MLR-013", ids)
+        self.assertNotIn("TPL-001", ids)
 
     def test_engines_config_complete(self):
         """5 引擎配置完整（指南/skill/tool/case 文件均存在）"""

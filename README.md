@@ -10,7 +10,7 @@
 |------|------|----------|------|------|
 | 标准架构 | arch_metrics_standard | arch-quality-standard | 4 维（结构/设计/文档/演进）× 16 子维 | SAR-001~012 |
 | 多语言混合依赖 | arch_metrics_multilang | arch-quality-multilang | 6 维 | MLR-001~012 |
-| 模板元编程 | arch_metrics_template | arch-quality-template | 6 维 | TPL（MLR-013~024） |
+| 模板元编程 | arch_metrics_template | arch-quality-template | 6 维 | TPL（TPL-001~012） |
 | 数值算法精度 | arch_metrics_numerical_accuracy | python -m arch_quality.arch_metrics_numerical_accuracy | 6 维 | NVR-001~012 |
 | 求解器/物理场 | arch_metrics_solver_physics | python -m arch_quality.arch_metrics_solver_physics | 4 维 | MPR-001~012 |
 | 几何内核/科学数据 | arch_metrics_geometry_consistency | python -m arch_quality.arch_metrics_geometry_consistency | 4 维 | GCS-001~012 |
@@ -114,7 +114,7 @@ cp .opencode/agents/architecture-quality.md ~/.config/opencode/agents/architectu
 ### 多语言混合依赖（MLR-001~012）
 跨语言调用强度、影响半径、回调深度、绑定层接口一致性、脚本越界访问、跨语言循环依赖。
 
-### 模板元编程与编译时依赖膨胀（TPL / MLR-013~024）
+### 模板元编程与编译时依赖膨胀（TPL / TPL-001~012）
 编译时扇入、模板实例化重复率、头文件影响半径、模板嵌套深度、二进制膨胀率、不必要的模板化。
 
 ### 数值算法正确性与精度保障（NVR-001~012）
@@ -164,7 +164,7 @@ arch-quality/
 │   ├── arch_core.py                  # 文件索引、依赖图、Git 历史（共享）
 │   ├── arch_metrics_standard.py      # 标准 4 维 + SAR-012
 │   ├── arch_metrics_multilang.py     # 多语言 6 维 + MLR-001~012
-│   ├── arch_metrics_template.py      # 模板元编程 6 维 + TPL（MLR-013~024）
+│   ├── arch_metrics_template.py      # 模板元编程 6 维 + TPL（TPL-001~012）
 │   ├── arch_metrics_numerical_accuracy.py  # 数值精度 6 维 + NVR-012
 │   ├── arch_metrics_solver_physics.py      # 求解器/物理场 4 维 + MPR-012
 │   ├── arch_metrics_geometry_consistency.py # 几何内核/科学数据 4 维 + GCS-012

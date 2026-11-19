@@ -364,16 +364,16 @@ class ComprehensiveReport:
             if tpl_violations:
                 merged_014_023 = False
                 for v in tpl_violations:
-                    if v.get("merge_to") == "MLR-014":
+                    if v.get("merge_to") == "TPL-002":
                         for existing in result["mlr_violations"]:
-                            if existing.get("rule") == "MLR-014":
+                            if existing.get("rule") == "TPL-002":
                                 existing["merged_with_023"] = True
-                                existing["detail"] += f"; 另有 {v['count']} 处多处重复实例化（MLR-023 已合并）"
+                                existing["detail"] += f"; 另有 {v['count']} 处多处重复实例化（TPL-011 已合并）"
                                 merged_014_023 = True
                                 break
                         if not merged_014_023:
                             result["mlr_violations"].append({
-                                "rule": "MLR-014", "name": v.get("name", ""),
+                                "rule": "TPL-002", "name": v.get("name", ""),
                                 "severity": v.get("severity", "MEDIUM"),
                                 "output_level": v.get("output_level", "WARNING"),
                                 "count": v.get("count", 0),
@@ -391,8 +391,8 @@ class ComprehensiveReport:
                             output_level_summary[ol] += 1
                         if v.get("waivable"):
                             sme_waiver_notes.append(f"{v['rule']}: severity={v['severity']}, output_level={ol}")
-                if any(v.get("rule") == "MLR-013" for v in tpl_violations) and any(v.get("rule") == "MLR-015" for v in tpl_violations):
-                    result["structural_note_cross_concern"] = "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块"
+                if any(v.get("rule") == "TPL-001" for v in tpl_violations) and any(v.get("rule") == "TPL-003" for v in tpl_violations):
+                    result["structural_note_cross_concern"] = "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块"
                 if sme_waiver_notes:
                     result["sme_waiver_summary"] = sme_waiver_notes
                 result["output_level_summary"] = output_level_summary

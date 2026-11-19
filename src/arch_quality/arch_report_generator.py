@@ -661,7 +661,7 @@ class ReportGenerator:
     def _origin_annotation(v: dict) -> str:
         """WP-6：违规来源标注 [third-party]/[test]（计数感知）。
 
-        优先使用 origin_counts（如 MLR-024 循环依赖按成员归类），
+        优先使用 origin_counts（如 TPL-012 循环依赖按成员归类），
         回退到 origin 单值。first_party（项目自身）不标注。
         """
         counts = v.get("origin_counts") or {}
