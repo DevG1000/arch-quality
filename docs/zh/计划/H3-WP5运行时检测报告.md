@@ -9,7 +9,7 @@
 | 项 | 结果 |
 |:--|:--|
 | 触发 | `gh workflow run "Architecture Quality CI" --ref doc-pr/xxx` |
-| 最终 Run ID | `45101707990` |
+| 最终 Run ID | `45102267162` |
 | job | `Runtime Kernel (OCCT V8.0.1)` |
 | 结果 | ✅ **success**（OCCT 构建 + smoke probe 全部通过） |
 | OCCT | V8.0.1，缓存 key `occt-v8.0.1-Linux-2dd4...` |
@@ -22,7 +22,9 @@
 | `44491233807` | `X11/Xlib.h` 缺失 | workflow 增加 `libx11-dev libxext-dev` 安装（不 apt 安装 OCCT） |
 | `45093710334` | smoke 链接缺 `TKGeomBase/TKGeomAlgo` 等 | `run_kernel_smoke.sh` 补齐 OCCT 几何库 |
 | `45098217279` | Euler 探针重复计数（48/24/6→30）、shell BOM | 改用索引映射去重；去除 `.sh` BOM |
-| `45101707990` | — | `euler=PASS`（8/12/6→2）、closure PASS |
+| `45101707990` | 首次 smoke 通过，但 `TopTools_IndexedMapOfShape` 有 deprecated 警告 | 改用 `NCollection_IndexedMap` |
+| `45102068392` | `kernel_smoke.cpp` 仍残留旧别名 `faceMap` | 完成迁移 |
+| `45102267162` | — | ✅ `euler=PASS`（8/12/6→2）、closure PASS，无 OCCT 编译警告 |
 
 > 同一 workflow 的 unit/perf job 失败为既有 CI 环境/依赖问题（缺 `pyyaml`/`flask`/`.opencode` 等），非本 WP 范围。
 

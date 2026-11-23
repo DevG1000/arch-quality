@@ -71,7 +71,7 @@ bash scripts/ci/run_kernel_smoke.sh  # 预期：OCCT version: 8.0.1 / box valid=
 | 项 | 状态 |
 |:---|:-----|
 | 脚本/工作流落地 | ✅ 已提交 |
-| **CI 实测通过** | ✅ run `45101707990`：`runtime-kernel` success；`euler=PASS closure=PASS api_compat=SKIPPED` |
+| **CI 实测通过** | ✅ run `45102267162`：`runtime-kernel` success；`euler=PASS closure=PASS api_compat=SKIPPED` |
 | 构建耗时实测 | ✅ 冷构建约 33 min；缓存命中后 smoke 约 5 s |
 
 **风险**
@@ -93,4 +93,4 @@ bash scripts/ci/run_kernel_smoke.sh  # 预期：OCCT version: 8.0.1 / box valid=
 
 ---
 
-*G0 基础设施已验证：run `45101707990` 的 `Runtime Kernel (OCCT V8.0.1)` job success。*
+*G0 基础设施已验证：run `45102267162` 的 `Runtime Kernel (OCCT V8.0.1)` job success。*
