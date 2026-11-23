@@ -1,4 +1,4 @@
-// kernel_smoke.cpp - minimal OCCT kernel probe: substrate for H3 runtime detection (B2/B3/B5).
+﻿// kernel_smoke.cpp - minimal OCCT kernel probe: substrate for H3 runtime detection (B2/B3/B5).
 // Verifies the pinned OCCT build loads and can construct + validate a B-Rep solid.
 #include <Standard_Version.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
@@ -6,6 +6,8 @@
 #include <TopoDS_Shape.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopAbs_ShapeEnum.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopExp.hxx>
 #include <iostream>
 
 int main() {
@@ -20,8 +22,9 @@ int main() {
   BRepCheck_Analyzer analyzer(box);
   const bool valid = analyzer.IsValid();
 
-  int faces = 0;
-  for (TopExp_Explorer e(box, TopAbs_FACE); e.More(); e.Next()) ++faces;
+  TopTools_IndexedMapOfShape faceMap;
+  TopExp::MapShapes(box, TopAbs_FACE, faceMap);
+  const int faces = faceMap.Extent();
 
   std::cout << "box valid=" << (valid ? "true" : "false") << " faces=" << faces << std::endl;
   return (valid && faces == 6) ? 0 : 3;

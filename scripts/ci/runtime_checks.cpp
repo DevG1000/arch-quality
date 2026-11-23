@@ -1,4 +1,4 @@
-// runtime_checks.cpp - H3 WP-5 B2/B3 runtime probes (non-blocking).
+﻿// runtime_checks.cpp - H3 WP-5 B2/B3 runtime probes (non-blocking).
 // Extends G0 kernel_smoke.cpp with topology (Euler) and closure checks.
 // B5 (cross-version API compat) is emitted as SKIPPED; the Python aggregator records the reason.
 #include <Standard_Version.hxx>
@@ -7,13 +7,15 @@
 #include <TopoDS_Shape.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopAbs_ShapeEnum.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopExp.hxx>
 #include <iostream>
 #include <string>
 
 static int count_shape(const TopoDS_Shape& s, TopAbs_ShapeEnum t) {
-  int n = 0;
-  for (TopExp_Explorer e(s, t); e.More(); e.Next()) ++n;
-  return n;
+  TopTools_IndexedMapOfShape map;
+  TopExp::MapShapes(s, t, map);
+  return map.Extent();
 }
 
 int main() {

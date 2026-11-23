@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # run_kernel_smoke.sh - Compile & run the OCCT kernel smoke probe (G0 substrate check).
 set -euo pipefail
 OCCT_CACHE="${OCCT_CACHE:-$PWD/.occt-cache}"
