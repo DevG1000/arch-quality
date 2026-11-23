@@ -23,7 +23,7 @@ int main() {
   BRepCheck_Analyzer analyzer(box);
   const bool valid = analyzer.IsValid();
 
-  TopTools_IndexedMapOfShape faceMap;
+  NCollection_IndexedMap<TopoDS_Shape, TopTools_ShapeMapHasher> faceMap;
   TopExp::MapShapes(box, TopAbs_FACE, faceMap);
   const int faces = faceMap.Extent();
 
