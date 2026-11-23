@@ -26,15 +26,15 @@ OUT_JSON = PROJECT / "docs" / "zh" / "计划" / "rule_coverage_matrix.json"
 
 ALL_RULES = [
     # 多语言（14）
-    "MLR-001", "MLR-001b", "MLR-002", "MLR-003", "MLR-004", "MLR-004b",
+    "MLR-001", "MLR-002", "MLR-003", "MLR-004",
     "MLR-005", "MLR-006", "MLR-007", "MLR-008", "MLR-009", "MLR-010",
     "MLR-011", "MLR-012",
     # 数值（11，NVR-009 空洞）
     "NVR-001", "NVR-002", "NVR-003", "NVR-004", "NVR-005", "NVR-006",
-    "NVR-007", "NVR-008", "NVR-010", "NVR-011", "NVR-012",
+    "NVR-007", "NVR-008", "NVR-009", "NVR-010", "NVR-011", "NVR-012",
     # 物理场（11，MPR-011 空洞）
     "MPR-001", "MPR-002", "MPR-003", "MPR-004", "MPR-005", "MPR-006",
-    "MPR-007", "MPR-008", "MPR-009", "MPR-010", "MPR-012",
+    "MPR-007", "MPR-008", "MPR-009", "MPR-010", "MPR-011", "MPR-012",
     # 模板（12，当前 TPL-001~012，WP-7 将改 TPL）
     "TPL-001", "TPL-002", "TPL-003", "TPL-004", "TPL-005", "TPL-006",
     "TPL-007", "TPL-008", "TPL-009", "TPL-010", "TPL-011", "TPL-012",

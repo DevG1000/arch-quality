@@ -651,6 +651,24 @@ class GeometryConsistencyMetrics:
                 "detail": "内核调用点紧邻未检查 IsDone()/IsValid()，失败可能被静默吞没",
             })
 
+        # H3 WP-5 B4：跨函数失败传递 + builder 委托（candidate）
+        builder_hits = 0
+        status_checks = 0
+        for _content in self._all_contents.values():
+            builder_hits += len(re.findall(
+                r"(?i)\b(BRepFeat|BRepFill|CheckAndLoad|Perform|Build|Make[A-Z]\w*)\b",
+                _content))
+            status_checks += len(re.findall(r"(?i)\b(IsDone|IsValid)\s*\(", _content))
+        if builder_hits >= 2 and status_checks == 0:
+            results.append({
+                "rule": "GCS-003", "name": "内核异常/失败状态传播",
+                "severity": "MEDIUM", "output_level": "WARNING",
+                "count": builder_hits, "candidate": True,
+                "detail": (f"检测到 {builder_hits} 处 builder/delegate 调用但未发现 "
+                           "IsDone()/IsValid() 跨函数状态检查（B4 candidate）"),
+                "evidence": "builder/delegate pattern without status check",
+            })
+
         # GCS-004
         if d1d.get("lifetime_management", {}).get("manual_scope_count", 0) > 0:
             results.append({

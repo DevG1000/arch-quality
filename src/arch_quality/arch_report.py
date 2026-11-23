@@ -239,6 +239,18 @@ class ComprehensiveReport:
             "hpc_waiver_audit": hpc_result.get("waiver_audit", {}) if hpc_result else {},
             "hpc_version_info": hpc_result.get("version_info", {}) if hpc_result else {},
             "topology_advisory": hpc_result.get("topology_advisory", {}) if hpc_result else {},
+            "known_holes_audit": {
+                "policy": "H3 决策 6：静态不可判项保持 KNOWN_HOLES，文档化归因，不新增编号",
+                "scored_rules_known_holes": {
+                    "geometry_consistency": ["GCS-013", "GCS-014"],
+                    "anti_corruption": ["ACL-013"],
+                    "numerical": [],
+                    "solver_physics": [],
+                    "hpc": ["HPC-013", "HPC-014"],
+                    "fossil": ["FOS-013", "FOS-014"],
+                },
+                "runtime_candidates": ["GCS-001 闭合性运行时判定", "GCS 欧拉公式约束", "ACL 内核升级兼容测试"],
+            },
             "fossil_applicability_set": fos_result.get("applicability_set", []) if fos_result else [],
             "fossil_score_scope": fos_result.get("score_scope", "none") if fos_result else "none",
             "fossil_gate_status": fos_result.get("gate_status", "PASS") if fos_result else "PASS",

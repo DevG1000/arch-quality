@@ -830,6 +830,17 @@ class NumericalAccuracyMetrics:
 
         return results
 
+        # NVR-009：确认绝热等级（INFO，不参与评分；静态信号仅提示）
+        all_text = "\n".join(self._all_contents.values())
+        if re.search(r"(?i)\b(dt|deltat|timestep|delta_t)\b", all_text) and not re.search(
+                r"(?i)adiabatic|heat[\s_-]?transfer|thermal|energy[\s_-]?equation", all_text):
+            results.append({
+                "rule": "NVR-009", "name": "确认绝热等级",
+                "severity": "LOW", "output_level": "INFO", "candidate": True,
+                "count": 1,
+                "detail": "检测到时间步/热平衡配置信号但未确认绝热等级；仅提示，不参与评分",
+            })
+
     def all_metrics(self) -> dict:
         """返回完整的 6 维评分 + NVR 规则检查结果"""
         if not self._has_numerical:

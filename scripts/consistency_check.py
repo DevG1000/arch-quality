@@ -144,7 +144,7 @@ ENGINES = {
 }
 RULE_ID_VALIDATION_PENDING = True
 # 已知规则空洞（WP-7.1 重编号/补齐后应消除）
-KNOWN_HOLES = {"NVR-009", "MPR-011", "GCS-013", "GCS-014", "ACL-013",
+KNOWN_HOLES = {"GCS-013", "GCS-014", "ACL-013",
                "HPC-013", "HPC-014", "FOS-013", "FOS-014"}
 
 

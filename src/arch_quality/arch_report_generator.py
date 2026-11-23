@@ -555,6 +555,21 @@ class ReportGenerator:
         },
     }
 
+    def _known_holes_section(self) -> str:
+        audit = self.m.get("known_holes_audit") or {}
+        if not audit:
+            return ""
+        lines = ["## KNOWN_HOLES 审计", "",
+                 f"> {audit.get('policy', '')}", "",
+                 "| 引擎 | 已知空洞 |", "|:--|:--|"]
+        for engine, holes in (audit.get("scored_rules_known_holes") or {}).items():
+            lines.append(f"| {engine} | {', '.join(holes) if holes else '—'} |")
+        lines.append("")
+        rt = audit.get("runtime_candidates") or []
+        if rt:
+            lines.append("运行时候选：" + ", ".join(rt) + "。")
+        return "\n".join(lines) + "\n"
+
     def _topology_advisory_section(self) -> str:
         """多级计算结构 advisory（不计分、不改 overall/gate）。"""
         a = self.m.get("topology_advisory") or {}
@@ -990,6 +1005,7 @@ class ReportGenerator:
             self._multilang_section(),
             self._enhancement_sections(),
             self._topology_advisory_section(),
+            self._known_holes_section(),
             self._mlr_violations(),
             self._rule_coverage_matrix(),
             self._scissors_gap_risk(),

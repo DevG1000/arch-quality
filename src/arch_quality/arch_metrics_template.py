@@ -821,6 +821,31 @@ class TemplateMetaprogrammingMetrics:
                 "waivable": True,
             })
 
+        # H3 WP-5 B1：跨 TU 实例化语义（有 compile DB 时启用，candidate）
+        compile_db = os.path.join(self.root, "compile_commands.json")
+        if os.path.isfile(compile_db):
+            try:
+                with open(compile_db, encoding="utf-8-sig") as fh:
+                    db = json.load(fh)
+                tu_count = len(db) if isinstance(db, list) else 0
+            except Exception:
+                tu_count = 0
+            all_text = "\n".join(
+                self._read_cached(f) or "" for f in self.index.files
+                if f["ext"] in CPP_EXTS or f["ext"] in (".h", ".hpp")
+            )
+            explicit_inst = len(re.findall(
+                r"\btemplate\s+(?:class|struct)\s+\w+", all_text))
+            if tu_count > 1 and explicit_inst == 0:
+                mlr_results.append({
+                    "rule": "TPL-006", "name": "虚泛型（镀金模板）",
+                    "severity": "MEDIUM", "output_level": "WARNING",
+                    "count": tu_count, "candidate": True,
+                    "detail": (f"compile_commands 含 {tu_count} 个 TU，模板使用面未见显式实例化；"
+                               "跨 TU 实例化仅 candidate，需人工/AST 复核"),
+                    "evidence": "compile_commands.json + no template class/struct instantiation",
+                })
+
         # TPL-007: 未使用 extern template 优化
         has_many_instances = len(template_dup) > 5
         has_extern = any(

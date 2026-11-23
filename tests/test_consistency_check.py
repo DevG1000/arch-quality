@@ -34,10 +34,10 @@ class TestConsistencyCheck(unittest.TestCase):
         self.assertNotIn("=> standard: PASS", r.stdout)
 
     def test_known_holes_info(self):
-        """已知空洞（NVR-009/MPR-011）为 INFO 不 FAIL"""
+        """B7 保留 GCS-013/014、ACL-013 为 KNOWN_HOLES；B6 已实现 NVR-009/MPR-011"""
         r = run_check()
-        self.assertIn("NVR-009", r.stdout)
-        self.assertIn("MPR-011", r.stdout)
+        self.assertNotIn("NVR-009", r.stdout)
+        self.assertNotIn("MPR-011", r.stdout)
         self.assertIn("WP-7.1", r.stdout)
 
     def test_rule_id_extract(self):
