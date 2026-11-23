@@ -7,13 +7,14 @@
 #include <TopoDS_Shape.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopAbs_ShapeEnum.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
+#include <NCollection_IndexedMap.hxx>
+#include <TopTools_ShapeMapHasher.hxx>
 #include <TopExp.hxx>
 #include <iostream>
 #include <string>
 
 static int count_shape(const TopoDS_Shape& s, TopAbs_ShapeEnum t) {
-  TopTools_IndexedMapOfShape map;
+  NCollection_IndexedMap<TopoDS_Shape, TopTools_ShapeMapHasher> map;
   TopExp::MapShapes(s, t, map);
   return map.Extent();
 }

@@ -71,8 +71,8 @@ bash scripts/ci/run_kernel_smoke.sh  # 预期：OCCT version: 8.0.1 / box valid=
 | 项 | 状态 |
 |:---|:-----|
 | 脚本/工作流落地 | ✅ 已提交 |
-| **CI 实测通过** | ⚠️ 首次失败（缺 `X11/Xlib.h`）；`build_occt.sh` 已加 apt 安装 X11 dev，待复跑 |
-| 构建耗时实测 | 🔲 待 CI 记录（缓存命中后应降至分钟级）|
+| **CI 实测通过** | ✅ run `45101707990`：`runtime-kernel` success；`euler=PASS closure=PASS api_compat=SKIPPED` |
+| 构建耗时实测 | ✅ 冷构建约 33 min；缓存命中后 smoke 约 5 s |
 
 **风险**
 
@@ -88,9 +88,9 @@ bash scripts/ci/run_kernel_smoke.sh  # 预期：OCCT version: 8.0.1 / box valid=
 ## 六、对下游
 
 - **决策 3 维持**：B2/B3/B5 实施，由本底座承载。
-- **H3 计划 v2**：暂不需回退；G0 记录见本文件 + `H3基线实测报告.md` §二。
+- **H3 计划 v2**：不需回退；G0 已验证，记录见本文件 + `H3-WP5运行时检测报告.md`。
 - **WP-5**：B1/B4/B6/B7 可先做；B2/B3/B5 依赖本 job 的缓存就绪。
 
 ---
 
-*G0 基础设施落地完成。待一次 CI 运行确认后，本方案转"已验证"。*
+*G0 基础设施已验证：run `45101707990` 的 `Runtime Kernel (OCCT V8.0.1)` job success。*
