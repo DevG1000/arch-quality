@@ -828,8 +828,6 @@ class NumericalAccuracyMetrics:
                 "detail": f"数值债务密度 {debt.get('debt_ratio', 0)*100:.1f}%，超过 30% 警戒线",
             })
 
-        return results
-
         # NVR-009：确认绝热等级（INFO，不参与评分；静态信号仅提示）
         all_text = "\n".join(self._all_contents.values())
         if re.search(r"(?i)\b(dt|deltat|timestep|delta_t)\b", all_text) and not re.search(
@@ -840,6 +838,8 @@ class NumericalAccuracyMetrics:
                 "count": 1,
                 "detail": "检测到时间步/热平衡配置信号但未确认绝热等级；仅提示，不参与评分",
             })
+
+        return results
 
     def all_metrics(self) -> dict:
         """返回完整的 6 维评分 + NVR 规则检查结果"""

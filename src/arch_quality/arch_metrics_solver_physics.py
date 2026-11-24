@@ -1406,11 +1406,13 @@ class SolverPhysicsMetrics:
                 "detail": f"数据格式转换函数分散在 {convert_count} 个位置，建议集中管理",
             })
 
-        return results
-
         # MPR-011：跨场时域同步规范（多场 + 无同步信号 → candidate WARNING）
         all_text = "\n".join(self._all_contents.values())
-        field_hits = len(re.findall(r"(?i)\b(fluid|structure|solid|thermal|mesh|electro)\w*", all_text))
+        field_terms = set(
+            m.group(0).lower()
+            for m in re.finditer(r"(?i)\b(fluid|structure|solid|thermal|mesh|electro)\w*", all_text)
+        )
+        field_hits = len(field_terms)
         dt_values = set(re.findall(r"(?i)\bdt\w*\s*=\s*([0-9.eE+-]+)", all_text))
         sync_signal = re.search(
             r"(?i)\b(synchronize|sync|align[\s_-]?time|interpolate[\s_-]?in[\s_-]?time|"
@@ -1423,6 +1425,8 @@ class SolverPhysicsMetrics:
                 "detail": (f"检测到 {field_hits} 个物理场信号、{len(dt_values)} 种时间步定义"
                            "，未发现同步/对齐/耦合迭代信号；candidate，需人工确认"),
             })
+
+        return results
 
     def all_metrics(self) -> dict:
         """返回完整的 4 维评分 + MPR 规则检查结果"""

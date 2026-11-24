@@ -1,4 +1,4 @@
-"""
+﻿"""
 数值精度评估外部验证回归测试
 
 对本地可用的开源项目运行工具，将结果与已建立的基线 JSON 比对。
@@ -43,6 +43,12 @@ def run_assessment_cached(project_path):
     """运行工具并缓存结果（避免每个测试方法都重新运行）"""
     m = NumericalAccuracyMetrics(project_path)
     return m.all_metrics()
+
+
+def _scored_violations(violations):
+    """仅返回参与回归的违规：INFO/candidate 为提示项，不计入基线稳定性。"""
+    return [v for v in violations
+            if v.get("output_level") != "INFO" and not v.get("candidate")]
 
 
 # ── Fixtures ──
@@ -97,11 +103,11 @@ class TestNumericalRegression:
                              available_projects(include_slow=True),
                              ids=lambda p: p[0] if isinstance(p, tuple) else p)
     def test_nvr_count_stable(self, project_name, project_path):
-        """NVR 违规数量不应变化"""
+        """NVR 计分违规数量不应变化（INFO/candidate 提示项除外）"""
         baseline = load_baseline(project_name)
         result = run_assessment_cached(project_path)
-        expected = len(baseline.get('nvr_violations', []))
-        actual = len(result.get('nvr_violations', []))
+        expected = len(_scored_violations(baseline.get('nvr_violations', [])))
+        actual = len(_scored_violations(result.get('nvr_violations', [])))
         assert actual == expected, (
             f'{project_name}: NVR 违规数量变化 '
             f'(基线={expected}, 当前={actual})'
@@ -111,11 +117,11 @@ class TestNumericalRegression:
                              available_projects(include_slow=True),
                              ids=lambda p: p[0] if isinstance(p, tuple) else p)
     def test_nvr_rules_unchanged(self, project_name, project_path):
-        """NVR 违规的规则列表不应变化"""
+        """NVR 计分违规的规则列表不应变化（INFO/candidate 提示项除外）"""
         baseline = load_baseline(project_name)
         result = run_assessment_cached(project_path)
-        expected_rules = sorted(v['rule'] for v in baseline.get('nvr_violations', []))
-        actual_rules = sorted(v['rule'] for v in result.get('nvr_violations', []))
+        expected_rules = sorted(v['rule'] for v in _scored_violations(baseline.get('nvr_violations', [])))
+        actual_rules = sorted(v['rule'] for v in _scored_violations(result.get('nvr_violations', [])))
         assert actual_rules == expected_rules, (
             f'{project_name}: NVR 违规规则变化\n'
             f'  基线: {expected_rules}\n'

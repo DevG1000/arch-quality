@@ -10,6 +10,7 @@ import os
 import re
 import json
 import argparse
+import shlex
 from pathlib import Path
 from collections import defaultdict
 
@@ -827,23 +828,79 @@ class TemplateMetaprogrammingMetrics:
             try:
                 with open(compile_db, encoding="utf-8-sig") as fh:
                     db = json.load(fh)
-                tu_count = len(db) if isinstance(db, list) else 0
             except Exception:
-                tu_count = 0
+                db = []
+            tu_files = set()
+            include_flags = set()
+            define_flags = set()
+            root_abs = os.path.abspath(self.root)
+            if isinstance(db, list):
+                for entry in db:
+                    if not isinstance(entry, dict):
+                        continue
+                    src = entry.get("file")
+                    if src:
+                        directory = entry.get("directory") or self.root
+                        if not os.path.isabs(src):
+                            src = os.path.join(directory, src)
+                        tu_files.add(os.path.normpath(os.path.abspath(src)))
+                    args = entry.get("arguments")
+                    if not args:
+                        try:
+                            args = shlex.split(entry.get("command", ""))
+                        except ValueError:
+                            args = []
+                    for arg in args or []:
+                        if arg.startswith("-I") and len(arg) > 2:
+                            include_flags.add(arg[2:])
+                        elif arg.startswith("-D") and len(arg) > 2:
+                            define_flags.add(arg[2:])
+            tu_count = len(tu_files) or (len(db) if isinstance(db, list) else 0)
             all_text = "\n".join(
                 self._read_cached(f) or "" for f in self.index.files
                 if f["ext"] in CPP_EXTS or f["ext"] in (".h", ".hpp")
             )
             explicit_inst = len(re.findall(
                 r"\btemplate\s+(?:class|struct)\s+\w+", all_text))
-            if tu_count > 1 and explicit_inst == 0:
+            extern_template = len(re.findall(r"\bextern\s+template\b", all_text))
+            template_names = set(re.findall(
+                r"\btemplate\s*<[^>{};]*>\s*(?:class|struct)\s+(\w+)", all_text))
+            repeated = {}
+            for tu in tu_files:
+                try:
+                    if os.path.commonpath([root_abs, os.path.abspath(tu)]) != root_abs:
+                        continue
+                    content = read_text_smart(tu)
+                except Exception:
+                    continue
+                for name in template_names:
+                    if re.search(r"\b" + re.escape(name) + r"\s*<", content):
+                        repeated.setdefault(name, set()).add(os.path.basename(tu))
+            repeated_multi = {k: v for k, v in repeated.items() if len(v) >= 2}
+            if repeated_multi and explicit_inst == 0 and extern_template == 0:
+                names = ", ".join(sorted(repeated_multi)[:5])
+                mlr_results.append({
+                    "rule": "TPL-006", "name": "虚泛型（镀金模板）",
+                    "severity": "MEDIUM", "output_level": "WARNING",
+                    "count": len(repeated_multi), "candidate": True,
+                    "detail": (f"compile_commands 含 {tu_count} 个 TU；模板 {names} 在多个 TU 使用，"
+                               "未发现显式实例化/extern template（candidate，需 AST/人工复核）"),
+                    "evidence": "compile_commands.json + template use in >=2 TUs",
+                    "tu_count": tu_count,
+                    "include_flags": sorted(include_flags)[:10],
+                    "define_flags": sorted(define_flags)[:10],
+                })
+            elif tu_count > 1 and explicit_inst == 0 and extern_template == 0 and template_names:
                 mlr_results.append({
                     "rule": "TPL-006", "name": "虚泛型（镀金模板）",
                     "severity": "MEDIUM", "output_level": "WARNING",
                     "count": tu_count, "candidate": True,
-                    "detail": (f"compile_commands 含 {tu_count} 个 TU，模板使用面未见显式实例化；"
+                    "detail": (f"compile_commands 含 {tu_count} 个 TU；模板使用面未见显式实例化/extern template；"
                                "跨 TU 实例化仅 candidate，需人工/AST 复核"),
                     "evidence": "compile_commands.json + no template class/struct instantiation",
+                    "tu_count": tu_count,
+                    "include_flags": sorted(include_flags)[:10],
+                    "define_flags": sorted(define_flags)[:10],
                 })
 
         # TPL-007: 未使用 extern template 优化

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """test_numerical_accuracy.py — 数值算法正确性与精度保障评估单元测试"""
 
 import os
@@ -508,6 +508,45 @@ class TestMMSPobsEnhancements(unittest.TestCase):
             ast.parse(src)  # 语法正确
             self.assertIn("--json", src, f"{f} 缺 --json 支持")
             self.assertIn("_json.dumps", src, f"{f} 缺 JSON 输出")
+
+
+class TestNVR009(unittest.TestCase):
+    """NVR-009 绝热等级提示：INFO、不评分、可实际触发"""
+
+    def _make(self, files):
+        tmp = tempfile.mkdtemp()
+        for path, content in files.items():
+            full = os.path.join(tmp, path)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w", encoding="utf-8") as f:
+                f.write(content)
+        return tmp
+
+    def test_nvr009_info_when_timestep_without_thermal(self):
+        tmp = self._make({
+            "src/solver.cpp": "// solver\ndouble dt = 0.01;\nfor (int i=0;i<10;i++) {}\n",
+        })
+        try:
+            m = NumericalAccuracyMetrics(tmp)
+            rules = m.check_nvr_rules()
+            hits = [r for r in rules if r["rule"] == "NVR-009"]
+            self.assertTrue(hits, "NVR-009 应实际触发")
+            self.assertEqual(hits[0]["severity"], "LOW")
+            self.assertEqual(hits[0]["output_level"], "INFO")
+            self.assertTrue(hits[0].get("candidate"))
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_nvr009_silent_when_thermal_model_present(self):
+        tmp = self._make({
+            "src/solver.cpp": "// solver\ndouble dt = 0.01;\n// thermal energy equation\n",
+        })
+        try:
+            m = NumericalAccuracyMetrics(tmp)
+            rules = m.check_nvr_rules()
+            self.assertFalse(any(r["rule"] == "NVR-009" for r in rules))
+        finally:
+            shutil.rmtree(tmp)
 
 
 if __name__ == "__main__":

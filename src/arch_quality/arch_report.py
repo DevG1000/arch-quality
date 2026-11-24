@@ -422,6 +422,8 @@ class ComprehensiveReport:
         if gcs_result is not None:
             for v in gcs_result.get("gcs_violations", []):
                 result["mlr_violations"].append(v)
+            for v in gcs_result.get("gcs_candidates", []):
+                result["mlr_violations"].append(v)
 
         # 合并 ACL 防腐层违规到报告
         if acl_result is not None:

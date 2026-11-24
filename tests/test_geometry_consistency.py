@@ -601,6 +601,48 @@ class TestWaiverAbuseGuards(unittest.TestCase):
             shutil.rmtree(tmp)
 
 
+class TestB4BuilderDelegate(unittest.TestCase):
+    """B4 builder/delegate 文件级失败状态检查 candidate"""
+
+    def test_b4_candidate_when_builder_without_status_check(self):
+        tmp = _make_project({"src/wrapper.cpp": """
+#include <BRepBuilderAPI_MakeFace.hxx>
+TopoDS_Shape buildFace() {
+    BRepBuilderAPI_MakeFace mk;
+    mk.Build();
+    return mk.Shape();
+}
+"""})
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            result = m.all_metrics()
+            hits = [r for r in result.get("gcs_candidates", []) if r["rule"] == "GCS-003"]
+            self.assertTrue(hits, "B4 应产生 GCS-003 candidate")
+            self.assertTrue(any("wrapper.cpp" in loc for loc in hits[0].get("locations", [])))
+            self.assertFalse(any(r["rule"] == "GCS-003" and r.get("candidate")
+                                 for r in result.get("gcs_violations", [])))
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_b4_silent_when_status_check_present(self):
+        tmp = _make_project({"src/wrapper.cpp": """
+#include <BRepBuilderAPI_MakeFace.hxx>
+TopoDS_Shape buildFace() {
+    BRepBuilderAPI_MakeFace mk;
+    mk.Build();
+    if (!mk.IsDone()) return TopoDS_Shape();
+    return mk.Shape();
+}
+"""})
+        try:
+            m = GeometryConsistencyMetrics(tmp)
+            result = m.all_metrics()
+            self.assertFalse(any(r["rule"] == "GCS-003"
+                                 for r in result.get("gcs_candidates", [])))
+        finally:
+            shutil.rmtree(tmp)
+
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -14,6 +14,7 @@ test_template_metrics.py — arch_metrics_template.py 单元测试
 10. 综合评分权重计算
 """
 
+import json
 import os
 import shutil
 import tempfile
@@ -822,6 +823,60 @@ class TestDimensionNames(unittest.TestCase):
             self.assertIn("template_nesting_depth", result["dimensions"])
             self.assertNotIn("template_nesting_degree", result["dimensions"])
             self.assertIn("unnecessary_templating", result["dimensions"])
+        finally:
+            shutil.rmtree(tmp)
+
+
+class TestB1CompileDB(unittest.TestCase):
+    """B1 跨 TU 实例化：compile_commands.json + 多 TU 模板使用"""
+
+    def _make(self, files):
+        tmp = tempfile.mkdtemp()
+        for path, content in files.items():
+            full = os.path.join(tmp, path)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w", encoding="utf-8") as f:
+                f.write(content)
+        return tmp
+
+    def _db(self, root):
+        return json.dumps([
+            {"directory": root, "file": "src/a.cpp",
+             "arguments": ["g++", "-Iinclude", "-DUSE_A", "-c", "src/a.cpp"]},
+            {"directory": root, "file": "src/b.cpp",
+             "arguments": ["g++", "-Iinclude", "-DUSE_B", "-c", "src/b.cpp"]},
+        ])
+
+    def test_b1_cross_tu_template_candidate(self):
+        tmp = self._make({
+            "src/vec.h": "template<typename T> class Vec { T data[3]; };\n",
+            "src/a.cpp": '#include "vec.h"\nVec<int> a;\n',
+            "src/b.cpp": '#include "vec.h"\nVec<int> b;\n',
+        })
+        try:
+            with open(os.path.join(tmp, "compile_commands.json"), "w", encoding="utf-8") as f:
+                f.write(self._db(tmp))
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            rules = metrics.check_mlr_rules()
+            b1 = [v for v in rules if v["rule"] == "TPL-006" and v.get("candidate")]
+            self.assertTrue(b1, "B1 应产生 TPL-006 candidate")
+            self.assertIn("compile_commands", b1[0]["detail"])
+            self.assertEqual(b1[0]["tu_count"], 2)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_b1_silent_with_extern_template(self):
+        tmp = self._make({
+            "src/vec.h": "template<typename T> class Vec { T data[3]; };\nextern template class Vec<int>;\n",
+            "src/a.cpp": '#include "vec.h"\nVec<int> a;\n',
+            "src/b.cpp": '#include "vec.h"\nVec<int> b;\n',
+        })
+        try:
+            with open(os.path.join(tmp, "compile_commands.json"), "w", encoding="utf-8") as f:
+                f.write(self._db(tmp))
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            rules = metrics.check_mlr_rules()
+            self.assertFalse(any(v["rule"] == "TPL-006" and v.get("candidate") for v in rules))
         finally:
             shutil.rmtree(tmp)
 
