@@ -11,7 +11,7 @@ import json
 import hashlib
 import subprocess
 from pathlib import Path
-from collections import defaultdict
+from collections import defaultdict, deque
 from datetime import datetime
 
 
@@ -338,60 +338,78 @@ class FileIndex:
 
 
 class DepGraph:
-    """依赖图（含跨语言边）"""
+    """依赖图：节点 + 普通边 + 跨语言边"""
 
     def __init__(self):
         self.nodes = {}         # {node_id: {"lang": str, "path": str}}
         self.edges = []         # [(src, dst)]
-        self.cross_edges = []   # [(src, dst)]  仅跨语言边（两端均为项目节点且语言不同）
+        self.cross_edges = []   # [(src, dst)] 跨语言边
+        # 邻接表：把 O(E) 查询降为 O(1)（C1 性能）
+        self._succ = defaultdict(list)
+        self._pred = defaultdict(list)
+        self._cross_succ = defaultdict(list)
+        self._cross_pred = defaultdict(list)
+        self._languages_cache = None
+        self._single_language_cache = None
 
     def add_node(self, node_id: str, lang: str, path: str = ""):
         if node_id not in self.nodes:
             self.nodes[node_id] = {"lang": lang, "path": path}
+            self._languages_cache = None
+            self._single_language_cache = None
 
     def add_edge(self, src: str, dst: str):
         self.edges.append((src, dst))
+        self._succ[src].append(dst)
+        self._pred[dst].append(src)
         src_lang = self.nodes.get(src, {}).get("lang")
         dst_lang = self.nodes.get(dst, {}).get("lang")
         if dst_lang is not None and src_lang is not None and src_lang != dst_lang:
             self.cross_edges.append((src, dst))
+            self._cross_succ[src].append(dst)
+            self._cross_pred[dst].append(src)
 
     @property
     def is_single_language(self):
-        """项目是否仅包含单一语言"""
-        langs = set(n.get("lang") for n in self.nodes.values() if n.get("lang"))
-        return len(langs) <= 1
+        """项目是否只有一种语言"""
+        if self._single_language_cache is None:
+            self._single_language_cache = len(self.languages) <= 1
+        return self._single_language_cache
 
     @property
     def languages(self):
-        """项目包含的语言集合"""
-        return set(n.get("lang") for n in self.nodes.values() if n.get("lang"))
+        """项目涉及的语言集合"""
+        if self._languages_cache is None:
+            self._languages_cache = set(
+                n.get("lang") for n in self.nodes.values() if n.get("lang")
+            )
+        return set(self._languages_cache)
 
     def successors(self, node: str):
-        return [d for s, d in self.edges if s == node]
+        return list(self._succ.get(node, ()))
 
     def predecessors(self, node: str):
-        return [s for s, d in self.edges if d == node]
+        return list(self._pred.get(node, ()))
 
     def cross_successors(self, node: str):
-        return [d for s, d in self.cross_edges if s == node]
+        return list(self._cross_succ.get(node, ()))
 
     def cross_predecessors(self, node: str):
-        return [s for s, d in self.cross_edges if d == node]
+        return list(self._cross_pred.get(node, ()))
 
     def bfs_reachable(self, start: str, max_depth: int = 5, cross_only: bool = False):
-        """BFS遍历可达节点，最多 max_depth 层"""
-        edge_pool = self.cross_edges if cross_only else self.edges
+        """BFS 可达节点，限制 max_depth"""
+        succ = self._cross_succ if cross_only else self._succ
         visited = {start}
-        queue = [(start, 0)]
+        queue = deque([(start, 0)])
         while queue:
-            node, depth = queue.pop(0)
+            node, depth = queue.popleft()
             if depth >= max_depth:
                 continue
-            for s, d in edge_pool:
-                if s == node and d not in visited:
-                    visited.add(d)
-                    queue.append((d, depth + 1))
+            for dst in succ.get(node, ()):
+                if dst not in visited:
+                    visited.add(dst)
+                    queue.append((dst, depth + 1))
         return visited
 
     def detect_cross_lang_cycles(self):

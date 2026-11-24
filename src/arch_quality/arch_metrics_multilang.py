@@ -11,7 +11,7 @@ import json
 import argparse
 import warnings
 from pathlib import Path
-from collections import defaultdict
+from collections import defaultdict, deque
 
 # DEBT-1: 抑制 Fortran 内容触发正则 SyntaxWarning 污染 stdout（agent harness 依赖干净输出）
 warnings.filterwarnings("ignore", category=SyntaxWarning)
@@ -114,6 +114,8 @@ class MultilangMetrics:
         self.index = FileIndex(root, build_dir=build_dir)
         self.graph = DepGraph()
         self._swig_bindings = {}
+        self._calc_cache = {}
+        self._text_cache = {}
         self._build_files = self._collect_build_bindings()
         self._fortran_module_map = {}
         self._fortran_subroutine_map = {}
@@ -124,6 +126,15 @@ class MultilangMetrics:
         self._compute_fortran_mapping_stats()
         self._build_cross_lang_graph()
         self.git = GitHistory(root)
+
+    def _read_text(self, path):
+        """单次评估内文件内容快照：只读取一次，避免重复 stat/read。"""
+        key = os.path.abspath(str(path))
+        if key in self._text_cache:
+            return self._text_cache[key]
+        content = read_text_smart(key)
+        self._text_cache[key] = content
+        return content
 
     def _collect_build_bindings(self):
         """从 build_dir 收集 SWIG 绑定产物信息
@@ -160,7 +171,7 @@ class MultilangMetrics:
 
             if is_wrap:
                 try:
-                    content = read_text_smart(str(fpath))
+                    content = self._read_text(str(fpath))
                 except Exception:
                     content = ""
                 bound_funcs = re.findall(r'\.def\s*\(\s*["\x27](\w+)["\x27]', content)
@@ -190,7 +201,7 @@ class MultilangMetrics:
 
             if is_pyi:
                 try:
-                    content = read_text_smart(str(fpath))
+                    content = self._read_text(str(fpath))
                 except Exception:
                     content = ""
                 pyi_funcs = re.findall(r'def\s+(\w+)\s*\(', content)
@@ -216,7 +227,7 @@ class MultilangMetrics:
             if f["ext"] not in (".f90", ".f95", ".f03", ".f08"):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             for m in _MODULE_DECL_RE.finditer(content):
@@ -239,7 +250,7 @@ class MultilangMetrics:
         sub_map = {}
         for f in self.index.by_lang("fortran"):
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             for m in _SUBROUTINE_DECL_RE.finditer(content):
@@ -270,7 +281,7 @@ class MultilangMetrics:
 
         for f in fortran_files:
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
 
@@ -332,7 +343,7 @@ class MultilangMetrics:
             if f["ext"] not in (".h", ".hpp", ".c", ".cpp"):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 content = ""
             # 匹配 C/C++ 函数声明: 返回类型 函数名(参数...)
@@ -353,12 +364,23 @@ class MultilangMetrics:
             for fn in funcs:
                 func_to_headers[fn].append(hdr_path)
 
+        # C1: basename indexes for O(1) fallback lookups
+        fortran_base_map = {}
+        for f in self.index.by_lang("fortran"):
+            fortran_base_map.setdefault(
+                os.path.splitext(os.path.basename(f["path"]))[0].lower(), f["path"])
+        cpp_by_base = {}
+        for f in self.index.files:
+            if f["ext"] in (".cpp", ".cxx", ".cc", ".h", ".hpp", ".c"):
+                cpp_by_base.setdefault(
+                    os.path.splitext(os.path.basename(f["path"]))[0].lower(), f["path"])
+
         # ── 第 1 步: 构建依赖图节点和边 ──
         for f in self.index.files:
             node_id = f["path"]
             self.graph.add_node(node_id, f["lang"], f["path"])
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 content = ""
 
@@ -441,11 +463,9 @@ class MultilangMetrics:
                             self.graph.add_edge(node_id, target)
                     # 回退2: 文件名匹配
                     else:
-                        for other in self.index.by_lang("fortran"):
-                            other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
-                            if other_base == mod_name:
-                                self.graph.add_edge(node_id, other["path"])
-                                break
+                        target = fortran_base_map.get(mod_name)
+                        if target and target != node_id:
+                            self.graph.add_edge(node_id, target)
             elif f["ext"] == ".f":
                 # F77: call 语句 (2层解析: 子程序映射 → 文件名回退)
                 for m in re.finditer(r'^\s*call\s+(\w+)', content, re.MULTILINE | re.IGNORECASE):
@@ -457,11 +477,9 @@ class MultilangMetrics:
                             self.graph.add_edge(node_id, target)
                     # 回退: 文件名匹配
                     else:
-                        for other in self.index.by_lang("fortran"):
-                            other_base = os.path.splitext(os.path.basename(other["path"]))[0].lower()
-                            if other_base == called_name:
-                                self.graph.add_edge(node_id, other["path"])
-                                break
+                        target = fortran_base_map.get(called_name)
+                        if target and target != node_id:
+                            self.graph.add_edge(node_id, target)
 
             # ── SWIG: %include → C++ 头文件 ──
             elif f["lang"] == "swig":
@@ -530,12 +548,10 @@ class MultilangMetrics:
                 # Cross-language: Tcl calling C/C++ via package require for wrapped libs
                 # e.g., package require Bu (BRL-CAD C library)
                 for m in re.finditer(r'package\s+require\s+(?:::)?(\w+)', content):
-                    pkg_name = m.group(1)
-                    for cf in self.index.files:
-                        if cf["ext"] in (".cpp", ".cxx", ".cc", ".h", ".hpp", ".c"):
-                            cb = os.path.splitext(os.path.basename(cf["path"]))[0]
-                            if cb.lower() == pkg_name.lower() and cf["path"] != node_id:
-                                self.graph.add_edge(node_id, cf["path"])
+                    pkg_name = m.group(1).lower()
+                    target = cpp_by_base.get(pkg_name)
+                    if target and target != node_id:
+                        self.graph.add_edge(node_id, target)
 
         # ── 第 4 步: ★ pybind11 跨语言边（AST + BindingMap + ctypes 兜底）──
         try:
@@ -574,7 +590,7 @@ class MultilangMetrics:
                 # SWIG %module → Python 模块名（跨语言边: .i → Python）
                 for mod_name in sb.get("modules", []):
                     for pf in self.index.by_lang("python"):
-                        if mod_name in pf["path"] or mod_name in read_text_smart(pf["abs_path"]):
+                        if mod_name in pf["path"] or mod_name in self._read_text(pf["abs_path"]):
                             self.graph.add_edge(pf["path"], sf["path"])
 
                 # SWIG %include "header.h" → C++ 头文件（跨语言边: .i → .h）
@@ -645,7 +661,7 @@ class MultilangMetrics:
 
                 for mod_name in sb.get("modules", []):
                     for pf in self.index.by_lang("python"):
-                        if mod_name in pf["path"] or mod_name in read_text_smart(pf["abs_path"]):
+                        if mod_name in pf["path"] or mod_name in self._read_text(pf["abs_path"]):
                             self.graph.add_edge(pf["path"], sf_path)
 
                 for inc_path in sb.get("includes", []):
@@ -667,6 +683,12 @@ class MultilangMetrics:
                 self._swig_bindings[sf_path] = sb
 
     # ── 6 个评估维度 ──
+
+    def _calc_cached(self, name: str, fn):
+        """同一评估实例内缓存维度结果，避免 all_metrics 与 check_mlr 重复计算。"""
+        if name not in self._calc_cache:
+            self._calc_cache[name] = fn()
+        return self._calc_cache[name]
 
     def calc_coupling_intensity(self) -> tuple:
         """维度1: 跨语言调用强度
@@ -815,7 +837,11 @@ class MultilangMetrics:
         for cpp_path in cpp_files:
             cpp_base_lookup[os.path.splitext(os.path.basename(cpp_path))[0]].append(cpp_path)
 
+        _py_imports_cache = {}
+
         def _py_imports_cpp(py_path, py_content):
+            if py_path in _py_imports_cache:
+                return _py_imports_cache[py_path]
             """检测 Python 文件是否 import 了某个 C++ 模块，返回匹配的 cpp 路径列表"""
             result = []
             seen = set()
@@ -825,6 +851,7 @@ class MultilangMetrics:
                     if cpp_path not in seen:
                         seen.add(cpp_path)
                         result.append(cpp_path)
+            _py_imports_cache[py_path] = result
             return result
 
         # 预构建 py 文件 basename → [paths] 索引（PyImport 解析用）
@@ -837,7 +864,7 @@ class MultilangMetrics:
         def _get_py_content(py_path):
             if py_path not in _py_content_cache:
                 try:
-                    _py_content_cache[py_path] = read_text_smart(py_files[py_path]["abs_path"])
+                    _py_content_cache[py_path] = self._read_text(py_files[py_path]["abs_path"])
                 except Exception:
                     _py_content_cache[py_path] = ""
             return _py_content_cache[py_path]
@@ -878,25 +905,35 @@ class MultilangMetrics:
 
         has_cross_edges = bool(self.graph.cross_edges)
 
-        # ── 路径 1: BFS 跨语言最大深度 ──
+        # Path 1: cross-language BFS. Start only from cross-edge endpoints.
         if has_cross_edges:
-            for node_id in self.graph.nodes:
+            start_nodes = set()
+            for src, dst in self.graph.cross_edges:
+                start_nodes.add(src)
+                start_nodes.add(dst)
+            for node_id in start_nodes:
                 visited = {node_id}
-                queue = [(node_id, 0, [node_id])]
+                parent = {node_id: None}
+                queue = deque([(node_id, 0)])
                 while queue:
-                    node, depth, path = queue.pop(0)
+                    node, depth = queue.popleft()
                     if depth > max_depth:
                         max_depth = depth
-                        max_depth_path = path[:]
+                        path = []
+                        cur = node
+                        while cur is not None:
+                            path.append(cur)
+                            cur = parent.get(cur)
+                        max_depth_path = path[::-1]
                     for neighbor in self.graph.cross_successors(node):
                         if neighbor not in visited:
                             visited.add(neighbor)
-                            queue.append((neighbor, depth + 1, path + [neighbor]))
+                            parent[neighbor] = node
+                            queue.append((neighbor, depth + 1))
 
-        # ── 路径 2: 静态回调链检测 (Py→C++→Py→C++) ──
         for py_path, py_info in py_files.items():
             try:
-                py_content = read_text_smart(py_info["abs_path"])
+                py_content = self._read_text(py_info["abs_path"])
             except Exception:
                 continue
 
@@ -925,7 +962,7 @@ class MultilangMetrics:
 
             for cpp_path in cpp_targets:
                 try:
-                    cpp_content = read_text_smart(cpp_files[cpp_path]["abs_path"])
+                    cpp_content = self._read_text(cpp_files[cpp_path]["abs_path"])
                 except Exception:
                     continue
 
@@ -972,7 +1009,7 @@ class MultilangMetrics:
             if f["ext"] not in (".cpp", ".cxx", ".cc"):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             has_pybind_callback = bool(re.search(
@@ -998,7 +1035,7 @@ class MultilangMetrics:
                     py_content_of = None
                 for py_path, py_info in py_files.items():
                     try:
-                        pc = read_text_smart(py_info["abs_path"])
+                        pc = self._read_text(py_info["abs_path"])
                     except Exception:
                         continue
                     matched = _py_imports_cpp(py_path, pc)
@@ -1016,7 +1053,7 @@ class MultilangMetrics:
             if f["ext"] not in all_cpp_exts:
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
 
@@ -1031,7 +1068,7 @@ class MultilangMetrics:
             if not py_preds:
                 for py_path, py_info in py_files.items():
                     try:
-                        pc = read_text_smart(py_info["abs_path"])
+                        pc = self._read_text(py_info["abs_path"])
                     except Exception:
                         continue
                     if f["path"] in _py_imports_cpp(py_path, pc):
@@ -1073,7 +1110,7 @@ class MultilangMetrics:
         for f in self.index.files:
             if f["ext"] in (".h", ".hpp"):
                 try:
-                    content = read_text_smart(f["abs_path"])
+                    content = self._read_text(f["abs_path"])
                 except Exception:
                     continue
                 funcs = set()
@@ -1102,7 +1139,7 @@ class MultilangMetrics:
 
         for f in self.index.files:
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 content = ""
 
@@ -1184,7 +1221,7 @@ class MultilangMetrics:
         deductions = 0
         for f in self.index.files:
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             if "void*" in content or "c_void_p" in content:
@@ -1227,7 +1264,7 @@ class MultilangMetrics:
             if f["lang"] not in ("python", "tcl", "lua", "javascript"):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
 
@@ -1373,7 +1410,7 @@ class MultilangMetrics:
             if f["ext"] != ".cpp":
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             missing_defaults = re.findall(r"\.def\s*\(\s*[\"'\x60](\w+)[\"'\x60]\s*,\s*&\w+\s*\)", content)
@@ -1481,7 +1518,7 @@ class MultilangMetrics:
             if f["lang"] != "tcl":
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             violations = []
@@ -1508,7 +1545,7 @@ class MultilangMetrics:
                 })
 
         # MLR-005: 跨语言回调深度超标
-        depth_score, depth_info = self.calc_call_depth()
+        depth_score, depth_info = self._calc_cached('call_depth', self.calc_call_depth)
         if depth_info.get("max_depth", 0) >= 3:
             chains = depth_info.get("callback_chains", [])
             detail = f"最大跨语言回调深度 = {depth_info['max_depth']}，建议 ≤ 2"
@@ -1531,7 +1568,7 @@ class MultilangMetrics:
 
         # MLR-006: 热点模块
         from arch_quality.arch_python_ast import is_third_party_path
-        intensity_score, intensity_scores = self.calc_coupling_intensity()
+        intensity_score, intensity_scores = self._calc_cached('coupling_intensity', self.calc_coupling_intensity)
         hotspots_all = [n for n, s in intensity_scores.items() if s < 60]
         hotspots_tp = [n for n in hotspots_all if is_third_party_path(n)]
         hotspots = [n for n in hotspots_all if not is_third_party_path(n)]
@@ -1553,7 +1590,7 @@ class MultilangMetrics:
             })
 
         # MLR-007: TNT模块
-        radius_score, radii = self.calc_impact_radius()
+        radius_score, radii = self._calc_cached('impact_radius', self.calc_impact_radius)
         is_single = self.graph.is_single_language
         radius_threshold = 30 if is_single else 10
         tnt_modules = [n for n, v in radii.items() if isinstance(v, dict) and v.get("radius", 0) > radius_threshold]
@@ -1572,7 +1609,7 @@ class MultilangMetrics:
             if f["ext"] not in (".cpp", ".cxx", ".cc", ".h", ".hpp"):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             if not has_pybind11_context(content):
@@ -1606,7 +1643,7 @@ class MultilangMetrics:
             if f["ext"] not in (".c", ".cpp", ".py"):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
 
@@ -1693,7 +1730,7 @@ class MultilangMetrics:
             if f["ext"] != ".py":
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             loop_calls = len(re.findall(r"for.*\n.*(?:CDLL|ctypes|c_void_p)", content))
@@ -1711,7 +1748,7 @@ class MultilangMetrics:
         fortran_files = self.index.by_lang("fortran")
         for f in fortran_files:
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             if "iso_c_binding" not in content.lower() and re.search(r"subroutine|function", content):
@@ -1755,12 +1792,12 @@ class MultilangMetrics:
         weights = self.weights
         is_single = self.graph.is_single_language
 
-        dim1, dim1_detail = self.calc_coupling_intensity()
-        dim2, dim2_detail = self.calc_impact_radius()
-        dim3, dim3_detail = self.calc_call_depth()
-        dim4, dim4_detail = self.calc_binding_consistency()
-        dim5, dim5_detail = self.calc_script_boundary()
-        dim6, dim6_detail = self.calc_cross_lang_cycles()
+        dim1, dim1_detail = self._calc_cached('coupling_intensity', self.calc_coupling_intensity)
+        dim2, dim2_detail = self._calc_cached('impact_radius', self.calc_impact_radius)
+        dim3, dim3_detail = self._calc_cached('call_depth', self.calc_call_depth)
+        dim4, dim4_detail = self._calc_cached('binding_consistency', self.calc_binding_consistency)
+        dim5, dim5_detail = self._calc_cached('script_boundary', self.calc_script_boundary)
+        dim6, dim6_detail = self._calc_cached('cross_lang_cycles', self.calc_cross_lang_cycles)
 
         mlr_violations = self.check_mlr_rules()
 
