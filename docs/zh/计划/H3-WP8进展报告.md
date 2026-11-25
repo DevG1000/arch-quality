@@ -91,13 +91,14 @@ python scripts/run_agent_harness.py --case case-13-acl-good/14/15
 | 引擎 | 折数 | 通过 | 9 折 | 状态 |
 |:--|--:|--:|:--:|:--|
 | standard | 9 | 7 | 是 | PASS |
+| multilang | 9 | 7 | 是 | PASS |
 | numerical | 9 | 8 | 是 | PASS |
 | solver_physics | 9 | 7 | 是 | PASS |
 | geometry_consistency | 9 | 8 | 是 | PASS |
 | anti_corruption | 9 | 7 | 是 | PASS |
 | hpc | 9 | 8 | 是 | PASS |
 
-总计：**6 引擎有数据，6 项真正 9 折 PASS**；multilang 语料待扩。
+总计：**7 引擎有数据，7 项真正 9 折 PASS**；无 pending。
 
 验证：
 
@@ -108,6 +109,6 @@ tests/test_cross_validate_all.py → 5 passed
 ## 4. 下一步
 
 1. F4：补 ACL Agent Harness cases（good/flawed/non-ACL）与 `acl_dimension_fields`；
-2. F3：✅ 聚合层完成；standard/multilang 9 折语料待扩；
+2. F3：✅ 完成；7 引擎全部 9 折 PASS；
 3. F1：按元模型 §5.2 回填标准/多语言/数值/物理场 9 案例；
 4. E1：ACL 科学内核扩展。
