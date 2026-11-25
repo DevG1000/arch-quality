@@ -1,0 +1,470 @@
+{
+  "method": "Leave-One-Out Cross Validation (9-fold)",
+  "projects": [
+    "sp_moose",
+    "sp_openfoam",
+    "sp_kratos",
+    "sp_dealii",
+    "sp_mfem",
+    "sp_elmerfem",
+    "sp_freefem",
+    "sp_su2",
+    "sp_precice"
+  ],
+  "folds": [
+    {
+      "fold": "sp_moose",
+      "project_type": "framework_mp",
+      "train_projects": [
+        "sp_openfoam",
+        "sp_kratos",
+        "sp_dealii",
+        "sp_mfem",
+        "sp_elmerfem",
+        "sp_freefem",
+        "sp_su2",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 56.34,
+        "stdev": 7.94,
+        "min": 41.0,
+        "max": 69.25,
+        "range": 28.25
+      },
+      "test_overall": 70.5,
+      "test_mpr_count": 1,
+      "test_mpr_rules": [
+        "MPR-012"
+      ],
+      "in_range": false,
+      "outlier_distance": 14.16,
+      "unexpected_mpr": [],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-005",
+        "MPR-008",
+        "MPR-009"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 70,
+        "coupling_architecture": 50,
+        "extension_support": 100,
+        "data_transfer": 65
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 58.12,
+        "coupling_architecture": 61.25,
+        "extension_support": 36.75,
+        "data_transfer": 71.25
+      }
+    },
+    {
+      "fold": "sp_openfoam",
+      "project_type": "framework_mp",
+      "train_projects": [
+        "sp_moose",
+        "sp_kratos",
+        "sp_dealii",
+        "sp_mfem",
+        "sp_elmerfem",
+        "sp_freefem",
+        "sp_su2",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 60.03,
+        "stdev": 6.71,
+        "min": 50.75,
+        "max": 70.5,
+        "range": 19.75
+      },
+      "test_overall": 41.0,
+      "test_mpr_count": 5,
+      "test_mpr_rules": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-008",
+        "MPR-009",
+        "MPR-012"
+      ],
+      "in_range": false,
+      "outlier_distance": 19.03,
+      "unexpected_mpr": [
+        "MPR-001",
+        "MPR-003"
+      ],
+      "missing_mpr": [
+        "MPR-005"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 50,
+        "coupling_architecture": 35,
+        "extension_support": 20,
+        "data_transfer": 65
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 60.62,
+        "coupling_architecture": 63.12,
+        "extension_support": 46.75,
+        "data_transfer": 71.25
+      }
+    },
+    {
+      "fold": "sp_kratos",
+      "project_type": "framework_mp",
+      "train_projects": [
+        "sp_moose",
+        "sp_openfoam",
+        "sp_dealii",
+        "sp_mfem",
+        "sp_elmerfem",
+        "sp_freefem",
+        "sp_su2",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 56.5,
+        "stdev": 8.2,
+        "min": 41.0,
+        "max": 70.5,
+        "range": 29.5
+      },
+      "test_overall": 69.25,
+      "test_mpr_count": 2,
+      "test_mpr_rules": [
+        "MPR-008",
+        "MPR-009"
+      ],
+      "in_range": true,
+      "outlier_distance": 12.75,
+      "unexpected_mpr": [],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-005",
+        "MPR-012"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 70,
+        "coupling_architecture": 70,
+        "extension_support": 55,
+        "data_transfer": 85
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 58.12,
+        "coupling_architecture": 58.75,
+        "extension_support": 42.38,
+        "data_transfer": 68.75
+      }
+    },
+    {
+      "fold": "sp_dealii",
+      "project_type": "library_mp",
+      "train_projects": [
+        "sp_moose",
+        "sp_openfoam",
+        "sp_kratos",
+        "sp_mfem",
+        "sp_elmerfem",
+        "sp_freefem",
+        "sp_su2",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 58.41,
+        "stdev": 9.11,
+        "min": 41.0,
+        "max": 70.5,
+        "range": 29.5
+      },
+      "test_overall": 54.0,
+      "test_mpr_count": 2,
+      "test_mpr_rules": [
+        "MPR-008",
+        "MPR-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 4.41,
+      "unexpected_mpr": [],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-005",
+        "MPR-009"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 55,
+        "coupling_architecture": 60,
+        "extension_support": 37,
+        "data_transfer": 65
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 60.0,
+        "coupling_architecture": 60.0,
+        "extension_support": 44.62,
+        "data_transfer": 71.25
+      }
+    },
+    {
+      "fold": "sp_mfem",
+      "project_type": "library_mp",
+      "train_projects": [
+        "sp_moose",
+        "sp_openfoam",
+        "sp_kratos",
+        "sp_dealii",
+        "sp_elmerfem",
+        "sp_freefem",
+        "sp_su2",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 58.03,
+        "stdev": 9.23,
+        "min": 41.0,
+        "max": 70.5,
+        "range": 29.5
+      },
+      "test_overall": 57.0,
+      "test_mpr_count": 2,
+      "test_mpr_rules": [
+        "MPR-008",
+        "MPR-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 1.03,
+      "unexpected_mpr": [],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-005",
+        "MPR-009"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 55,
+        "coupling_architecture": 70,
+        "extension_support": 37,
+        "data_transfer": 65
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 60.0,
+        "coupling_architecture": 58.75,
+        "extension_support": 44.62,
+        "data_transfer": 71.25
+      }
+    },
+    {
+      "fold": "sp_elmerfem",
+      "project_type": "framework_mp",
+      "train_projects": [
+        "sp_moose",
+        "sp_openfoam",
+        "sp_kratos",
+        "sp_dealii",
+        "sp_mfem",
+        "sp_freefem",
+        "sp_su2",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 58.16,
+        "stdev": 9.2,
+        "min": 41.0,
+        "max": 70.5,
+        "range": 29.5
+      },
+      "test_overall": 56.0,
+      "test_mpr_count": 2,
+      "test_mpr_rules": [
+        "MPR-009",
+        "MPR-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 2.16,
+      "unexpected_mpr": [],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-005",
+        "MPR-008"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 55,
+        "coupling_architecture": 60,
+        "extension_support": 45,
+        "data_transfer": 65
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 60.0,
+        "coupling_architecture": 60.0,
+        "extension_support": 43.62,
+        "data_transfer": 71.25
+      }
+    },
+    {
+      "fold": "sp_freefem",
+      "project_type": "solver_mp",
+      "train_projects": [
+        "sp_moose",
+        "sp_openfoam",
+        "sp_kratos",
+        "sp_dealii",
+        "sp_mfem",
+        "sp_elmerfem",
+        "sp_su2",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 57.81,
+        "stdev": 9.23,
+        "min": 41.0,
+        "max": 70.5,
+        "range": 29.5
+      },
+      "test_overall": 58.75,
+      "test_mpr_count": 1,
+      "test_mpr_rules": [
+        "MPR-008"
+      ],
+      "in_range": true,
+      "outlier_distance": 0.94,
+      "unexpected_mpr": [],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-005",
+        "MPR-009",
+        "MPR-012"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 55,
+        "coupling_architecture": 75,
+        "extension_support": 30,
+        "data_transfer": 75
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 60.0,
+        "coupling_architecture": 58.12,
+        "extension_support": 45.5,
+        "data_transfer": 70.0
+      }
+    },
+    {
+      "fold": "sp_su2",
+      "project_type": "solver_mp",
+      "train_projects": [
+        "sp_moose",
+        "sp_openfoam",
+        "sp_kratos",
+        "sp_dealii",
+        "sp_mfem",
+        "sp_elmerfem",
+        "sp_freefem",
+        "sp_precice"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 57.16,
+        "stdev": 8.95,
+        "min": 41.0,
+        "max": 70.5,
+        "range": 29.5
+      },
+      "test_overall": 64.0,
+      "test_mpr_count": 3,
+      "test_mpr_rules": [
+        "MPR-008",
+        "MPR-009",
+        "MPR-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 6.84,
+      "unexpected_mpr": [],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-005"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 70,
+        "coupling_architecture": 70,
+        "extension_support": 50,
+        "data_transfer": 65
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 58.12,
+        "coupling_architecture": 58.75,
+        "extension_support": 43.0,
+        "data_transfer": 71.25
+      }
+    },
+    {
+      "fold": "sp_precice",
+      "project_type": "coupling_lib",
+      "train_projects": [
+        "sp_moose",
+        "sp_openfoam",
+        "sp_kratos",
+        "sp_dealii",
+        "sp_mfem",
+        "sp_elmerfem",
+        "sp_freefem",
+        "sp_su2"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 58.81,
+        "stdev": 8.83,
+        "min": 41.0,
+        "max": 70.5,
+        "range": 29.5
+      },
+      "test_overall": 50.75,
+      "test_mpr_count": 3,
+      "test_mpr_rules": [
+        "MPR-005",
+        "MPR-008",
+        "MPR-009"
+      ],
+      "in_range": true,
+      "outlier_distance": 8.06,
+      "unexpected_mpr": [
+        "MPR-005"
+      ],
+      "missing_mpr": [
+        "MPR-001",
+        "MPR-003",
+        "MPR-012"
+      ],
+      "test_dimensions": {
+        "boundary_integrity": 55,
+        "coupling_architecture": 50,
+        "extension_support": 20,
+        "data_transfer": 85
+      },
+      "train_dimension_means": {
+        "boundary_integrity": 60.0,
+        "coupling_architecture": 61.25,
+        "extension_support": 46.75,
+        "data_transfer": 68.75
+      }
+    }
+  ],
+  "summary": {
+    "total_folds": 9,
+    "in_range_count": 7,
+    "generalization_rate": "7/9",
+    "generalization_verdict": "WARNING"
+  },
+  "dimension": "solver_physics",
+  "criterion": "LOOCV in-range (train min..max)"
+}

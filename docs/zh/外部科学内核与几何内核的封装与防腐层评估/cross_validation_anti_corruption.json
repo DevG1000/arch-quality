@@ -1,0 +1,503 @@
+{
+  "method": "Leave-One-Out Cross Validation (9-fold)",
+  "projects": [
+    "acl_salome_geom",
+    "acl_gmsh",
+    "acl_freecad",
+    "acl_elmerfem",
+    "acl_synth_healthy",
+    "acl_occt",
+    "acl_kicad",
+    "acl_synth_direct",
+    "acl_synth_scatter"
+  ],
+  "folds": [
+    {
+      "fold": "acl_salome_geom",
+      "project_type": "kernel_wrap",
+      "train_projects": [
+        "acl_gmsh",
+        "acl_freecad",
+        "acl_elmerfem",
+        "acl_synth_healthy",
+        "acl_occt",
+        "acl_kicad",
+        "acl_synth_direct",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 42.81,
+        "stdev": 17.9,
+        "min": 24.0,
+        "max": 87.5,
+        "range": 63.5
+      },
+      "test_overall": 47.5,
+      "test_acl_count": 5,
+      "test_acl_rules": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-005",
+        "ACL-010",
+        "ACL-011"
+      ],
+      "in_range": true,
+      "outlier_distance": 4.69,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-003",
+        "ACL-004",
+        "ACL-006",
+        "ACL-007",
+        "ACL-012"
+      ],
+      "test_dimensions": {
+        "external_access": 30,
+        "wrapper_coverage": 50,
+        "data_exchange": 70,
+        "fidelity": 40
+      },
+      "train_dimension_means": {
+        "external_access": 51.25,
+        "wrapper_coverage": 37.5,
+        "data_exchange": 39.38,
+        "fidelity": 40.0
+      }
+    },
+    {
+      "fold": "acl_gmsh",
+      "project_type": "mesh_tool",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_freecad",
+        "acl_elmerfem",
+        "acl_synth_healthy",
+        "acl_occt",
+        "acl_kicad",
+        "acl_synth_direct",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 45.75,
+        "stdev": 16.44,
+        "min": 35.0,
+        "max": 87.5,
+        "range": 52.5
+      },
+      "test_overall": 24.0,
+      "test_acl_count": 7,
+      "test_acl_rules": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-005",
+        "ACL-006",
+        "ACL-007",
+        "ACL-011",
+        "ACL-012"
+      ],
+      "in_range": false,
+      "outlier_distance": 21.75,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-003",
+        "ACL-004",
+        "ACL-010"
+      ],
+      "test_dimensions": {
+        "external_access": 30,
+        "wrapper_coverage": 50,
+        "data_exchange": 0,
+        "fidelity": 30
+      },
+      "train_dimension_means": {
+        "external_access": 51.25,
+        "wrapper_coverage": 37.5,
+        "data_exchange": 48.12,
+        "fidelity": 41.25
+      }
+    },
+    {
+      "fold": "acl_freecad",
+      "project_type": "kernel_app",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_gmsh",
+        "acl_elmerfem",
+        "acl_synth_healthy",
+        "acl_occt",
+        "acl_kicad",
+        "acl_synth_direct",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 44.0,
+        "stdev": 17.86,
+        "min": 24.0,
+        "max": 87.5,
+        "range": 63.5
+      },
+      "test_overall": 38.0,
+      "test_acl_count": 5,
+      "test_acl_rules": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-005",
+        "ACL-007",
+        "ACL-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 6.0,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-003",
+        "ACL-004",
+        "ACL-006",
+        "ACL-010",
+        "ACL-011"
+      ],
+      "test_dimensions": {
+        "external_access": 30,
+        "wrapper_coverage": 50,
+        "data_exchange": 30,
+        "fidelity": 50
+      },
+      "train_dimension_means": {
+        "external_access": 51.25,
+        "wrapper_coverage": 37.5,
+        "data_exchange": 44.38,
+        "fidelity": 38.75
+      }
+    },
+    {
+      "fold": "acl_elmerfem",
+      "project_type": "fem_suite",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_gmsh",
+        "acl_freecad",
+        "acl_synth_healthy",
+        "acl_occt",
+        "acl_kicad",
+        "acl_synth_direct",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 43.81,
+        "stdev": 17.91,
+        "min": 24.0,
+        "max": 87.5,
+        "range": 63.5
+      },
+      "test_overall": 39.5,
+      "test_acl_count": 6,
+      "test_acl_rules": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-006",
+        "ACL-007",
+        "ACL-010",
+        "ACL-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 4.31,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-003",
+        "ACL-004",
+        "ACL-005",
+        "ACL-011"
+      ],
+      "test_dimensions": {
+        "external_access": 60,
+        "wrapper_coverage": 50,
+        "data_exchange": 30,
+        "fidelity": 20
+      },
+      "train_dimension_means": {
+        "external_access": 47.5,
+        "wrapper_coverage": 37.5,
+        "data_exchange": 44.38,
+        "fidelity": 42.5
+      }
+    },
+    {
+      "fold": "acl_synth_healthy",
+      "project_type": "synthetic_good",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_gmsh",
+        "acl_freecad",
+        "acl_elmerfem",
+        "acl_occt",
+        "acl_kicad",
+        "acl_synth_direct",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 37.81,
+        "stdev": 6.98,
+        "min": 24.0,
+        "max": 47.5,
+        "range": 23.5
+      },
+      "test_overall": 87.5,
+      "test_acl_count": 2,
+      "test_acl_rules": [
+        "ACL-003",
+        "ACL-010"
+      ],
+      "in_range": false,
+      "outlier_distance": 49.69,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-004",
+        "ACL-005",
+        "ACL-006",
+        "ACL-007",
+        "ACL-011",
+        "ACL-012"
+      ],
+      "test_dimensions": {
+        "external_access": 100,
+        "wrapper_coverage": 50,
+        "data_exchange": 100,
+        "fidelity": 80
+      },
+      "train_dimension_means": {
+        "external_access": 42.5,
+        "wrapper_coverage": 37.5,
+        "data_exchange": 35.62,
+        "fidelity": 35.0
+      }
+    },
+    {
+      "fold": "acl_occt",
+      "project_type": "kernel",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_gmsh",
+        "acl_freecad",
+        "acl_elmerfem",
+        "acl_synth_healthy",
+        "acl_kicad",
+        "acl_synth_direct",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 44.19,
+        "stdev": 17.79,
+        "min": 24.0,
+        "max": 87.5,
+        "range": 63.5
+      },
+      "test_overall": 36.5,
+      "test_acl_count": 5,
+      "test_acl_rules": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-005",
+        "ACL-007",
+        "ACL-011"
+      ],
+      "in_range": true,
+      "outlier_distance": 7.69,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-003",
+        "ACL-004",
+        "ACL-006",
+        "ACL-010",
+        "ACL-012"
+      ],
+      "test_dimensions": {
+        "external_access": 30,
+        "wrapper_coverage": 50,
+        "data_exchange": 25,
+        "fidelity": 50
+      },
+      "train_dimension_means": {
+        "external_access": 51.25,
+        "wrapper_coverage": 37.5,
+        "data_exchange": 45.0,
+        "fidelity": 38.75
+      }
+    },
+    {
+      "fold": "acl_kicad",
+      "project_type": "eda",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_gmsh",
+        "acl_freecad",
+        "acl_elmerfem",
+        "acl_synth_healthy",
+        "acl_occt",
+        "acl_synth_direct",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 42.88,
+        "stdev": 17.92,
+        "min": 24.0,
+        "max": 87.5,
+        "range": 63.5
+      },
+      "test_overall": 47.0,
+      "test_acl_count": 4,
+      "test_acl_rules": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-007",
+        "ACL-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 4.12,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-003",
+        "ACL-004",
+        "ACL-005",
+        "ACL-006",
+        "ACL-010",
+        "ACL-011"
+      ],
+      "test_dimensions": {
+        "external_access": 60,
+        "wrapper_coverage": 50,
+        "data_exchange": 30,
+        "fidelity": 50
+      },
+      "train_dimension_means": {
+        "external_access": 47.5,
+        "wrapper_coverage": 37.5,
+        "data_exchange": 44.38,
+        "fidelity": 38.75
+      }
+    },
+    {
+      "fold": "acl_synth_direct",
+      "project_type": "synthetic_bad",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_gmsh",
+        "acl_freecad",
+        "acl_elmerfem",
+        "acl_synth_healthy",
+        "acl_occt",
+        "acl_kicad",
+        "acl_synth_scatter"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 44.38,
+        "stdev": 17.7,
+        "min": 24.0,
+        "max": 87.5,
+        "range": 63.5
+      },
+      "test_overall": 35.0,
+      "test_acl_count": 7,
+      "test_acl_rules": [
+        "ACL-001",
+        "ACL-002",
+        "ACL-003",
+        "ACL-004",
+        "ACL-005",
+        "ACL-006",
+        "ACL-010"
+      ],
+      "in_range": true,
+      "outlier_distance": 9.38,
+      "unexpected_acl": [
+        "ACL-004"
+      ],
+      "missing_acl": [
+        "ACL-007",
+        "ACL-011",
+        "ACL-012"
+      ],
+      "test_dimensions": {
+        "external_access": 0,
+        "wrapper_coverage": 0,
+        "data_exchange": 100,
+        "fidelity": 20
+      },
+      "train_dimension_means": {
+        "external_access": 55.0,
+        "wrapper_coverage": 43.75,
+        "data_exchange": 35.62,
+        "fidelity": 42.5
+      }
+    },
+    {
+      "fold": "acl_synth_scatter",
+      "project_type": "synthetic_bad",
+      "train_projects": [
+        "acl_salome_geom",
+        "acl_gmsh",
+        "acl_freecad",
+        "acl_elmerfem",
+        "acl_synth_healthy",
+        "acl_occt",
+        "acl_kicad",
+        "acl_synth_direct"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 44.38,
+        "stdev": 17.7,
+        "min": 24.0,
+        "max": 87.5,
+        "range": 63.5
+      },
+      "test_overall": 35.0,
+      "test_acl_count": 7,
+      "test_acl_rules": [
+        "ACL-002",
+        "ACL-003",
+        "ACL-006",
+        "ACL-007",
+        "ACL-010",
+        "ACL-011",
+        "ACL-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 9.38,
+      "unexpected_acl": [],
+      "missing_acl": [
+        "ACL-001",
+        "ACL-004",
+        "ACL-005"
+      ],
+      "test_dimensions": {
+        "external_access": 100,
+        "wrapper_coverage": 0,
+        "data_exchange": 0,
+        "fidelity": 20
+      },
+      "train_dimension_means": {
+        "external_access": 42.5,
+        "wrapper_coverage": 43.75,
+        "data_exchange": 48.12,
+        "fidelity": 42.5
+      }
+    }
+  ],
+  "summary": {
+    "total_folds": 9,
+    "in_range_count": 7,
+    "generalization_rate": "7/9",
+    "generalization_verdict": "PASS"
+  },
+  "dimension": "anti_corruption",
+  "criterion": "LOOCV in-range (train min..max)"
+}

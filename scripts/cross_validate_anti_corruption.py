@@ -216,6 +216,11 @@ def main():
             'generalization_verdict': ('PASS' if in_range_count >= 7 else 'FAIL'),
         },
     }
+    report['dimension'] = 'anti_corruption'
+    report['criterion'] = 'LOOCV in-range (train min..max)'
+    json_path = os.path.join(REPORT_DIR, 'cross_validation_anti_corruption.json')
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
     report_path = os.path.join(REPORT_DIR, '交叉验证报告_anti_corruption.md')
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(generate_report_markdown(report))

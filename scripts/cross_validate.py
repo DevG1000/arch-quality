@@ -1,4 +1,4 @@
-"""
+﻿"""
 k-fold 交叉验证：数值精度评估工具泛化能力检验
 
 方法：Leave-One-Out Cross Validation (LOOCV)
@@ -250,6 +250,11 @@ def main():
         }
     }
 
+    report['dimension'] = 'numerical'
+    report['criterion'] = 'LOOCV in-range (train min..max)'
+    json_path = os.path.join(REPORT_DIR, 'cross_validation_numerical.json')
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
     report_path = os.path.join(PROJECT_ROOT, 'docs', 'zh', '交叉验证报告.md')
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(generate_report_markdown(report))

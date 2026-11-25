@@ -77,9 +77,36 @@ python scripts/run_agent_harness.py --case case-13-acl-good/14/15
 → 3/3 PASS
 ```
 
+## 3.2 F3 实施内容
+
+新增 `scripts/cross_validate_all.py`：
+
+- 读取 numerical / solver / GCS / ACL / HPC 的 JSON 结果；
+- 统一为 LOOCV in-range 口径；
+- 7/9 比率阈值 + `nine_fold` 标记；
+- 输出 `H3-WP8-F3-cross-validation.json` / `.md`。
+
+当前汇总：
+
+| 引擎 | 折数 | 通过 | 9 折 | 状态 |
+|:--|--:|--:|:--:|:--|
+| numerical | 5 | 4 | 否 | PARTIAL |
+| solver_physics | 9 | 7 | 是 | PASS |
+| geometry_consistency | 9 | 8 | 是 | PASS |
+| anti_corruption | 9 | 7 | 是 | PASS |
+| hpc | 9 | 8 | 是 | PASS |
+
+总计：**5 引擎有数据，4 项真正 9 折 PASS**；standard/multilang 语料待扩。
+
+验证：
+
+```text
+tests/test_cross_validate_all.py → 5 passed
+```
+
 ## 4. 下一步
 
 1. F4：补 ACL Agent Harness cases（good/flawed/non-ACL）与 `acl_dimension_fields`；
-2. F3：统一 5 个交叉验证脚本输出，汇总 9 折 LOOCV 7/9；
+2. F3：✅ 聚合层完成；standard/multilang 9 折语料待扩；
 3. F1：按元模型 §5.2 回填标准/多语言/数值/物理场 9 案例；
 4. E1：ACL 科学内核扩展。
