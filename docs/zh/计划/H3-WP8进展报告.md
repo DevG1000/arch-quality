@@ -90,13 +90,14 @@ python scripts/run_agent_harness.py --case case-13-acl-good/14/15
 
 | 引擎 | 折数 | 通过 | 9 折 | 状态 |
 |:--|--:|--:|:--:|:--|
+| standard | 9 | 7 | 是 | PASS |
 | numerical | 9 | 8 | 是 | PASS |
 | solver_physics | 9 | 7 | 是 | PASS |
 | geometry_consistency | 9 | 8 | 是 | PASS |
 | anti_corruption | 9 | 7 | 是 | PASS |
 | hpc | 9 | 8 | 是 | PASS |
 
-总计：**5 引擎有数据，5 项真正 9 折 PASS**；standard/multilang 语料待扩。
+总计：**6 引擎有数据，6 项真正 9 折 PASS**；multilang 语料待扩。
 
 验证：
 

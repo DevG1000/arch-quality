@@ -14,6 +14,7 @@ OUT_JSON = os.path.join(OUT_DIR, "H3-WP8-F3-cross-validation.json")
 OUT_MD = os.path.join(OUT_DIR, "H3-WP8-F3-cross-validation.md")
 
 INPUTS = {
+    "standard": os.path.join(ROOT, "docs", "zh", "cross_validation_standard.json"),
     "numerical": os.path.join(ROOT, "docs", "zh", "cross_validation_numerical.json"),
     "solver_physics": os.path.join(
         ROOT, "docs", "zh", "求解器和物理场模块化架构模式识别评估",
@@ -27,7 +28,7 @@ INPUTS = {
     "hpc": os.path.join(
         ROOT, "docs", "zh", "并行异构计算架构评估", "hpc_cross_validation.json"),
 }
-PENDING = ["standard", "multilang"]
+PENDING = ["multilang"]
 
 
 def normalize(name, data):
@@ -83,7 +84,7 @@ def build_summary():
                 and all(e.get("status") == "PASS" for e in loaded)
                 else "PASS_WITH_RESIDUAL"
             ),
-            "note": "numerical now 9-fold; standard/multilang LOOCV corpus pending",
+            "note": "standard/numerical are 9-fold; multilang LOOCV corpus pending",
         },
     }
 

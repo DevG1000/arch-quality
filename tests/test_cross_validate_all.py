@@ -34,11 +34,12 @@ class TestNormalize(unittest.TestCase):
 class TestAggregate(unittest.TestCase):
     def test_current_summary(self):
         s = cross_validate_all.build_summary()
-        self.assertEqual(s["summary"]["engines_with_data"], 5)
-        self.assertEqual(s["summary"]["nine_fold_pass_count"], 5)
-        self.assertIn("standard", s["pending_engines"])
+        self.assertEqual(s["summary"]["engines_with_data"], 6)
+        self.assertEqual(s["summary"]["nine_fold_pass_count"], 6)
+        self.assertNotIn("standard", s["pending_engines"])
         self.assertIn("multilang", s["pending_engines"])
         self.assertEqual(s["engines"]["numerical"]["status"], "PASS")
+        self.assertEqual(s["engines"]["standard"]["status"], "PASS")
 
     def test_markdown_contains_table(self):
         md = cross_validate_all.render_md(cross_validate_all.build_summary())

@@ -1,7 +1,17 @@
 {
-  "generated_at": "2026-11-25 15:39:56",
+  "generated_at": "2026-11-25 16:16:40",
   "criterion": "LOOCV in-range; 7/9 rate threshold; nine_fold requires n>=9",
   "engines": {
+    "standard": {
+      "engine": "standard",
+      "fold_count": 9,
+      "passed": 7,
+      "rate": 0.7778,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "PASS",
+      "status": "PASS"
+    },
     "numerical": {
       "engine": "numerical",
       "fold_count": 9,
@@ -54,14 +64,13 @@
     }
   },
   "pending_engines": [
-    "standard",
     "multilang"
   ],
   "summary": {
-    "engines_with_data": 5,
-    "rate_pass_count": 5,
-    "nine_fold_pass_count": 5,
+    "engines_with_data": 6,
+    "rate_pass_count": 6,
+    "nine_fold_pass_count": 6,
     "kpi_status": "PASS_WITH_RESIDUAL",
-    "note": "numerical now 9-fold; standard/multilang LOOCV corpus pending"
+    "note": "standard/numerical are 9-fold; multilang LOOCV corpus pending"
   }
 }

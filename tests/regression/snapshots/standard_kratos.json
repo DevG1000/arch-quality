@@ -1,0 +1,21 @@
+{
+  "snapshot_date": "2026-11-25",
+  "root_path": "D:\\opensource\\Kratos",
+  "standard_overall": 45.53,
+  "dimensions": {
+    "structural": 48.41,
+    "design": 73.18,
+    "documentation": 35.0,
+    "evolution": 22.86
+  },
+  "file_count": 8512,
+  "sar_violations": {
+    "SAR-002": 1,
+    "SAR-004": 1,
+    "SAR-005": 1,
+    "SAR-006": 1010,
+    "SAR-007": 154,
+    "SAR-010": 1,
+    "SAR-012": 1
+  }
+}

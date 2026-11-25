@@ -1,0 +1,20 @@
+{
+  "snapshot_date": "2026-11-25",
+  "root_path": "D:\\opensource\\preCICE",
+  "standard_overall": 51.66,
+  "dimensions": {
+    "structural": 62.36,
+    "design": 64.46,
+    "documentation": 44.0,
+    "evolution": 32.14
+  },
+  "file_count": 765,
+  "sar_violations": {
+    "SAR-002": 1,
+    "SAR-005": 1,
+    "SAR-006": 15,
+    "SAR-007": 1,
+    "SAR-010": 1,
+    "SAR-012": 1
+  }
+}

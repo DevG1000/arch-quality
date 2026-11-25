@@ -1,0 +1,21 @@
+{
+  "snapshot_date": "2026-11-25",
+  "root_path": "D:\\opensource\\SU2",
+  "standard_overall": 39.97,
+  "dimensions": {
+    "structural": 36.14,
+    "design": 68.06,
+    "documentation": 32.0,
+    "evolution": 22.86
+  },
+  "file_count": 1819,
+  "sar_violations": {
+    "SAR-002": 1,
+    "SAR-004": 1,
+    "SAR-005": 1,
+    "SAR-006": 51,
+    "SAR-007": 57,
+    "SAR-010": 1,
+    "SAR-012": 1
+  }
+}

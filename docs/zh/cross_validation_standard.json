@@ -1,0 +1,96 @@
+{
+  "dimension": "standard",
+  "method": "Leave-One-Out Cross Validation (9-fold)",
+  "criterion": "LOOCV overall in [train_min, train_max]",
+  "projects": [
+    "arch-quality",
+    "brl-cad",
+    "freecad-cam",
+    "openfoam-apps",
+    "elmerfem",
+    "mfem",
+    "kratos",
+    "su2",
+    "precice"
+  ],
+  "folds": [
+    {
+      "fold": "arch-quality",
+      "test_overall": 54.78,
+      "train_min": 34.96,
+      "train_max": 51.66,
+      "in_range": false,
+      "outlier_distance": 3.12
+    },
+    {
+      "fold": "brl-cad",
+      "test_overall": 37.5,
+      "train_min": 34.96,
+      "train_max": 54.78,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "freecad-cam",
+      "test_overall": 34.96,
+      "train_min": 37.5,
+      "train_max": 54.78,
+      "in_range": false,
+      "outlier_distance": 2.54
+    },
+    {
+      "fold": "openfoam-apps",
+      "test_overall": 41.55,
+      "train_min": 34.96,
+      "train_max": 54.78,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "elmerfem",
+      "test_overall": 38.61,
+      "train_min": 34.96,
+      "train_max": 54.78,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "mfem",
+      "test_overall": 38.74,
+      "train_min": 34.96,
+      "train_max": 54.78,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "kratos",
+      "test_overall": 45.53,
+      "train_min": 34.96,
+      "train_max": 54.78,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "su2",
+      "test_overall": 39.97,
+      "train_min": 34.96,
+      "train_max": 54.78,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "precice",
+      "test_overall": 51.66,
+      "train_min": 34.96,
+      "train_max": 54.78,
+      "in_range": true,
+      "outlier_distance": 0.0
+    }
+  ],
+  "summary": {
+    "total_folds": 9,
+    "in_range_count": 7,
+    "generalization_rate": "7/9",
+    "generalization_verdict": "PASS"
+  }
+}
