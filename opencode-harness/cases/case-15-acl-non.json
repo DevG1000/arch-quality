@@ -1,0 +1,13 @@
+{
+  "id": "case-15-acl-non",
+  "name": "非 ACL 项目判定",
+  "description": "验证 agent 对无外部内核信号的普通项目判定为非 ACL",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_standard",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_standard 目录直接运行外部内核防腐层评估命令：python -m arch_quality.arch_metrics_anti_corruption D:\\opensource\\arch-quality\\tests\\mutation\\projects\\good_project_standard --json，然后汇报 overall 评分与 is_acl 判断。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_acl": false,
+    "overall_range": null,
+    "dimension_fields": [],
+    "max_retries": 2
+  }
+}

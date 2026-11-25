@@ -51,7 +51,7 @@
     "data_transfer"
   ],
   "assert_mode": "log",
-  "version": "1.2",
+  "version": "1.3",
   "gcs_dimension_fields": [
     "geometry_kernel_consistency",
     "precision_unit_consistency",
@@ -69,7 +69,8 @@
     "arch-quality-multilang",
     "arch-quality-template",
     "python -m arch_quality.arch_metrics_hpc",
-    "python -m arch_quality.arch_metrics_fossil_code"
+    "python -m arch_quality.arch_metrics_fossil_code",
+    "python -m arch_quality.arch_metrics_anti_corruption"
   ],
   "hpc_dimension_fields": [
     "backend_consistency",
@@ -82,5 +83,11 @@
     "dead",
     "clone",
     "debt"
+  ],
+  "acl_dimension_fields": [
+    "external_access",
+    "wrapper_coverage",
+    "data_exchange",
+    "fidelity"
   ]
 }

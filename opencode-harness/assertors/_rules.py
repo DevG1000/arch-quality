@@ -38,6 +38,9 @@ _DEFAULTS = {
         "geometry_kernel_consistency", "precision_unit_consistency",
         "scidata_organization", "data_access_norm",
     ],
+    "acl_dimension_fields": [
+        "external_access", "wrapper_coverage", "data_exchange", "fidelity",
+    ],
     "hpc_dimension_fields": [
         "backend_consistency", "mpi_halo", "load_topology", "hybrid_parallel",
     ],
@@ -49,6 +52,7 @@ _DEFAULTS = {
         "python -m arch_quality.arch_metrics_template",
         "python -m arch_quality.arch_metrics_solver_physics",
         "python -m arch_quality.arch_metrics_hpc",
+        "python -m arch_quality.arch_metrics_anti_corruption",
     ],
     "assert_mode": "log",
 }

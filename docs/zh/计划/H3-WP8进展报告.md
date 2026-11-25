@@ -50,6 +50,33 @@ python scripts/fetch_project.py --check-all   → exit 0
 tests/test_fetch_project.py                   → 3 passed
 ```
 
+## 3.1 F4 实施内容
+
+新增 ACL Harness 三例：
+
+| case | 项目 | 结果 |
+|:--|:--|:--|
+| case-13-acl-good | good_project_acl | **PASS**，overall 92.5 |
+| case-14-acl-flawed | bad_project_acl | **PASS**，overall 14.0 |
+| case-15-acl-non | good_project_standard | **PASS**，is_acl=false |
+
+配套：
+
+- `rules.json` v1.3 新增 `acl_dimension_fields`；
+- `single_engine_prefixes` 加入 anti-corruption 引擎；
+- `assert_not_applicable` 支持 `is_acl=false`；
+- 新增 `tests/test_harness_acl.py`；
+- 新增合成 `bad_project_acl`（直接 OCCT 调用 + STEP 直连）。
+
+验证：
+
+```text
+tests/test_agent_assert.py + test_harness_acl.py + test_harness_gcs.py + test_fetch_project.py
+→ 46 passed
+python scripts/run_agent_harness.py --case case-13-acl-good/14/15
+→ 3/3 PASS
+```
+
 ## 4. 下一步
 
 1. F4：补 ACL Agent Harness cases（good/flawed/non-ACL）与 `acl_dimension_fields`；

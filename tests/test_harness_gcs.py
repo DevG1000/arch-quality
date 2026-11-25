@@ -56,7 +56,7 @@ class TestRulesUpdate(unittest.TestCase):
 
     def test_rules_has_gcs_fields(self):
         rules = json.load(open(os.path.join(HARNESS, "rules.json"), encoding="utf-8"))
-        self.assertEqual(rules["version"], "1.1")
+        self.assertGreaterEqual(float(rules["version"]), 1.1)
         self.assertEqual(len(rules.get("gcs_dimension_fields", [])), 4)
         self.assertIn("geometry_kernel_consistency", rules["gcs_dimension_fields"])
         self.assertGreaterEqual(len(rules.get("single_engine_prefixes", [])), 6)
