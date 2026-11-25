@@ -35,10 +35,10 @@ class TestAggregate(unittest.TestCase):
     def test_current_summary(self):
         s = cross_validate_all.build_summary()
         self.assertEqual(s["summary"]["engines_with_data"], 5)
-        self.assertEqual(s["summary"]["nine_fold_pass_count"], 4)
+        self.assertEqual(s["summary"]["nine_fold_pass_count"], 5)
         self.assertIn("standard", s["pending_engines"])
         self.assertIn("multilang", s["pending_engines"])
-        self.assertEqual(s["engines"]["numerical"]["status"], "PARTIAL")
+        self.assertEqual(s["engines"]["numerical"]["status"], "PASS")
 
     def test_markdown_contains_table(self):
         md = cross_validate_all.render_md(cross_validate_all.build_summary())

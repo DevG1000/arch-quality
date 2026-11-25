@@ -22,15 +22,23 @@ PROJECTS = {
     'FreeFEM': r'D:\opensource\FreeFEM-sources',
     'MFEM': r'D:\opensource\mfem',
     'FEniCSx': r'D:\opensource\dolfinx',
+    'Code_Aster': r'D:\opensource\code_aster',
+    'ElmerFEM': r'D:\OPENSOURCE\ElmerFEM',
+    'Kratos': r'D:\opensource\Kratos',
+    'SU2': r'D:\opensource\SU2',
 }
 
 # 项目类型分类（用于分析评分模式）
 PROJECT_TYPES = {
-    'MOOSE': 'large_library',      # 大型多物理场框架
-    'deal.II': 'large_library',    # 大型 FEM 库
-    'FreeFEM': 'small_solver',     # 小型 PDE 求解器
-    'MFEM': 'small_library',       # 小型 FEM 库
-    'FEniCSx': 'small_solver',     # 小型 FEM 框架
+    'MOOSE': 'large_library',
+    'deal.II': 'large_library',
+    'FreeFEM': 'small_solver',
+    'MFEM': 'small_library',
+    'FEniCSx': 'small_solver',
+    'Code_Aster': 'large_library',
+    'ElmerFEM': 'large_library',
+    'Kratos': 'large_library',
+    'SU2': 'small_solver',
 }
 
 

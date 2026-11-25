@@ -5,7 +5,11 @@
     "deal.II",
     "FreeFEM",
     "MFEM",
-    "FEniCSx"
+    "FEniCSx",
+    "Code_Aster",
+    "ElmerFEM",
+    "Kratos",
+    "SU2"
   ],
   "folds": [
     {
@@ -15,12 +19,16 @@
         "deal.II",
         "FreeFEM",
         "MFEM",
-        "FEniCSx"
+        "FEniCSx",
+        "Code_Aster",
+        "ElmerFEM",
+        "Kratos",
+        "SU2"
       ],
       "train_metrics": {
-        "count": 4,
-        "mean": 83.58,
-        "stdev": 21.51,
+        "count": 8,
+        "mean": 87.35,
+        "stdev": 15.67,
         "min": 46.33,
         "max": 96.0,
         "range": 49.67
@@ -31,7 +39,7 @@
         "NVR-003"
       ],
       "in_range": true,
-      "outlier_distance": 12.42,
+      "outlier_distance": 8.65,
       "unexpected_nvr": [],
       "missing_nvr": [
         "NVR-001",
@@ -49,12 +57,12 @@
         "numerical_debt": 100.0
       },
       "train_dimension_means": {
-        "numerical_stability": 92.5,
-        "roundoff_sensitivity": 73.75,
-        "mms_verification": 75.0,
-        "error_estimation": 82.5,
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 67.5,
+        "mms_verification": 87.5,
+        "error_estimation": 87.5,
         "regression_coverage": 100.0,
-        "numerical_debt": 83.33
+        "numerical_debt": 91.67
       }
     },
     {
@@ -64,12 +72,16 @@
         "MOOSE",
         "FreeFEM",
         "MFEM",
-        "FEniCSx"
+        "FEniCSx",
+        "Code_Aster",
+        "ElmerFEM",
+        "Kratos",
+        "SU2"
       ],
       "train_metrics": {
-        "count": 4,
-        "mean": 83.58,
-        "stdev": 21.51,
+        "count": 8,
+        "mean": 87.35,
+        "stdev": 15.67,
         "min": 46.33,
         "max": 96.0,
         "range": 49.67
@@ -80,7 +92,7 @@
         "NVR-003"
       ],
       "in_range": true,
-      "outlier_distance": 12.42,
+      "outlier_distance": 8.65,
       "unexpected_nvr": [],
       "missing_nvr": [
         "NVR-001",
@@ -98,12 +110,12 @@
         "numerical_debt": 100.0
       },
       "train_dimension_means": {
-        "numerical_stability": 92.5,
-        "roundoff_sensitivity": 73.75,
-        "mms_verification": 75.0,
-        "error_estimation": 82.5,
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 67.5,
+        "mms_verification": 87.5,
+        "error_estimation": 87.5,
         "regression_coverage": 100.0,
-        "numerical_debt": 83.33
+        "numerical_debt": 91.67
       }
     },
     {
@@ -113,12 +125,16 @@
         "MOOSE",
         "deal.II",
         "MFEM",
-        "FEniCSx"
+        "FEniCSx",
+        "Code_Aster",
+        "ElmerFEM",
+        "Kratos",
+        "SU2"
       ],
       "train_metrics": {
-        "count": 4,
-        "mean": 83.58,
-        "stdev": 21.51,
+        "count": 8,
+        "mean": 87.35,
+        "stdev": 15.67,
         "min": 46.33,
         "max": 96.0,
         "range": 49.67
@@ -129,7 +145,7 @@
         "NVR-003"
       ],
       "in_range": true,
-      "outlier_distance": 12.42,
+      "outlier_distance": 8.65,
       "unexpected_nvr": [],
       "missing_nvr": [
         "NVR-001",
@@ -147,12 +163,12 @@
         "numerical_debt": 100.0
       },
       "train_dimension_means": {
-        "numerical_stability": 92.5,
-        "roundoff_sensitivity": 73.75,
-        "mms_verification": 75.0,
-        "error_estimation": 82.5,
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 67.5,
+        "mms_verification": 87.5,
+        "error_estimation": 87.5,
         "regression_coverage": 100.0,
-        "numerical_debt": 83.33
+        "numerical_debt": 91.67
       }
     },
     {
@@ -162,12 +178,16 @@
         "MOOSE",
         "deal.II",
         "FreeFEM",
-        "FEniCSx"
+        "FEniCSx",
+        "Code_Aster",
+        "ElmerFEM",
+        "Kratos",
+        "SU2"
       ],
       "train_metrics": {
-        "count": 4,
-        "mean": 83.58,
-        "stdev": 21.51,
+        "count": 8,
+        "mean": 87.35,
+        "stdev": 15.67,
         "min": 46.33,
         "max": 96.0,
         "range": 49.67
@@ -178,7 +198,7 @@
         "NVR-003"
       ],
       "in_range": true,
-      "outlier_distance": 12.42,
+      "outlier_distance": 8.65,
       "unexpected_nvr": [],
       "missing_nvr": [
         "NVR-001",
@@ -196,12 +216,12 @@
         "numerical_debt": 100.0
       },
       "train_dimension_means": {
-        "numerical_stability": 92.5,
-        "roundoff_sensitivity": 73.75,
-        "mms_verification": 75.0,
-        "error_estimation": 82.5,
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 67.5,
+        "mms_verification": 87.5,
+        "error_estimation": 87.5,
         "regression_coverage": 100.0,
-        "numerical_debt": 83.33
+        "numerical_debt": 91.67
       }
     },
     {
@@ -211,15 +231,19 @@
         "MOOSE",
         "deal.II",
         "FreeFEM",
-        "MFEM"
+        "MFEM",
+        "Code_Aster",
+        "ElmerFEM",
+        "Kratos",
+        "SU2"
       ],
       "train_metrics": {
-        "count": 4,
-        "mean": 96.0,
-        "stdev": 0.0,
-        "min": 96.0,
+        "count": 8,
+        "mean": 93.56,
+        "stdev": 2.44,
+        "min": 91.0,
         "max": 96.0,
-        "range": 0.0
+        "range": 5.0
       },
       "test_overall": 46.33,
       "test_nvr_count": 6,
@@ -232,12 +256,11 @@
         "NVR-012"
       ],
       "in_range": false,
-      "outlier_distance": 49.67,
+      "outlier_distance": 47.23,
       "unexpected_nvr": [
         "NVR-001",
         "NVR-005",
         "NVR-007",
-        "NVR-008",
         "NVR-012"
       ],
       "missing_nvr": [],
@@ -251,18 +274,230 @@
       },
       "train_dimension_means": {
         "numerical_stability": 100.0,
-        "roundoff_sensitivity": 80.0,
+        "roundoff_sensitivity": 70.62,
         "mms_verification": 100.0,
-        "error_estimation": 100.0,
+        "error_estimation": 96.25,
         "regression_coverage": 100.0,
         "numerical_debt": 100.0
+      }
+    },
+    {
+      "fold": "Code_Aster",
+      "project_type": "large_library",
+      "train_projects": [
+        "MOOSE",
+        "deal.II",
+        "FreeFEM",
+        "MFEM",
+        "FEniCSx",
+        "ElmerFEM",
+        "Kratos",
+        "SU2"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 87.98,
+        "stdev": 15.9,
+        "min": 46.33,
+        "max": 96.0,
+        "range": 49.67
+      },
+      "test_overall": 91.0,
+      "test_nvr_count": 1,
+      "test_nvr_rules": [
+        "NVR-003"
+      ],
+      "in_range": true,
+      "outlier_distance": 3.02,
+      "unexpected_nvr": [],
+      "missing_nvr": [
+        "NVR-001",
+        "NVR-005",
+        "NVR-007",
+        "NVR-008",
+        "NVR-012"
+      ],
+      "test_dimensions": {
+        "numerical_stability": 100.0,
+        "roundoff_sensitivity": 55,
+        "mms_verification": 100.0,
+        "error_estimation": 100,
+        "regression_coverage": 100.0,
+        "numerical_debt": 100.0
+      },
+      "train_dimension_means": {
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 70.62,
+        "mms_verification": 87.5,
+        "error_estimation": 87.5,
+        "regression_coverage": 100.0,
+        "numerical_debt": 91.67
+      }
+    },
+    {
+      "fold": "ElmerFEM",
+      "project_type": "large_library",
+      "train_projects": [
+        "MOOSE",
+        "deal.II",
+        "FreeFEM",
+        "MFEM",
+        "FEniCSx",
+        "Code_Aster",
+        "Kratos",
+        "SU2"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 87.98,
+        "stdev": 15.9,
+        "min": 46.33,
+        "max": 96.0,
+        "range": 49.67
+      },
+      "test_overall": 91.0,
+      "test_nvr_count": 1,
+      "test_nvr_rules": [
+        "NVR-003"
+      ],
+      "in_range": true,
+      "outlier_distance": 3.02,
+      "unexpected_nvr": [],
+      "missing_nvr": [
+        "NVR-001",
+        "NVR-005",
+        "NVR-007",
+        "NVR-008",
+        "NVR-012"
+      ],
+      "test_dimensions": {
+        "numerical_stability": 100.0,
+        "roundoff_sensitivity": 55,
+        "mms_verification": 100.0,
+        "error_estimation": 100,
+        "regression_coverage": 100.0,
+        "numerical_debt": 100.0
+      },
+      "train_dimension_means": {
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 70.62,
+        "mms_verification": 87.5,
+        "error_estimation": 87.5,
+        "regression_coverage": 100.0,
+        "numerical_debt": 91.67
+      }
+    },
+    {
+      "fold": "Kratos",
+      "project_type": "large_library",
+      "train_projects": [
+        "MOOSE",
+        "deal.II",
+        "FreeFEM",
+        "MFEM",
+        "FEniCSx",
+        "Code_Aster",
+        "ElmerFEM",
+        "SU2"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 87.98,
+        "stdev": 15.9,
+        "min": 46.33,
+        "max": 96.0,
+        "range": 49.67
+      },
+      "test_overall": 91.0,
+      "test_nvr_count": 1,
+      "test_nvr_rules": [
+        "NVR-003"
+      ],
+      "in_range": true,
+      "outlier_distance": 3.02,
+      "unexpected_nvr": [],
+      "missing_nvr": [
+        "NVR-001",
+        "NVR-005",
+        "NVR-007",
+        "NVR-008",
+        "NVR-012"
+      ],
+      "test_dimensions": {
+        "numerical_stability": 100.0,
+        "roundoff_sensitivity": 55,
+        "mms_verification": 100.0,
+        "error_estimation": 100,
+        "regression_coverage": 100.0,
+        "numerical_debt": 100.0
+      },
+      "train_dimension_means": {
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 70.62,
+        "mms_verification": 87.5,
+        "error_estimation": 87.5,
+        "regression_coverage": 100.0,
+        "numerical_debt": 91.67
+      }
+    },
+    {
+      "fold": "SU2",
+      "project_type": "small_solver",
+      "train_projects": [
+        "MOOSE",
+        "deal.II",
+        "FreeFEM",
+        "MFEM",
+        "FEniCSx",
+        "Code_Aster",
+        "ElmerFEM",
+        "Kratos"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 87.92,
+        "stdev": 15.89,
+        "min": 46.33,
+        "max": 96.0,
+        "range": 49.67
+      },
+      "test_overall": 91.5,
+      "test_nvr_count": 2,
+      "test_nvr_rules": [
+        "NVR-003",
+        "NVR-008"
+      ],
+      "in_range": true,
+      "outlier_distance": 3.58,
+      "unexpected_nvr": [],
+      "missing_nvr": [
+        "NVR-001",
+        "NVR-005",
+        "NVR-007",
+        "NVR-012"
+      ],
+      "test_dimensions": {
+        "numerical_stability": 100.0,
+        "roundoff_sensitivity": 80,
+        "mms_verification": 100.0,
+        "error_estimation": 70,
+        "regression_coverage": 100.0,
+        "numerical_debt": 100.0
+      },
+      "train_dimension_means": {
+        "numerical_stability": 96.25,
+        "roundoff_sensitivity": 67.5,
+        "mms_verification": 87.5,
+        "error_estimation": 91.25,
+        "regression_coverage": 100.0,
+        "numerical_debt": 91.67
       }
     }
   ],
   "summary": {
-    "total_folds": 5,
-    "in_range_count": 4,
-    "generalization_rate": "4/5",
+    "total_folds": 9,
+    "in_range_count": 8,
+    "generalization_rate": "8/9",
     "generalization_verdict": "WARNING"
   },
   "dimension": "numerical",

@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-11-25 14:33:52",
+  "generated_at": "2026-11-25 15:39:56",
   "criterion": "LOOCV in-range; 7/9 rate threshold; nine_fold requires n>=9",
   "engines": {
     "numerical": {
       "engine": "numerical",
-      "fold_count": 5,
-      "passed": 4,
-      "rate": 0.8,
+      "fold_count": 9,
+      "passed": 8,
+      "rate": 0.8889,
       "rate_pass_7_of_9": true,
-      "nine_fold": false,
+      "nine_fold": true,
       "source_verdict": "WARNING",
-      "status": "PARTIAL"
+      "status": "PASS"
     },
     "solver_physics": {
       "engine": "solver_physics",
@@ -60,8 +60,8 @@
   "summary": {
     "engines_with_data": 5,
     "rate_pass_count": 5,
-    "nine_fold_pass_count": 4,
+    "nine_fold_pass_count": 5,
     "kpi_status": "PASS_WITH_RESIDUAL",
-    "note": "numerical currently 5-fold; standard/multilang LOOCV corpus pending"
+    "note": "numerical now 9-fold; standard/multilang LOOCV corpus pending"
   }
 }

@@ -79,10 +79,11 @@ def build_summary():
             "rate_pass_count": sum(1 for e in loaded if e.get("rate_pass_7_of_9")),
             "nine_fold_pass_count": sum(1 for e in loaded if e.get("status") == "PASS"),
             "kpi_status": (
-                "PASS" if loaded and all(e.get("status") == "PASS" for e in loaded)
+                "PASS" if loaded and not PENDING
+                and all(e.get("status") == "PASS" for e in loaded)
                 else "PASS_WITH_RESIDUAL"
             ),
-            "note": "numerical currently 5-fold; standard/multilang LOOCV corpus pending",
+            "note": "numerical now 9-fold; standard/multilang LOOCV corpus pending",
         },
     }
 
