@@ -50,6 +50,36 @@ def _registry_path():
     return ""
 
 
+
+def _profile_source_display(root: str, source: str) -> str:
+    """Report-safe source path: relative when inside root, basename otherwise."""
+    if not source:
+        return ""
+    if source.startswith("<"):
+        return source
+    try:
+        rel = os.path.relpath(source, root)
+        if rel != ".." and not rel.startswith(".." + os.sep):
+            return rel.replace(os.sep, "/")
+    except (ValueError, OSError):
+        pass
+    return os.path.basename(source)
+
+
+def _profile_source_kind(profile: dict) -> str:
+    kind = profile.get("config_source_kind")
+    if kind:
+        return kind
+    source = profile.get("config_source", "")
+    if source.startswith("<CLI"):
+        return "cli"
+    if source.endswith("arch-quality.yaml"):
+        return "arch-quality.yaml"
+    if source.endswith("pyproject.toml"):
+        return "pyproject.toml"
+    return "none"
+
+
 class ComprehensiveReport:
     """综合报告数据生成器"""
 
@@ -181,9 +211,15 @@ class ComprehensiveReport:
 
         skipped_engines = [e for e in ENHANCEMENT_ENGINES if e not in enabled] if profile_active else []
         subset_scoring = profile_active and bool(skipped_engines)
+        config_source = self.profile.get("config_source", "") if profile_active else ""
+        config_kind = _profile_source_kind(self.profile) if profile_active else "none"
         profile_meta = {
             "active": profile_active,
-            "config_source": self.profile.get("config_source", "") if profile_active else "",
+            "config_source": config_source,
+            "config_source_display": _profile_source_display(self.root, config_source) if profile_active else "",
+            "config_source_kind": config_kind,
+            "profile_source": (self.profile.get("profile_source") if profile_active else None) or config_kind,
+            "cli_override": bool(self.profile.get("cli_override", False)) if profile_active else False,
             "profile": self.profile.get("profile") if profile_active else None,
             "enable_engines": self.profile.get("enable_engines") if profile_active else None,
             "skip_engines": self.profile.get("skip_engines") if profile_active else None,
@@ -483,6 +519,12 @@ def main():
         cfg = dict(cfg)
         # 单 profile 归一为字符串（保持历史报告语义），多 profile 保留 list
         cfg["profile"] = args.profile if len(args.profile) > 1 else args.profile[0]
+        cfg["profile_source"] = "cli"
+        if cfg.get("config_source"):
+            cfg["cli_override"] = True
+        else:
+            cfg["config_source"] = "<CLI --profile>"
+            cfg["config_source_kind"] = "cli"
     if args.profile or cfg:
         cfg = dict(cfg)
         cfg["enabled_engines"] = resolve_enabled_engines(

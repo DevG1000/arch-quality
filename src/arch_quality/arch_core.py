@@ -730,6 +730,9 @@ def load_profile_config(root: str) -> dict:
 
     cfg = _validate_profile_config(cfg_raw, source)
     cfg["config_source"] = source
+    cfg["config_source_kind"] = (
+        "arch-quality.yaml" if yaml_path.exists() else "pyproject.toml"
+    )
     cfg["enabled_engines"] = resolve_enabled_engines(
         cfg.get("profile"), cfg.get("enable_engines"), cfg.get("skip_engines"))
     return cfg

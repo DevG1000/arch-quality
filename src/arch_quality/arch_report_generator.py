@@ -255,6 +255,48 @@ class ReportGenerator:
 
     # ── 章节 2: 总体评分 ──
 
+    def _profile_section(self) -> str:
+        p = self.m.get("profile") or {}
+        if not p:
+            return ""
+        if not p.get("active"):
+            return "## Profile 配置来源\n\n未启用显式 profile；使用启发式全量引擎检测。"
+        source = p.get("config_source_display") or p.get("config_source") or "未指定"
+        profile = p.get("profile")
+        if isinstance(profile, (list, tuple)):
+            profile = ", ".join(str(x) for x in profile)
+        elif profile is None:
+            profile = "（未声明，按 enable/skip 解析）"
+        profile_source = p.get("profile_source")
+        if p.get("cli_override"):
+            profile_source = "CLI --profile（覆盖配置文件）"
+        elif profile_source == "cli":
+            profile_source = "CLI --profile"
+        elif profile_source == "arch-quality.yaml":
+            profile_source = "配置文件（arch-quality.yaml）"
+        elif profile_source == "pyproject.toml":
+            profile_source = "配置文件（pyproject.toml）"
+        else:
+            profile_source = "未指定"
+        enabled = ", ".join(p.get("enabled_engines", [])) or "（无）"
+        skipped = ", ".join(p.get("skipped_engines", [])) or "（无）"
+        rows = [
+            ("Profile", str(profile)),
+            ("配置来源", str(source)),
+            ("来源类型", str(p.get("config_source_kind", "none"))),
+            ("Profile 来源", str(profile_source)),
+            ("启用引擎", enabled),
+            ("跳过引擎", skipped),
+            ("子集评分", "是" if p.get("subset_scoring") else "否"),
+        ]
+        body = "\n".join(f"| {k} | {v} |" for k, v in rows)
+        return (
+            "## Profile 配置来源\n\n"
+            "| 项 | 值 |\n|:--|:--|\n"
+            + body
+            + "\n\n> 配置来源使用相对路径/占位符展示，不泄露本机绝对路径。"
+        )
+
     def _overall_score(self) -> str:
         overall = self.m.get("overall_score", 0)
         grade = _score_grade(overall)
@@ -997,6 +1039,7 @@ class ReportGenerator:
         sections = [
             self._header(),
             self._overall_score(),
+            self._profile_section(),
             self._comparison_with_previous(),
             self._structural_quality(),
             self._design_quality(),
