@@ -20,6 +20,10 @@ def _extract_dimension_scores(text: str) -> dict[str, float]:
         "mpi_halo": ["mpi_halo"],
         "load_topology": ["load_topology"],
         "hybrid_parallel": ["hybrid_parallel"],
+        "legacy": ["legacy"],
+        "dead": ["dead"],
+        "clone": ["clone"],
+        "debt": ["debt"],
     }
     scores = {}
     for key, aliases in dim_aliases.items():

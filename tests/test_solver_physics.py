@@ -1,4 +1,4 @@
-"""
+﻿"""
 test_solver_physics.py — arch_metrics_solver_physics.py 单元测试
 
 测试场景:
@@ -933,6 +933,43 @@ class TestAllMetricsIntegration(unittest.TestCase):
         self.assertIn("跨场数据传递规范性", m.weights)
         total = sum(m.weights.values())
         self.assertAlmostEqual(total, 1.0, places=2)
+
+
+class TestMPR011(unittest.TestCase):
+    """MPR-011 跨场时域同步：多场 + 无同步信号 -> candidate WARNING"""
+
+    def _make(self, files):
+        tmp = tempfile.mkdtemp()
+        _write_tree(tmp, files)
+        return tmp
+
+    def test_mpr011_candidate_when_multifield_no_sync(self):
+        tmp = self._make({
+            "src/fluid/Solver.cpp": "// fluid\ndouble dt = 0.001;\n",
+            "src/thermal/Solver.cpp": "// thermal\ndouble dt = 0.01;\n",
+        })
+        try:
+            m = SolverPhysicsMetrics(tmp)
+            rules = m.check_mpr_rules()
+            hits = [r for r in rules if r["rule"] == "MPR-011"]
+            self.assertTrue(hits, "MPR-011 应实际触发")
+            self.assertEqual(hits[0]["severity"], "MEDIUM")
+            self.assertEqual(hits[0]["output_level"], "WARNING")
+            self.assertTrue(hits[0].get("candidate"))
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_mpr011_silent_when_sync_signal_present(self):
+        tmp = self._make({
+            "src/fluid/Solver.cpp": "// fluid\ndouble dt = 0.001;\n",
+            "src/thermal/Solver.cpp": "// thermal\ndouble dt = 0.01;\nsynchronize();\n",
+        })
+        try:
+            m = SolverPhysicsMetrics(tmp)
+            rules = m.check_mpr_rules()
+            self.assertFalse(any(r["rule"] == "MPR-011" for r in rules))
+        finally:
+            shutil.rmtree(tmp)
 
 
 if __name__ == "__main__":

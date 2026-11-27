@@ -1,0 +1,478 @@
+{
+  "method": "Leave-One-Out Cross Validation (9-fold)",
+  "projects": [
+    "gcs_occt",
+    "gcs_salome_geom",
+    "gcs_freecad",
+    "gcs_mfem",
+    "gcs_elmerfem",
+    "gcs_gmsh",
+    "gcs_kratos",
+    "gcs_code_aster",
+    "gcs_synth_unhealthy"
+  ],
+  "folds": [
+    {
+      "fold": "gcs_occt",
+      "project_type": "kernel",
+      "train_projects": [
+        "gcs_salome_geom",
+        "gcs_freecad",
+        "gcs_mfem",
+        "gcs_elmerfem",
+        "gcs_gmsh",
+        "gcs_kratos",
+        "gcs_code_aster",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 74.31,
+        "stdev": 7.45,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 64.0,
+      "test_gcs_count": 3,
+      "test_gcs_rules": [
+        "GCS-003",
+        "GCS-004",
+        "GCS-005"
+      ],
+      "in_range": true,
+      "outlier_distance": 10.31,
+      "unexpected_gcs": [
+        "GCS-003"
+      ],
+      "missing_gcs": [
+        "GCS-001",
+        "GCS-007",
+        "GCS-010",
+        "GCS-012"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 55,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 100,
+        "data_access_norm": 50
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 73.75,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 90.0,
+        "data_access_norm": 73.75
+      }
+    },
+    {
+      "fold": "gcs_salome_geom",
+      "project_type": "kernel_wrap",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_freecad",
+        "gcs_mfem",
+        "gcs_elmerfem",
+        "gcs_gmsh",
+        "gcs_kratos",
+        "gcs_code_aster",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 71.81,
+        "stdev": 7.13,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 84.0,
+      "test_gcs_count": 2,
+      "test_gcs_rules": [
+        "GCS-004",
+        "GCS-005"
+      ],
+      "in_range": true,
+      "outlier_distance": 12.19,
+      "unexpected_gcs": [],
+      "missing_gcs": [
+        "GCS-001",
+        "GCS-003",
+        "GCS-007",
+        "GCS-010",
+        "GCS-012"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 80,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 100,
+        "data_access_norm": 100
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 70.62,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 90.0,
+        "data_access_norm": 67.5
+      }
+    },
+    {
+      "fold": "gcs_freecad",
+      "project_type": "kernel_app",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_salome_geom",
+        "gcs_mfem",
+        "gcs_elmerfem",
+        "gcs_gmsh",
+        "gcs_kratos",
+        "gcs_code_aster",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 71.81,
+        "stdev": 7.13,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 84.0,
+      "test_gcs_count": 2,
+      "test_gcs_rules": [
+        "GCS-004",
+        "GCS-005"
+      ],
+      "in_range": true,
+      "outlier_distance": 12.19,
+      "unexpected_gcs": [],
+      "missing_gcs": [
+        "GCS-001",
+        "GCS-003",
+        "GCS-007",
+        "GCS-010",
+        "GCS-012"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 80,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 100,
+        "data_access_norm": 100
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 70.62,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 90.0,
+        "data_access_norm": 67.5
+      }
+    },
+    {
+      "fold": "gcs_mfem",
+      "project_type": "fem_lib",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_salome_geom",
+        "gcs_freecad",
+        "gcs_elmerfem",
+        "gcs_gmsh",
+        "gcs_kratos",
+        "gcs_code_aster",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 72.19,
+        "stdev": 7.66,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 81.0,
+      "test_gcs_count": 2,
+      "test_gcs_rules": [
+        "GCS-001",
+        "GCS-005"
+      ],
+      "in_range": true,
+      "outlier_distance": 8.81,
+      "unexpected_gcs": [],
+      "missing_gcs": [
+        "GCS-003",
+        "GCS-004",
+        "GCS-007",
+        "GCS-010",
+        "GCS-012"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 70,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 100,
+        "data_access_norm": 100
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 71.88,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 90.0,
+        "data_access_norm": 67.5
+      }
+    },
+    {
+      "fold": "gcs_elmerfem",
+      "project_type": "fem_suite",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_salome_geom",
+        "gcs_freecad",
+        "gcs_mfem",
+        "gcs_gmsh",
+        "gcs_kratos",
+        "gcs_code_aster",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 73.28,
+        "stdev": 8.2,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 72.25,
+      "test_gcs_count": 3,
+      "test_gcs_rules": [
+        "GCS-001",
+        "GCS-005",
+        "GCS-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 1.03,
+      "unexpected_gcs": [],
+      "missing_gcs": [
+        "GCS-003",
+        "GCS-004",
+        "GCS-007",
+        "GCS-010"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 70,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 100,
+        "data_access_norm": 65
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 71.88,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 90.0,
+        "data_access_norm": 71.88
+      }
+    },
+    {
+      "fold": "gcs_gmsh",
+      "project_type": "mesh_tool",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_salome_geom",
+        "gcs_freecad",
+        "gcs_mfem",
+        "gcs_elmerfem",
+        "gcs_kratos",
+        "gcs_code_aster",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 74.16,
+        "stdev": 7.65,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 65.25,
+      "test_gcs_count": 4,
+      "test_gcs_rules": [
+        "GCS-004",
+        "GCS-005",
+        "GCS-007",
+        "GCS-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 8.91,
+      "unexpected_gcs": [],
+      "missing_gcs": [
+        "GCS-001",
+        "GCS-003",
+        "GCS-010"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 80,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 60,
+        "data_access_norm": 65
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 70.62,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 95.0,
+        "data_access_norm": 71.88
+      }
+    },
+    {
+      "fold": "gcs_kratos",
+      "project_type": "multiphysics",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_salome_geom",
+        "gcs_freecad",
+        "gcs_mfem",
+        "gcs_elmerfem",
+        "gcs_gmsh",
+        "gcs_code_aster",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 73.28,
+        "stdev": 8.2,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 72.25,
+      "test_gcs_count": 3,
+      "test_gcs_rules": [
+        "GCS-001",
+        "GCS-005",
+        "GCS-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 1.03,
+      "unexpected_gcs": [],
+      "missing_gcs": [
+        "GCS-003",
+        "GCS-004",
+        "GCS-007",
+        "GCS-010"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 70,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 100,
+        "data_access_norm": 65
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 71.88,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 90.0,
+        "data_access_norm": 71.88
+      }
+    },
+    {
+      "fold": "gcs_code_aster",
+      "project_type": "fem",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_salome_geom",
+        "gcs_freecad",
+        "gcs_mfem",
+        "gcs_elmerfem",
+        "gcs_gmsh",
+        "gcs_kratos",
+        "gcs_synth_unhealthy"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 73.28,
+        "stdev": 8.2,
+        "min": 63.5,
+        "max": 84.0,
+        "range": 20.5
+      },
+      "test_overall": 72.25,
+      "test_gcs_count": 3,
+      "test_gcs_rules": [
+        "GCS-001",
+        "GCS-005",
+        "GCS-012"
+      ],
+      "in_range": true,
+      "outlier_distance": 1.03,
+      "unexpected_gcs": [],
+      "missing_gcs": [
+        "GCS-003",
+        "GCS-004",
+        "GCS-007",
+        "GCS-010"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 70,
+        "precision_unit_consistency": 50,
+        "scidata_organization": 100,
+        "data_access_norm": 65
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 71.88,
+        "precision_unit_consistency": 56.25,
+        "scidata_organization": 90.0,
+        "data_access_norm": 71.88
+      }
+    },
+    {
+      "fold": "gcs_synth_unhealthy",
+      "project_type": "synthetic_bad",
+      "train_projects": [
+        "gcs_occt",
+        "gcs_salome_geom",
+        "gcs_freecad",
+        "gcs_mfem",
+        "gcs_elmerfem",
+        "gcs_gmsh",
+        "gcs_kratos",
+        "gcs_code_aster"
+      ],
+      "train_metrics": {
+        "count": 8,
+        "mean": 74.38,
+        "stdev": 7.36,
+        "min": 64.0,
+        "max": 84.0,
+        "range": 20.0
+      },
+      "test_overall": 63.5,
+      "test_gcs_count": 4,
+      "test_gcs_rules": [
+        "GCS-001",
+        "GCS-007",
+        "GCS-010",
+        "GCS-012"
+      ],
+      "in_range": false,
+      "outlier_distance": 10.88,
+      "unexpected_gcs": [
+        "GCS-010"
+      ],
+      "missing_gcs": [
+        "GCS-003",
+        "GCS-004",
+        "GCS-005"
+      ],
+      "test_dimensions": {
+        "geometry_kernel_consistency": 70,
+        "precision_unit_consistency": 100,
+        "scidata_organization": 60,
+        "data_access_norm": 30
+      },
+      "train_dimension_means": {
+        "geometry_kernel_consistency": 71.88,
+        "precision_unit_consistency": 50.0,
+        "scidata_organization": 95.0,
+        "data_access_norm": 76.25
+      }
+    }
+  ],
+  "summary": {
+    "total_folds": 9,
+    "in_range_count": 8,
+    "generalization_rate": "8/9",
+    "generalization_verdict": "PASS"
+  },
+  "dimension": "geometry_consistency",
+  "criterion": "LOOCV in-range (train min..max)"
+}

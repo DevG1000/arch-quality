@@ -19,6 +19,7 @@ projects:
     desc: arch-quality 自身（自举回归）
     fetch:
       repo: local
+      method: local
       dir: ""
     eval:
       engine: standard
@@ -30,6 +31,7 @@ projects:
     desc: OpenFOAM CFD 求解器（多语言/标准/物理场）
     fetch:
       repo: https://github.com/OpenFOAM/OpenFOAM-dev.git
+      ref: cca9f00f88d44e75a9f4ab49b422eed0eb7f5270
       dir: ""
     eval:
       engine: [multilang, standard, solver_physics, template, hpc]
@@ -39,6 +41,7 @@ projects:
     desc: BRL-CAD 实体建模（多语言/标准/模板）
     fetch:
       repo: https://github.com/BRL-CAD/brlcad.git
+      ref: ee1e2a33bccbb06dd27e7a65d7f503ac3494f6dc
       dir: ""
     eval:
       engine: [multilang, standard, template]
@@ -48,6 +51,7 @@ projects:
     desc: FreeCAD CAD（多语言/标准/模板）
     fetch:
       repo: https://github.com/FreeCAD/FreeCAD.git
+      ref: 148aa8cb574f2762cb760cbfe4f294b4003facbc
       dir: src
     eval:
       engine: [multilang, standard, template]
@@ -57,6 +61,7 @@ projects:
     desc: ElmerFEM 多物理场有限元（多语言/标准/模板/物理场）
     fetch:
       repo: https://github.com/ElmerCSC/elmerfem.git
+      ref: 42a449395153ba2fdd09959559574466deae4541
       dir: ""
     eval:
       engine: [multilang, standard, solver_physics, template]
@@ -68,6 +73,7 @@ projects:
     desc: MOOSE 多物理场框架（数值/物理场）
     fetch:
       repo: https://github.com/idaholab/moose.git
+      ref: 91b626f22634313924cce73e85dc6259d1ab2880
       dir: ""
     eval:
       engine: [numerical, solver_physics]
@@ -77,6 +83,7 @@ projects:
     desc: deal.II 有限元库（数值/物理场）
     fetch:
       repo: https://github.com/dealii/dealii.git
+      ref: cd748a2c7a170acf863620453572ae2a90040ef9
       dir: ""
     eval:
       engine: [numerical, solver_physics]
@@ -86,6 +93,7 @@ projects:
     desc: FreeFEM 有限元（数值/物理场）
     fetch:
       repo: https://github.com/FreeFem/FreeFem-sources.git
+      ref: 754dae8ae8f858784ad46b2f46dfd7862829cb5a
       dir: ""
     eval:
       engine: [numerical, solver_physics]
@@ -95,6 +103,7 @@ projects:
     desc: MFEM 有限元库（数值/物理场）
     fetch:
       repo: https://github.com/mfem/mfem.git
+      ref: 951cf8886b9c0c33fb36a2f0ede268c8d6a0d8b5
       dir: ""
     eval:
       engine: [numerical, solver_physics]
@@ -104,6 +113,7 @@ projects:
     desc: FEniCSx 有限元（数值/物理场）
     fetch:
       repo: https://github.com/FEniCS/dolfinx.git
+      ref: a5e52202e8abfb429144555c0ab857121fcc813a
       dir: ""
     eval:
       engine: [numerical, solver_physics]
@@ -113,6 +123,7 @@ projects:
     desc: Kratos 多物理场框架（物理场）
     fetch:
       repo: https://github.com/KratosMultiphysics/Kratos.git
+      ref: 6bccdabd7f1f280eaefed8b9eb2571c67ab1b5a1
       dir: ""
     eval:
       engine: [solver_physics]
@@ -122,6 +133,7 @@ projects:
     desc: SU2 航空求解器（物理场）
     fetch:
       repo: https://github.com/su2code/SU2.git
+      ref: 8e8ea59fe6225c8ec4e94d0e0a4b6690ea4294e5
       dir: ""
     eval:
       engine: [solver_physics]
@@ -131,6 +143,7 @@ projects:
     desc: preCICE 耦合库（物理场）
     fetch:
       repo: https://github.com/precice/precice.git
+      ref: 79bc1d43f9375031b853b6445a90366b3834d5c4
       dir: ""
     eval:
       engine: [solver_physics]
@@ -142,6 +155,7 @@ projects:
     desc: Eigen 模板库（模板）
     fetch:
       repo: https://gitlab.com/libeigen/eigen.git
+      ref: 5b3089dd7b11cfc08560b1638f09d6849bf67e5e
       dir: ""
     eval:
       engine: [template]
@@ -151,6 +165,7 @@ projects:
     desc: Boost 库（模板，mpl/gil/hana 子库）
     fetch:
       repo: https://github.com/boostorg/boost.git
+      ref: a01fcaf87b34000c43350c9a42faa81fa9237967
       dir: ""
     eval:
       engine: [template]
@@ -160,6 +175,7 @@ projects:
     desc: Facebook Folly（模板）
     fetch:
       repo: https://github.com/facebook/folly.git
+      ref: 202a3810775a5bb8e176855be509d5dcc24b448e
       dir: ""
     eval:
       engine: [template]
@@ -169,6 +185,7 @@ projects:
     desc: Google Abseil（模板）
     fetch:
       repo: https://github.com/abseil/abseil-cpp.git
+      ref: 7768e5d7dc26cda185a037c75fc6f242273e7bce
       dir: ""
     eval:
       engine: [template]
@@ -178,6 +195,7 @@ projects:
     desc: range-v3（模板）
     fetch:
       repo: https://github.com/ericniebler/range-v3.git
+      ref: 108f93c279c8f9cec175dac361084983d0176e99
       dir: ""
     eval:
       engine: [template]
@@ -225,6 +243,7 @@ projects:
     desc: Kratos 多物理场（GCS multiphysics 样本）
     fetch:
       repo: https://github.com/KratosMultiphysics/Kratos.git
+      ref: 6bccdabd7f1f280eaefed8b9eb2571c67ab1b5a1
       method: shallow
       dir: ""
     eval:
@@ -235,6 +254,7 @@ projects:
     desc: Code_Aster 结构力学 FEM（GCS 样本）
     fetch:
       repo: https://gitlab.com/codeaster/src.git
+      ref: 7cb48262af47548277f4824ea47f1cc90848f057
       method: shallow
       dir: ""
     eval:
@@ -245,6 +265,7 @@ projects:
     desc: MFEM 有限元库（GCS 健康样本）
     fetch:
       repo: https://github.com/mfem/mfem.git
+      ref: 951cf8886b9c0c33fb36a2f0ede268c8d6a0d8b5
       method: shallow
       dir: ""
     eval:
@@ -255,6 +276,7 @@ projects:
     desc: Elmer FEM（GCS/ACL 样本）
     fetch:
       repo: https://github.com/ElmerCSC/elmerfem.git
+      ref: 42a449395153ba2fdd09959559574466deae4541
       method: shallow
       dir: ""
     eval:
@@ -265,6 +287,7 @@ projects:
     desc: KiCad EDA（ACL eda 样本）
     fetch:
       repo: https://gitlab.com/kicad/code/kicad.git
+      ref: 3b5ff541a1f8685c1bdf6558d2b5dc98a877c967
       method: shallow
       dir: ""
     eval:
@@ -330,8 +353,53 @@ projects:
       snapshot: []
     note: HPC healthy sample; release tarball (no .git), ref v2512
 
+  petsc:
+    desc: PETSc 科学计算框架（E1 科学内核 A 类样本）
+    fetch:
+      repo: https://gitlab.com/petsc/petsc.git
+      method: shallow
+      dir: ""
+      ref: c8d5ad6b37827809d4a5f144342c9f99b804723e
+    eval:
+      engine: [acl]
+      snapshot: []
+    note: H3 WP-8 E1；KSP/SNES/TS/PetscErrorCode 信号
+
+  vtk:
+    desc: VTK 科学可视化库（E1 科学内核 A 类样本）
+    fetch:
+      repo: https://gitlab.kitware.com/vtk/vtk.git
+      method: shallow
+      dir: ""
+      ref: 1f261ff9006ad5886e40a103d7f6c97f7854fa59
+    eval:
+      engine: [acl]
+      snapshot: []
+    note: H3 WP-8 E1；vtkSmartPointer/vtkPolyData 信号
+
 checksums:
   generated_by: scripts/fetch_project.py (H2 WP-0.5)
   format: "git_ref:<repo>:<commit_sha>"
   git_ref:https://github.com/Open-Cascade-SAS/OCCT.git: b8f597c677811d1f9f4d8a97f5ae2825c0353a42
   git_ref:https://github.com/SalomePlatform/geom.git: 3f85d2e295e5d5415a0b1fe5f5e128a84d244996
+  git_ref:https://github.com/OpenFOAM/OpenFOAM-dev.git: cca9f00f88d44e75a9f4ab49b422eed0eb7f5270
+  git_ref:https://github.com/BRL-CAD/brlcad.git: ee1e2a33bccbb06dd27e7a65d7f503ac3494f6dc
+  git_ref:https://github.com/FreeCAD/FreeCAD.git: 148aa8cb574f2762cb760cbfe4f294b4003facbc
+  git_ref:https://github.com/ElmerCSC/elmerfem.git: 42a449395153ba2fdd09959559574466deae4541
+  git_ref:https://github.com/idaholab/moose.git: 91b626f22634313924cce73e85dc6259d1ab2880
+  git_ref:https://github.com/dealii/dealii.git: cd748a2c7a170acf863620453572ae2a90040ef9
+  git_ref:https://github.com/FreeFem/FreeFem-sources.git: 754dae8ae8f858784ad46b2f46dfd7862829cb5a
+  git_ref:https://github.com/mfem/mfem.git: 951cf8886b9c0c33fb36a2f0ede268c8d6a0d8b5
+  git_ref:https://github.com/FEniCS/dolfinx.git: a5e52202e8abfb429144555c0ab857121fcc813a
+  git_ref:https://github.com/KratosMultiphysics/Kratos.git: 6bccdabd7f1f280eaefed8b9eb2571c67ab1b5a1
+  git_ref:https://github.com/su2code/SU2.git: 8e8ea59fe6225c8ec4e94d0e0a4b6690ea4294e5
+  git_ref:https://github.com/precice/precice.git: 79bc1d43f9375031b853b6445a90366b3834d5c4
+  git_ref:https://gitlab.com/libeigen/eigen.git: 5b3089dd7b11cfc08560b1638f09d6849bf67e5e
+  git_ref:https://github.com/boostorg/boost.git: a01fcaf87b34000c43350c9a42faa81fa9237967
+  git_ref:https://github.com/facebook/folly.git: 202a3810775a5bb8e176855be509d5dcc24b448e
+  git_ref:https://github.com/abseil/abseil-cpp.git: 7768e5d7dc26cda185a037c75fc6f242273e7bce
+  git_ref:https://github.com/ericniebler/range-v3.git: 108f93c279c8f9cec175dac361084983d0176e99
+  git_ref:https://gitlab.com/codeaster/src.git: 7cb48262af47548277f4824ea47f1cc90848f057
+  git_ref:https://gitlab.com/kicad/code/kicad.git: 3b5ff541a1f8685c1bdf6558d2b5dc98a877c967
+  git_ref:https://gitlab.com/petsc/petsc.git: c8d5ad6b37827809d4a5f144342c9f99b804723e
+  git_ref:https://gitlab.kitware.com/vtk/vtk.git: 1f261ff9006ad5886e40a103d7f6c97f7854fa59

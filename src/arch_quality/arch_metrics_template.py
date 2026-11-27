@@ -10,6 +10,7 @@ import os
 import re
 import json
 import argparse
+import shlex
 from pathlib import Path
 from collections import defaultdict
 
@@ -626,7 +627,7 @@ class TemplateMetaprogrammingMetrics:
 
         source_count = sum(1 for f in self.index.files if f["ext"] in CPP_SOURCE_EXTS)
 
-        # MLR-013: 热模板头文件
+        # TPL-001: 热模板头文件
         hot_headers = []
         for hpath, influence in header_influence.items():
             if influence > 50:
@@ -634,7 +635,7 @@ class TemplateMetaprogrammingMetrics:
         if hot_headers:
             hot_headers.sort(key=lambda x: -x[1])
             mlr_results.append({
-                "rule": "MLR-013", "name": "热模板头文件",
+                "rule": "TPL-001", "name": "热模板头文件",
                 "severity": "HIGH",
                 "output_level": "WARNING",
                 "count": len(hot_headers),
@@ -642,7 +643,7 @@ class TemplateMetaprogrammingMetrics:
                           "; ".join(f"{h}({n})" for h, n in hot_headers[:10]),
             })
 
-        # MLR-014: 模板重复实例化
+        # TPL-002: 模板重复实例化
         has_specialization_waiver = len(waiver_annotations["specialization"]) > 0
         # 收集所有显式 extern template 声明的模板名
         extern_tpl_names = set()
@@ -699,7 +700,7 @@ class TemplateMetaprogrammingMetrics:
             output_level_014 = "INFO" if has_specialization_waiver else "WARNING"
             waiver_note_014 = " (豁免: 检测到 @template_specialization_required 注解，降为 INFO/需审查)" if has_specialization_waiver else ""
             mlr_results.append({
-                "rule": "MLR-014", "name": "模板重复实例化",
+                "rule": "TPL-002", "name": "模板重复实例化",
                 "severity": severity_014,
                 "output_level": output_level_014,
                 "count": redundant_count,
@@ -709,7 +710,7 @@ class TemplateMetaprogrammingMetrics:
                 "waivable": True,
             })
 
-        # MLR-015: 头文件传染链过长
+        # TPL-003: 头文件传染链过长
         adj = defaultdict(set)
         for s, d in self.graph.edges:
             adj[s].add(d)
@@ -736,7 +737,7 @@ class TemplateMetaprogrammingMetrics:
         if contagious_headers:
             contagious_headers.sort(key=lambda x: -x[1])
             mlr_results.append({
-                "rule": "MLR-015", "name": "头文件传染链过长",
+                "rule": "TPL-003", "name": "头文件传染链过长",
                 "severity": "MEDIUM",
                 "output_level": "WARNING",
                 "count": len(contagious_headers),
@@ -744,7 +745,7 @@ class TemplateMetaprogrammingMetrics:
                           "; ".join(f"{h}({n})" for h, n in contagious_headers[:10]),
             })
 
-        # MLR-016: 模板嵌套深度过高
+        # TPL-004: 模板嵌套深度过高
         max_depth = 0
         deep_files = []
         for f in self.index.files:
@@ -758,7 +759,7 @@ class TemplateMetaprogrammingMetrics:
 
         if deep_files:
             mlr_results.append({
-                "rule": "MLR-016", "name": "模板嵌套深度过高",
+                "rule": "TPL-004", "name": "模板嵌套深度过高",
                 "severity": "MEDIUM",
                 "output_level": "WARNING",
                 "count": len(deep_files),
@@ -766,7 +767,7 @@ class TemplateMetaprogrammingMetrics:
                           "; ".join(f"{p}(D={d})" for p, d in deep_files[:10]),
             })
 
-        # MLR-017: 二进制膨胀超标
+        # TPL-005: 二进制膨胀超标
         bloat_score, bloat_detail = self.calc_binary_bloat_ratio()
         bloat_ratio = bloat_detail.get("bloat_ratio", 0)
         has_bloat_waiver = len(waiver_annotations["binary_bloat"]) > 0
@@ -789,9 +790,9 @@ class TemplateMetaprogrammingMetrics:
                 output_level_017 = "WARNING"
                 waiver_detail_017 = ""
             if cross_rule_014_017:
-                waiver_detail_017 += " [跨规则协调: MLR-014豁免已通过，但MLR-017仍需性能数据验证]"
+                waiver_detail_017 += " [跨规则协调: TPL-002豁免已通过，但TPL-005仍需性能数据验证]"
             mlr_results.append({
-                "rule": "MLR-017", "name": "二进制膨胀超标",
+                "rule": "TPL-005", "name": "二进制膨胀超标",
                 "severity": severity_017,
                 "output_level": output_level_017,
                 "count": 1,
@@ -799,7 +800,7 @@ class TemplateMetaprogrammingMetrics:
                 "waivable": True,
             })
 
-        # MLR-018: 虚泛型（镀金模板）
+        # TPL-006: 虚泛型（镀金模板）
         _, unnes_detail = self.calc_unnecessary_templating()
         unnecessary_count = unnes_detail.get("unnecessary_templates", 0)
         total_templates = unnes_detail.get("total_templates", 0)
@@ -813,7 +814,7 @@ class TemplateMetaprogrammingMetrics:
             output_level_018 = "INFO" if has_reserved_waiver else "WARNING"
             waiver_note = " (豁免: 检测到 @reserved_for_future_extension 注解)" if has_reserved_waiver else ""
             mlr_results.append({
-                "rule": "MLR-018", "name": "虚泛型（镀金模板）",
+                "rule": "TPL-006", "name": "虚泛型（镀金模板）",
                 "severity": severity_018,
                 "output_level": output_level_018,
                 "count": unnecessary_count,
@@ -821,7 +822,88 @@ class TemplateMetaprogrammingMetrics:
                 "waivable": True,
             })
 
-        # MLR-019: 未使用 extern template 优化
+        # H3 WP-5 B1：跨 TU 实例化语义（有 compile DB 时启用，candidate）
+        compile_db = os.path.join(self.root, "compile_commands.json")
+        if os.path.isfile(compile_db):
+            try:
+                with open(compile_db, encoding="utf-8-sig") as fh:
+                    db = json.load(fh)
+            except Exception:
+                db = []
+            tu_files = set()
+            include_flags = set()
+            define_flags = set()
+            root_abs = os.path.abspath(self.root)
+            if isinstance(db, list):
+                for entry in db:
+                    if not isinstance(entry, dict):
+                        continue
+                    src = entry.get("file")
+                    if src:
+                        directory = entry.get("directory") or self.root
+                        if not os.path.isabs(src):
+                            src = os.path.join(directory, src)
+                        tu_files.add(os.path.normpath(os.path.abspath(src)))
+                    args = entry.get("arguments")
+                    if not args:
+                        try:
+                            args = shlex.split(entry.get("command", ""))
+                        except ValueError:
+                            args = []
+                    for arg in args or []:
+                        if arg.startswith("-I") and len(arg) > 2:
+                            include_flags.add(arg[2:])
+                        elif arg.startswith("-D") and len(arg) > 2:
+                            define_flags.add(arg[2:])
+            tu_count = len(tu_files) or (len(db) if isinstance(db, list) else 0)
+            all_text = "\n".join(
+                self._read_cached(f) or "" for f in self.index.files
+                if f["ext"] in CPP_EXTS or f["ext"] in (".h", ".hpp")
+            )
+            explicit_inst = len(re.findall(
+                r"\btemplate\s+(?:class|struct)\s+\w+", all_text))
+            extern_template = len(re.findall(r"\bextern\s+template\b", all_text))
+            template_names = set(re.findall(
+                r"\btemplate\s*<[^>{};]*>\s*(?:class|struct)\s+(\w+)", all_text))
+            repeated = {}
+            for tu in tu_files:
+                try:
+                    if os.path.commonpath([root_abs, os.path.abspath(tu)]) != root_abs:
+                        continue
+                    content = read_text_smart(tu)
+                except Exception:
+                    continue
+                for name in template_names:
+                    if re.search(r"\b" + re.escape(name) + r"\s*<", content):
+                        repeated.setdefault(name, set()).add(os.path.basename(tu))
+            repeated_multi = {k: v for k, v in repeated.items() if len(v) >= 2}
+            if repeated_multi and explicit_inst == 0 and extern_template == 0:
+                names = ", ".join(sorted(repeated_multi)[:5])
+                mlr_results.append({
+                    "rule": "TPL-006", "name": "虚泛型（镀金模板）",
+                    "severity": "MEDIUM", "output_level": "WARNING",
+                    "count": len(repeated_multi), "candidate": True,
+                    "detail": (f"compile_commands 含 {tu_count} 个 TU；模板 {names} 在多个 TU 使用，"
+                               "未发现显式实例化/extern template（candidate，需 AST/人工复核）"),
+                    "evidence": "compile_commands.json + template use in >=2 TUs",
+                    "tu_count": tu_count,
+                    "include_flags": sorted(include_flags)[:10],
+                    "define_flags": sorted(define_flags)[:10],
+                })
+            elif tu_count > 1 and explicit_inst == 0 and extern_template == 0 and template_names:
+                mlr_results.append({
+                    "rule": "TPL-006", "name": "虚泛型（镀金模板）",
+                    "severity": "MEDIUM", "output_level": "WARNING",
+                    "count": tu_count, "candidate": True,
+                    "detail": (f"compile_commands 含 {tu_count} 个 TU；模板使用面未见显式实例化/extern template；"
+                               "跨 TU 实例化仅 candidate，需人工/AST 复核"),
+                    "evidence": "compile_commands.json + no template class/struct instantiation",
+                    "tu_count": tu_count,
+                    "include_flags": sorted(include_flags)[:10],
+                    "define_flags": sorted(define_flags)[:10],
+                })
+
+        # TPL-007: 未使用 extern template 优化
         has_many_instances = len(template_dup) > 5
         has_extern = any(
             self._template_info.get(f["path"], {}).get("extern_template_count", 0) > 0
@@ -830,14 +912,14 @@ class TemplateMetaprogrammingMetrics:
         )
         if has_many_instances and not has_extern:
             mlr_results.append({
-                "rule": "MLR-019", "name": "未使用 extern template 优化",
+                "rule": "TPL-007", "name": "未使用 extern template 优化",
                 "severity": "LOW",
                 "output_level": "INFO",
                 "count": 1,
                 "detail": f"项目有 {len(template_dup)} 个模板实例化但未发现 extern template 声明",
             })
 
-        # MLR-020: 头文件包含不必要模板定义
+        # TPL-008: 头文件包含不必要模板定义
         for f in cpp_header_files:
             content = self._read_cached(f)
             if content is None:
@@ -848,14 +930,14 @@ class TemplateMetaprogrammingMetrics:
                 has_impl = bool(re.search(r'(?:class|struct)\s+\w+\s*(?::\s*(?:public|private|protected)\s+\w+)*\s*\{', content))
                 if has_impl and not has_inline and template_def_count > 3:
                     mlr_results.append({
-                        "rule": "MLR-020", "name": "头文件包含不必要模板定义",
+                        "rule": "TPL-008", "name": "头文件包含不必要模板定义",
                         "severity": "MEDIUM",
                         "output_level": "WARNING",
                         "count": 1,
                         "detail": f"{f['path']}: {template_def_count} 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化",
                     })
 
-        # MLR-021: 模板特化放在错误命名空间
+        # TPL-009: 模板特化放在错误命名空间
         for f in self.index.files:
             if f["ext"] not in CPP_EXTS and f["ext"] != ".h":
                 continue
@@ -864,14 +946,14 @@ class TemplateMetaprogrammingMetrics:
                 continue
             if NAMESPACE_STD_HASH.search(content):
                 mlr_results.append({
-                    "rule": "MLR-021", "name": "模板特化放在错误命名空间",
+                    "rule": "TPL-009", "name": "模板特化放在错误命名空间",
                     "severity": "LOW",
                     "output_level": "INFO",
                     "count": 1,
                     "detail": f"{f['path']}: 发现 namespace std 中的 hash 特化，应使用命名空间注入",
                 })
 
-        # MLR-022: 递归模板导致实例化爆炸
+        # TPL-010: 递归模板导致实例化爆炸
         # 匹配模式: struct Name<...> : Name<...>
         # 使用 (?!\w) 确保类名完整，避免 \w+ 回溯产生的假阳性
         recursive_pattern = re.compile(
@@ -894,26 +976,26 @@ class TemplateMetaprogrammingMetrics:
                 info = self._template_info.get(f["path"], {})
                 depth = info.get("max_nesting_depth", 0)
                 mlr_results.append({
-                    "rule": "MLR-022", "name": "递归模板导致实例化爆炸",
+                    "rule": "TPL-010", "name": "递归模板导致实例化爆炸",
                     "severity": "HIGH",
                     "output_level": "ERROR",
                     "count": 1,
                     "detail": f"{f['path']}: 检测到递归模板模式，嵌套深度 {depth}",
                 })
 
-        # MLR-023: 同一模板在多处重复实例化（与 MLR-014 合并扣分）
+        # TPL-011: 同一模板在多处重复实例化（与 TPL-002 合并扣分）
         if redundant:
             total_instances_across_files = sum(len(v) for v in redundant.values())
             mlr_results.append({
-                "rule": "MLR-023", "name": "同一模板在多处重复实例化",
+                "rule": "TPL-011", "name": "同一模板在多处重复实例化",
                 "severity": "MEDIUM",
                 "output_level": "WARNING",
                 "count": total_instances_across_files,
                 "detail": f"{len(redundant)} 种模板在 >2 个编译单元中重复实例化，共 {total_instances_across_files} 处",
-                "merge_to": "MLR-014",
+                "merge_to": "TPL-002",
             })
 
-        # MLR-024: 头文件包含循环依赖
+        # TPL-012: 头文件包含循环依赖
         # 邻接表使用 set 存储，其迭代序依赖 PYTHONHASHSEED；配合下方"全局 visited
         # 的 DFS 只探索每个节点一次"，不同哈希种子会发现数量不同的环（实测同一项目
         # 在 seed=0/1/2 下分别得到 9/33/20 个），使 ERROR 级规则的计数不可复现。
@@ -965,7 +1047,7 @@ class TemplateMetaprogrammingMetrics:
             _origin_024 = max(("first_party", "test", "third_party"),
                               key=lambda k: _oc[k])
             mlr_results.append({
-                "rule": "MLR-024", "name": "头文件包含循环依赖",
+                "rule": "TPL-012", "name": "头文件包含循环依赖",
                 "severity": severity_024,
                 "output_level": output_level_024,
                 "count": len(header_cycles),

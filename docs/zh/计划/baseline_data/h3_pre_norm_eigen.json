@@ -24464,7 +24464,7 @@
         "detail": "blas\\testing\\zblat3.f: Fortran 代码未使用 ISO_C_BINDING，Fortran 77 固定格式不支持 iso_c_binding，确认未被 C 直接调用后可豁免"
       },
       {
-        "rule": "MLR-013",
+        "rule": "TPL-001",
         "name": "热模板头文件",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -24472,17 +24472,17 @@
         "detail": "463 个头文件影响 >50 编译单元: Eigen\\src\\misc\\blas.h(564); Eigen\\src\\AccelerateSupport\\InternalHeaderCheck.h(563); Eigen\\src\\Core\\Array.h(561); Eigen\\src\\Core\\Map.h(561); Eigen\\src\\Core\\Product.h(561); Eigen\\src\\Core\\arch\\SSE\\Reductions.h(560); Eigen\\src\\Core\\DenseCoeffsBase.h(560); Eigen\\src\\Core\\DenseBase.h(560); Eigen\\src\\Core\\arch\\LSX\\PacketMath.h(560); Eigen\\src\\Core\\VectorBlock.h(560)"
       },
       {
-        "rule": "MLR-014",
+        "rule": "TPL-002",
         "name": "模板重复实例化",
         "severity": "HIGH",
         "output_level": "WARNING",
         "count": 249,
-        "detail": "249 个模板被 >2 个编译单元重复实例化: Tensor<Scalar, 2>×139; Guennebaud<gael.guennebaud@inria.fr>×99; Tensor<float, 4, DataLayout>×81; DSizes<Index, NumDims>×74; Tensor<float, 2, DataLayout>×66; Tensor<DataType, 2, DataLayout, IndexType>×61; Jacob<jacob.benoit.1@gmail.com>×53; Steiner<benoit.steiner.goog@gmail.com>×53; Tensor<DataType, 3, DataLayout, IndexType>×47; Tensor<DataType, 4, DataLayout, IndexType>×46; 另有 2666 处多处重复实例化（MLR-023 已合并）",
+        "detail": "249 个模板被 >2 个编译单元重复实例化: Tensor<Scalar, 2>×139; Guennebaud<gael.guennebaud@inria.fr>×99; Tensor<float, 4, DataLayout>×81; DSizes<Index, NumDims>×74; Tensor<float, 2, DataLayout>×66; Tensor<DataType, 2, DataLayout, IndexType>×61; Jacob<jacob.benoit.1@gmail.com>×53; Steiner<benoit.steiner.goog@gmail.com>×53; Tensor<DataType, 3, DataLayout, IndexType>×47; Tensor<DataType, 4, DataLayout, IndexType>×46; 另有 2666 处多处重复实例化（TPL-011 已合并）",
         "waivable": true,
         "merged_with_023": true
       },
       {
-        "rule": "MLR-015",
+        "rule": "TPL-003",
         "name": "头文件传染链过长",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24490,7 +24490,7 @@
         "detail": "36 个头文件存在 >3 层传播链 (影响 >20 文件): test\\sparse.h(334); test\\sparse_solver.h(324); Eigen\\src\\IterativeLinearSolvers\\DGMRES.h(318); Eigen\\src\\AccelerateSupport\\AccelerateSupport.h(315); unsupported\\Eigen\\src\\SparseExtra\\SparseInverse.h(315); unsupported\\Eigen\\src\\ArpackSupport\\ArpackSelfAdjointEigenSolver.h(299); unsupported\\test\\matrix_functions.h(298); demos\\opengl\\camera.h(268); demos\\opengl\\trackball.h(268); demos\\opengl\\gpuhelper.h(268)"
       },
       {
-        "rule": "MLR-016",
+        "rule": "TPL-004",
         "name": "模板嵌套深度过高",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24498,7 +24498,7 @@
         "detail": "最大模板嵌套深度 20，45 个文件嵌套 >6: Eigen\\src\\Core\\AssignEvaluator.h(D=12); Eigen\\src\\Core\\Redux.h(D=12); Eigen\\src\\Core\\arch\\MSA\\PacketMath.h(D=18); Eigen\\src\\Core\\arch\\ZVector\\PacketMath.h(D=14); Eigen\\src\\Core\\util\\Macros.h(D=8); Eigen\\src\\Geometry\\Quaternion.h(D=12); Eigen\\src\\SparseCore\\SparseMatrix.h(D=11); Eigen\\src\\SparseCore\\SparseVector.h(D=11); demos\\mandelbrot\\mandelbrot.cpp(D=16); doc\\examples\\matrixfree_cg.cpp(D=10)"
       },
       {
-        "rule": "MLR-017",
+        "rule": "TPL-005",
         "name": "二进制膨胀超标",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24507,7 +24507,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-018",
+        "rule": "TPL-006",
         "name": "虚泛型（镀金模板）",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -24516,7 +24516,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-019",
+        "rule": "TPL-007",
         "name": "未使用 extern template 优化",
         "severity": "LOW",
         "output_level": "INFO",
@@ -24524,7 +24524,7 @@
         "detail": "项目有 1820 个模板实例化但未发现 extern template 声明"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24532,7 +24532,7 @@
         "detail": "Eigen\\src\\Cholesky\\LLT_LAPACKE.h: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24540,7 +24540,7 @@
         "detail": "Eigen\\src\\Core\\ArithmeticSequence.h: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24548,7 +24548,7 @@
         "detail": "Eigen\\src\\Core\\Array.h: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24556,7 +24556,7 @@
         "detail": "Eigen\\src\\Core\\AssignEvaluator.h: 79 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24564,7 +24564,7 @@
         "detail": "Eigen\\src\\Core\\Assign_AOCL.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24572,7 +24572,7 @@
         "detail": "Eigen\\src\\Core\\CoreEvaluators.h: 169 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24580,7 +24580,7 @@
         "detail": "Eigen\\src\\Core\\CwiseNullaryOp.h: 62 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24588,7 +24588,7 @@
         "detail": "Eigen\\src\\Core\\DenseStorage.h: 18 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24596,7 +24596,7 @@
         "detail": "Eigen\\src\\Core\\DeviceWrapper.h: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24604,7 +24604,7 @@
         "detail": "Eigen\\src\\Core\\Fill.h: 20 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24612,7 +24612,7 @@
         "detail": "Eigen\\src\\Core\\Fuzzy.h: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24620,7 +24620,7 @@
         "detail": "Eigen\\src\\Core\\InnerProduct.h: 23 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24628,7 +24628,7 @@
         "detail": "Eigen\\src\\Core\\NoAlias.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24636,7 +24636,7 @@
         "detail": "Eigen\\src\\Core\\PartialReduxEvaluator.h: 17 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24644,7 +24644,7 @@
         "detail": "Eigen\\src\\Core\\Product.h: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24652,7 +24652,7 @@
         "detail": "Eigen\\src\\Core\\ProductEvaluators.h: 156 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24660,7 +24660,7 @@
         "detail": "Eigen\\src\\Core\\Redux.h: 43 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24668,7 +24668,7 @@
         "detail": "Eigen\\src\\Core\\arch\\AVX512\\GemmKernel.h: 46 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24676,7 +24676,7 @@
         "detail": "Eigen\\src\\Core\\arch\\AltiVec\\MatrixProduct.h: 151 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24684,7 +24684,7 @@
         "detail": "Eigen\\src\\Core\\arch\\Default\\ConjHelper.h: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24692,7 +24692,7 @@
         "detail": "Eigen\\src\\Core\\arch\\Default\\GenericPacketMathPow.h: 29 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24700,7 +24700,7 @@
         "detail": "Eigen\\src\\Core\\arch\\GPU\\Tuple.h: 31 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24708,7 +24708,7 @@
         "detail": "Eigen\\src\\Core\\arch\\HVX\\PacketMath.h: 144 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24716,7 +24716,7 @@
         "detail": "Eigen\\src\\Core\\arch\\NEON\\PacketMath.h: 1058 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24724,7 +24724,7 @@
         "detail": "Eigen\\src\\Core\\arch\\RVV10\\PacketMathDecl.h: 41 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24732,7 +24732,7 @@
         "detail": "Eigen\\src\\Core\\arch\\SSE\\Reductions.h: 53 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24740,7 +24740,7 @@
         "detail": "Eigen\\src\\Core\\arch\\SYCL\\InteropHeaders.h: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24748,7 +24748,7 @@
         "detail": "Eigen\\src\\Core\\arch\\SYCL\\PacketMath.h: 50 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24756,7 +24756,7 @@
         "detail": "Eigen\\src\\Core\\arch\\clang\\PacketMath.h: 156 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24764,7 +24764,7 @@
         "detail": "Eigen\\src\\Core\\functors\\AssignmentFunctors.h: 19 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24772,7 +24772,7 @@
         "detail": "Eigen\\src\\Core\\functors\\NullaryFunctors.h: 37 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24780,7 +24780,7 @@
         "detail": "Eigen\\src\\Core\\products\\GeneralMatrixMatrixTriangular.h: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24788,7 +24788,7 @@
         "detail": "Eigen\\src\\Core\\products\\SelfadjointMatrixVector.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24796,7 +24796,7 @@
         "detail": "Eigen\\src\\Core\\products\\TriangularSolverMatrix.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24804,7 +24804,7 @@
         "detail": "Eigen\\src\\Core\\util\\EmulateArray.h: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24812,7 +24812,7 @@
         "detail": "Eigen\\src\\Core\\util\\ForwardDeclarations.h: 199 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24820,7 +24820,7 @@
         "detail": "Eigen\\src\\Core\\util\\IntegralConstant.h: 26 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24828,7 +24828,7 @@
         "detail": "Eigen\\src\\Core\\util\\MoreMeta.h: 72 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24836,7 +24836,7 @@
         "detail": "Eigen\\src\\Core\\util\\Serializer.h: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24844,7 +24844,7 @@
         "detail": "Eigen\\src\\Core\\util\\SymbolicIndex.h: 55 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24852,7 +24852,7 @@
         "detail": "Eigen\\src\\Eigenvalues\\ComplexEigenSolver.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24860,7 +24860,7 @@
         "detail": "Eigen\\src\\Eigenvalues\\EigenSolver.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24868,7 +24868,7 @@
         "detail": "Eigen\\src\\OrderingMethods\\Ordering.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24876,7 +24876,7 @@
         "detail": "Eigen\\src\\SVD\\BDCSVDImpl.h: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24884,7 +24884,7 @@
         "detail": "Eigen\\src\\SVD\\JacobiSVD.h: 40 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24892,7 +24892,7 @@
         "detail": "Eigen\\src\\SVD\\UpperBidiagonalization.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24900,7 +24900,7 @@
         "detail": "Eigen\\src\\SparseCore\\AmbiVector.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24908,7 +24908,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseUtil.h: 21 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24916,7 +24916,7 @@
         "detail": "Eigen\\src\\SparseLU\\SparseLU_kernel_bmod.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24924,7 +24924,7 @@
         "detail": "Eigen\\src\\ThreadPool\\CoreThreadPoolDevice.h: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24932,7 +24932,7 @@
         "detail": "Eigen\\src\\misc\\lapacke_helpers.h: 16 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24940,7 +24940,7 @@
         "detail": "test\\gpu_test_helper.h: 19 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24948,7 +24948,7 @@
         "detail": "test\\random_without_cast_overflow.h: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24956,7 +24956,7 @@
         "detail": "test\\svd_fill.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24964,7 +24964,7 @@
         "detail": "unsupported\\Eigen\\NNLS: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24972,7 +24972,7 @@
         "detail": "unsupported\\Eigen\\src\\BVH\\BVAlgorithms.h: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24980,7 +24980,7 @@
         "detail": "unsupported\\Eigen\\src\\EulerAngles\\EulerSystem.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24988,7 +24988,7 @@
         "detail": "unsupported\\Eigen\\src\\GPU\\DeviceBlasExpr.h: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -24996,7 +24996,7 @@
         "detail": "unsupported\\Eigen\\src\\GPU\\DeviceExpr.h: 23 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25004,7 +25004,7 @@
         "detail": "unsupported\\Eigen\\src\\GPU\\DeviceMatrix.h: 34 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25012,7 +25012,7 @@
         "detail": "unsupported\\Eigen\\src\\GPU\\GpuFFT.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25020,7 +25020,7 @@
         "detail": "unsupported\\Eigen\\src\\GPU\\GpuSVD.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25028,7 +25028,7 @@
         "detail": "unsupported\\Eigen\\src\\GPU\\GpuSparseContext.h: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25036,7 +25036,7 @@
         "detail": "unsupported\\Eigen\\src\\LevenbergMarquardt\\LevenbergMarquardt.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25044,7 +25044,7 @@
         "detail": "unsupported\\Eigen\\src\\NonLinearOptimization\\HybridNonLinearSolver.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25052,7 +25052,7 @@
         "detail": "unsupported\\Eigen\\src\\NonLinearOptimization\\LevenbergMarquardt.h: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25060,7 +25060,7 @@
         "detail": "unsupported\\Eigen\\src\\SpecialFunctions\\BesselFunctionsFunctors.h: 24 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25068,7 +25068,7 @@
         "detail": "unsupported\\Eigen\\src\\SpecialFunctions\\SpecialFunctionsFunctors.h: 30 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25076,7 +25076,7 @@
         "detail": "unsupported\\Eigen\\src\\Splines\\Spline.h: 22 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25084,7 +25084,7 @@
         "detail": "unsupported\\Eigen\\src\\Splines\\SplineFitting.h: 16 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25092,7 +25092,7 @@
         "detail": "unsupported\\Eigen\\src\\TensorSymmetry\\util\\TemplateGroupTheory.h: 55 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25100,7 +25100,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorBlock.h: 36 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25108,7 +25108,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorBroadcasting.h: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25116,7 +25116,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorChipping.h: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25124,7 +25124,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorContraction.h: 31 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25132,7 +25132,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorContractionMapper.h: 35 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25140,7 +25140,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorContractionSycl.h: 39 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25148,7 +25148,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorContractionThreadPool.h: 23 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25156,7 +25156,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorConversion.h: 36 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25164,7 +25164,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorConvolution.h: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25172,7 +25172,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorConvolutionSycl.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25180,7 +25180,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorCostModel.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25188,7 +25188,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorDevice.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25196,7 +25196,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorDeviceSycl.h: 21 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25204,7 +25204,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorDimensionList.h: 18 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25212,7 +25212,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorDimensions.h: 36 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25220,7 +25220,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorEvalTo.h: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25228,7 +25228,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorEvaluator.h: 32 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25236,7 +25236,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorExecutor.h: 25 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25244,7 +25244,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorFFT.h: 22 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25252,7 +25252,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorForcedEval.h: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25260,7 +25260,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorForwardDeclarations.h: 59 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25268,7 +25268,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorGenerator.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25276,7 +25276,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorIndexList.h: 82 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25284,7 +25284,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorIntDiv.h: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25292,7 +25292,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorMeta.h: 31 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25300,7 +25300,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorMorphing.h: 33 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25308,7 +25308,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorPadding.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25316,7 +25316,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorRandom.h: 19 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25324,7 +25324,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorReductionSycl.h: 17 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25332,7 +25332,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorRef.h: 19 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25340,7 +25340,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorReverse.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25348,7 +25348,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorRoll.h: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25356,7 +25356,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorScan.h: 16 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25364,7 +25364,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorShuffling.h: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25372,7 +25372,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorTraits.h: 27 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25380,7 +25380,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorUInt128.h: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -25388,7 +25388,7 @@
         "detail": "unsupported\\test\\matrix_functions.h: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -25396,7 +25396,7 @@
         "detail": "Eigen\\src\\Core\\arch\\Default\\BFloat16.h: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -25404,7 +25404,7 @@
         "detail": "Eigen\\src\\Core\\arch\\Default\\Half.h: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25412,7 +25412,7 @@
         "detail": "Eigen\\src\\Cholesky\\BunchKaufman.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25420,7 +25420,7 @@
         "detail": "Eigen\\src\\Cholesky\\LDLT.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25428,7 +25428,7 @@
         "detail": "Eigen\\src\\Cholesky\\LLT.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25436,7 +25436,7 @@
         "detail": "Eigen\\src\\Core\\Array.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25444,7 +25444,7 @@
         "detail": "Eigen\\src\\Core\\ArrayWrapper.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25452,7 +25452,7 @@
         "detail": "Eigen\\src\\Core\\Block.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25460,7 +25460,7 @@
         "detail": "Eigen\\src\\Core\\ConcatOp.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25468,7 +25468,7 @@
         "detail": "Eigen\\src\\Core\\CoreEvaluators.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25476,7 +25476,7 @@
         "detail": "Eigen\\src\\Core\\CwiseBinaryOp.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25484,7 +25484,7 @@
         "detail": "Eigen\\src\\Core\\CwiseNullaryOp.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25492,7 +25492,7 @@
         "detail": "Eigen\\src\\Core\\CwiseTernaryOp.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25500,7 +25500,7 @@
         "detail": "Eigen\\src\\Core\\CwiseUnaryOp.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25508,7 +25508,7 @@
         "detail": "Eigen\\src\\Core\\CwiseUnaryView.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25516,7 +25516,7 @@
         "detail": "Eigen\\src\\Core\\DenseCoeffsBase.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25524,7 +25524,7 @@
         "detail": "Eigen\\src\\Core\\Diagonal.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25532,7 +25532,7 @@
         "detail": "Eigen\\src\\Core\\DiagonalMatrix.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25540,7 +25540,7 @@
         "detail": "Eigen\\src\\Core\\Fill.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25548,7 +25548,7 @@
         "detail": "Eigen\\src\\Core\\ForceAlignedAccess.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25556,7 +25556,7 @@
         "detail": "Eigen\\src\\Core\\GenericPacketMath.h: 检测到递归模板模式，嵌套深度 4"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25564,7 +25564,7 @@
         "detail": "Eigen\\src\\Core\\IndexedView.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25572,7 +25572,7 @@
         "detail": "Eigen\\src\\Core\\Inverse.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25580,7 +25580,7 @@
         "detail": "Eigen\\src\\Core\\Map.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25588,7 +25588,7 @@
         "detail": "Eigen\\src\\Core\\MapBase.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25596,7 +25596,7 @@
         "detail": "Eigen\\src\\Core\\NestByValue.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25604,7 +25604,7 @@
         "detail": "Eigen\\src\\Core\\PermutationMatrix.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25612,7 +25612,7 @@
         "detail": "Eigen\\src\\Core\\PlainObjectBase.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25620,7 +25620,7 @@
         "detail": "Eigen\\src\\Core\\ProductEvaluators.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25628,7 +25628,7 @@
         "detail": "Eigen\\src\\Core\\RealView.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25636,7 +25636,7 @@
         "detail": "Eigen\\src\\Core\\Ref.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25644,7 +25644,7 @@
         "detail": "Eigen\\src\\Core\\Replicate.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25652,7 +25652,7 @@
         "detail": "Eigen\\src\\Core\\Reshaped.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25660,7 +25660,7 @@
         "detail": "Eigen\\src\\Core\\ReturnByValue.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25668,7 +25668,7 @@
         "detail": "Eigen\\src\\Core\\Reverse.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25676,7 +25676,7 @@
         "detail": "Eigen\\src\\Core\\SelfAdjointView.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25684,7 +25684,7 @@
         "detail": "Eigen\\src\\Core\\SkewSymmetricMatrix3.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25692,7 +25692,7 @@
         "detail": "Eigen\\src\\Core\\Solve.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25700,7 +25700,7 @@
         "detail": "Eigen\\src\\Core\\Swap.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25708,7 +25708,7 @@
         "detail": "Eigen\\src\\Core\\Transpose.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25716,7 +25716,7 @@
         "detail": "Eigen\\src\\Core\\Transpositions.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25724,7 +25724,7 @@
         "detail": "Eigen\\src\\Core\\TriangularMatrix.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25732,7 +25732,7 @@
         "detail": "Eigen\\src\\Core\\VectorBlock.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25740,7 +25740,7 @@
         "detail": "Eigen\\src\\Core\\VectorwiseOp.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25748,7 +25748,7 @@
         "detail": "Eigen\\src\\Core\\arch\\AVX512\\GemmKernel.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25756,7 +25756,7 @@
         "detail": "Eigen\\src\\Core\\arch\\Default\\BFloat16.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25764,7 +25764,7 @@
         "detail": "Eigen\\src\\Core\\arch\\Default\\Half.h: 检测到递归模板模式，嵌套深度 4"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25772,7 +25772,7 @@
         "detail": "Eigen\\src\\Core\\arch\\LSX\\GeneralBlockPanelKernel.h: 检测到递归模板模式，嵌套深度 0"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25780,7 +25780,7 @@
         "detail": "Eigen\\src\\Core\\arch\\NEON\\GeneralBlockPanelKernel.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25788,7 +25788,7 @@
         "detail": "Eigen\\src\\Core\\arch\\RVV10\\GeneralBlockPanelKernel.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25796,7 +25796,7 @@
         "detail": "Eigen\\src\\Core\\arch\\SME\\GeneralBlockPanelKernel.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25804,7 +25804,7 @@
         "detail": "Eigen\\src\\Core\\arch\\SSE\\Reductions.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25812,7 +25812,7 @@
         "detail": "Eigen\\src\\Core\\functors\\BinaryFunctors.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25820,7 +25820,7 @@
         "detail": "Eigen\\src\\Core\\functors\\NullaryFunctors.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25828,7 +25828,7 @@
         "detail": "Eigen\\src\\Core\\functors\\UnaryFunctors.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25836,7 +25836,7 @@
         "detail": "Eigen\\src\\Core\\util\\BlasUtil.h: 检测到递归模板模式，嵌套深度 4"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25844,7 +25844,7 @@
         "detail": "Eigen\\src\\Core\\util\\ForwardDeclarations.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25852,7 +25852,7 @@
         "detail": "Eigen\\src\\Core\\util\\Meta.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25860,7 +25860,7 @@
         "detail": "Eigen\\src\\Core\\util\\MoreMeta.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25868,7 +25868,7 @@
         "detail": "Eigen\\src\\Core\\util\\Serializer.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25876,7 +25876,7 @@
         "detail": "Eigen\\src\\Core\\util\\XprHelper.h: 检测到递归模板模式，嵌套深度 4"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25884,7 +25884,7 @@
         "detail": "Eigen\\src\\Eigenvalues\\Tridiagonalization.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25892,7 +25892,7 @@
         "detail": "Eigen\\src\\Geometry\\Homogeneous.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25900,7 +25900,7 @@
         "detail": "Eigen\\src\\Geometry\\Quaternion.h: 检测到递归模板模式，嵌套深度 12"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25908,7 +25908,7 @@
         "detail": "Eigen\\src\\IterativeLinearSolvers\\SolveWithGuess.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25916,7 +25916,7 @@
         "detail": "Eigen\\src\\LU\\FullPivLU.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25924,7 +25924,7 @@
         "detail": "Eigen\\src\\LU\\PartialPivLU.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25932,7 +25932,7 @@
         "detail": "Eigen\\src\\QR\\ColPivHouseholderQR.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25940,7 +25940,7 @@
         "detail": "Eigen\\src\\QR\\CompleteOrthogonalDecomposition.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25948,7 +25948,7 @@
         "detail": "Eigen\\src\\QR\\FullPivHouseholderQR.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25956,7 +25956,7 @@
         "detail": "Eigen\\src\\QR\\HouseholderQR.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25964,7 +25964,7 @@
         "detail": "Eigen\\src\\QR\\RandColPivHouseholderQR.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25972,7 +25972,7 @@
         "detail": "Eigen\\src\\SVD\\SVDBase.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25980,7 +25980,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseAssign.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25988,7 +25988,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseCompressedBase.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -25996,7 +25996,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseCwiseBinaryOp.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26004,7 +26004,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseCwiseUnaryOp.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26012,7 +26012,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseDenseProduct.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26020,7 +26020,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseDiagonalProduct.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26028,7 +26028,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseMap.h: 检测到递归模板模式，嵌套深度 4"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26036,7 +26036,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseMatrix.h: 检测到递归模板模式，嵌套深度 11"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26044,7 +26044,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseProduct.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26052,7 +26052,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseRef.h: 检测到递归模板模式，嵌套深度 4"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26060,7 +26060,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseSelfAdjointView.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26068,7 +26068,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseUtil.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26076,7 +26076,7 @@
         "detail": "Eigen\\src\\SparseCore\\SparseView.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26084,7 +26084,7 @@
         "detail": "Eigen\\src\\StlSupport\\StdDeque.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26092,7 +26092,7 @@
         "detail": "Eigen\\src\\StlSupport\\StdList.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26100,7 +26100,7 @@
         "detail": "Eigen\\src\\StlSupport\\StdVector.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26108,7 +26108,7 @@
         "detail": "doc\\examples\\matrixfree_cg.cpp: 检测到递归模板模式，嵌套深度 10"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26116,7 +26116,7 @@
         "detail": "test\\AnnoyingScalar.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26124,7 +26124,7 @@
         "detail": "test\\MovableScalar.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26132,7 +26132,7 @@
         "detail": "test\\boostmultiprec.cpp: 检测到递归模板模式，嵌套深度 6"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26140,7 +26140,7 @@
         "detail": "test\\product_extra.cpp: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26148,7 +26148,7 @@
         "detail": "test\\unaryview.cpp: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26156,7 +26156,7 @@
         "detail": "unsupported\\Eigen\\AdolcForward: 检测到递归模板模式，嵌套深度 0"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26164,7 +26164,7 @@
         "detail": "unsupported\\Eigen\\AlignedVector3: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26172,7 +26172,7 @@
         "detail": "unsupported\\Eigen\\src\\AutoDiff\\AutoDiffScalar.h: 检测到递归模板模式，嵌套深度 4"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26180,7 +26180,7 @@
         "detail": "unsupported\\Eigen\\src\\AutoDiff\\CoherentPadOp.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26188,7 +26188,7 @@
         "detail": "unsupported\\Eigen\\src\\SpecialFunctions\\HipVectorCompatibility.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26196,7 +26196,7 @@
         "detail": "unsupported\\Eigen\\src\\Splines\\SplineFwd.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26204,7 +26204,7 @@
         "detail": "unsupported\\Eigen\\src\\TensorSymmetry\\Symmetry.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26212,7 +26212,7 @@
         "detail": "unsupported\\Eigen\\src\\TensorSymmetry\\util\\TemplateGroupTheory.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26220,7 +26220,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorArgMax.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26228,7 +26228,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorBase.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26236,7 +26236,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorBroadcasting.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26244,7 +26244,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorChipping.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26252,7 +26252,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorConcatenation.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26260,7 +26260,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorDimensions.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26268,7 +26268,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorExpr.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26276,7 +26276,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorFFT.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26284,7 +26284,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorGenerator.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26292,7 +26292,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorImagePatch.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26300,7 +26300,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorInflation.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26308,7 +26308,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorLayoutSwap.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26316,7 +26316,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorMeta.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26324,7 +26324,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorMorphing.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26332,7 +26332,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorPadding.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26340,7 +26340,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorPatch.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26348,7 +26348,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorReduction.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26356,7 +26356,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorRef.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26364,7 +26364,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorReverse.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26372,7 +26372,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorRoll.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26380,7 +26380,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorScan.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26388,7 +26388,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorShuffling.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26396,7 +26396,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorStriding.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26404,7 +26404,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorTrace.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -26412,7 +26412,7 @@
         "detail": "unsupported\\Eigen\\src\\Tensor\\TensorTraits.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -34628,11 +34628,11 @@
         "weighted_sum": 43.97
       }
     },
-    "structural_note_cross_concern": "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
+    "structural_note_cross_concern": "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
     "sme_waiver_summary": [
-      "MLR-014: severity=HIGH, output_level=WARNING",
-      "MLR-017: severity=MEDIUM, output_level=WARNING",
-      "MLR-018: severity=HIGH, output_level=WARNING"
+      "TPL-002: severity=HIGH, output_level=WARNING",
+      "TPL-005: severity=MEDIUM, output_level=WARNING",
+      "TPL-006: severity=HIGH, output_level=WARNING"
     ],
     "output_level_summary": {
       "ERROR": 127,

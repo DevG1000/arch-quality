@@ -1,4 +1,4 @@
-"""
+﻿"""
 k-fold 交叉验证：数值精度评估工具泛化能力检验
 
 方法：Leave-One-Out Cross Validation (LOOCV)
@@ -22,15 +22,23 @@ PROJECTS = {
     'FreeFEM': r'D:\opensource\FreeFEM-sources',
     'MFEM': r'D:\opensource\mfem',
     'FEniCSx': r'D:\opensource\dolfinx',
+    'Code_Aster': r'D:\opensource\code_aster',
+    'ElmerFEM': r'D:\OPENSOURCE\ElmerFEM',
+    'Kratos': r'D:\opensource\Kratos',
+    'SU2': r'D:\opensource\SU2',
 }
 
 # 项目类型分类（用于分析评分模式）
 PROJECT_TYPES = {
-    'MOOSE': 'large_library',      # 大型多物理场框架
-    'deal.II': 'large_library',    # 大型 FEM 库
-    'FreeFEM': 'small_solver',     # 小型 PDE 求解器
-    'MFEM': 'small_library',       # 小型 FEM 库
-    'FEniCSx': 'small_solver',     # 小型 FEM 框架
+    'MOOSE': 'large_library',
+    'deal.II': 'large_library',
+    'FreeFEM': 'small_solver',
+    'MFEM': 'small_library',
+    'FEniCSx': 'small_solver',
+    'Code_Aster': 'large_library',
+    'ElmerFEM': 'large_library',
+    'Kratos': 'large_library',
+    'SU2': 'small_solver',
 }
 
 
@@ -250,6 +258,11 @@ def main():
         }
     }
 
+    report['dimension'] = 'numerical'
+    report['criterion'] = 'LOOCV in-range (train min..max)'
+    json_path = os.path.join(REPORT_DIR, 'cross_validation_numerical.json')
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
     report_path = os.path.join(PROJECT_ROOT, 'docs', 'zh', '交叉验证报告.md')
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(generate_report_markdown(report))

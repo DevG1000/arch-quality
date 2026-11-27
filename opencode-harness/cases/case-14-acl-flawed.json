@@ -1,0 +1,21 @@
+{
+  "id": "case-14-acl-flawed",
+  "name": "外部内核防腐评估：违规项目",
+  "description": "验证 agent 对 bad_project_acl 识别直接访问与 STEP 直连违规",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_acl",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_acl 目录直接运行外部内核防腐层评估命令：python -m arch_quality.arch_metrics_anti_corruption D:\\opensource\\arch-quality\\tests\\mutation\\projects\\bad_project_acl --json，然后汇报 overall 评分、各维度评分（external_access/wrapper_coverage/data_exchange/fidelity）和 ACL 违规（acl_violations）。不要阅读源码实现，直接运行评估命令并报告结果。",
+  "expect": {
+    "is_acl": true,
+    "overall_range": [
+      0,
+      50
+    ],
+    "dimension_fields": [
+      "external_access",
+      "wrapper_coverage",
+      "data_exchange",
+      "fidelity"
+    ],
+    "max_retries": 2
+  }
+}

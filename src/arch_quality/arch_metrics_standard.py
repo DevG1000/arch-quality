@@ -78,20 +78,78 @@ def _resolve_weights():
     return weights
 
 
+
+
+# C2: precompiled regexes for SOLID / anti-pattern hot paths
+_SOLID_INTERFACE_RE = re.compile(r"interface\s+\w+|abstract\s+class|ABC\b|Protocol\b")
+_SOLID_NEW_RE = re.compile(r"\bnew\s+\w+\s*\(|\bnew\s+[A-Z]\w+")
+_SOLID_SUPER_RE = re.compile(r"def\s+\w+\([^)]*super\([^)]*\)\)|super\(\)\.\w+")
+_SOLID_DI_RE = re.compile(r"__init__\s*\(\s*self,\s*\w+")
+_SOLID_CONSTRUCTOR_DI_RE = re.compile(r"constructor\s*\([^)]*\w+")
+_SOLID_NEW_CONCRETE_RE = re.compile(r"\bnew\s+[A-Z]\w+\s*\(")
+_SOLID_FACTORY_RE = re.compile(r"def\s+(?:create|make|build|factory)\w*")
+_ANTI_CLASS_RE = re.compile(
+    r"(?m)^\s*(?:public\s+|private\s+|protected\s+|final\s+|abstract\s+)?class\s+\w+[^:{]*[\:{]"
+)
+_ANTI_METHOD_RE = re.compile(
+    r"(?m)^\s*(?:public|private|protected|static|def|void|int|str|bool|double|float|auto|\w+\s+\w+\s*\()"
+)
+_ANTI_HARDCODE_RE = re.compile(
+    r"\b(?:1\.2\.3\.4|8\.8\.8\.8|password\s*=\s*[\"x]\w+|api[_-]?key\s*=\s*[\"x]\w+)",
+    re.IGNORECASE,
+)
+_PATTERN_PREFILTERS = {
+    "Singleton": ("getinstance",),
+    "Observer": ("listener",),
+    "Strategy": ("function", "map<", "callable"),
+    "Factory": ("new",),
+    "Command": ("command",),
+    "TemplateMethod": ("this.",),
+    "Adapter": ("adapter", "implements"),
+    "Facade": ("facade",),
+    "Decorator": ("@", "decorator"),
+    "Cache": ("cache",),
+    "Retry": ("retry", "backoff"),
+    "CallbackInjection": ("__init__", "constructor"),
+}
+
 class StandardMetrics:
     """标准架构质量指标计算"""
 
-    def __init__(self, root: str, build_dir: str = "", test_dirs: list = None):
+    def __init__(self, root: str, build_dir: str = "", test_dirs: list = None,
+                 exclude_test_coverage_dirs: list = None):
         self.root = root
         self.test_dirs = test_dirs or []
+        self.exclude_test_coverage_dirs = [
+            str(d).replace("\\", "/").strip("/").lower()
+            for d in (exclude_test_coverage_dirs or []) if d
+        ]
         self.weights = _resolve_weights()
         self.index = FileIndex(root, build_dir=build_dir)
         self.graph = DepGraph()
+        self._text_cache = {}
+        self._lower_cache = {}
         self._build_graph()
         self._dim_cache = {}
         self.git = GitHistory(root)
 
     # ── 测试覆盖度辅助 ──
+    def _read_text(self, path):
+        """Per-assessment text snapshot to avoid repeated stat/read in design/doc phases."""
+        key = os.path.abspath(str(path))
+        if key in self._text_cache:
+            return self._text_cache[key]
+        content = read_text_smart(key)
+        self._text_cache[key] = content
+        return content
+
+    def _lower(self, path, content):
+        """Reuse one lower-cased copy per file across design sub-scores."""
+        key = os.path.abspath(str(path))
+        if key not in self._lower_cache:
+            self._lower_cache[key] = content.lower()
+        return self._lower_cache[key]
+
     def _is_test_file(self, f) -> bool:
         """判断文件是否属于测试文件（路径含 test/spec/tests 目录或文件名含 test/spec）"""
         path_l = f["path"].lower().replace("\\", "/")
@@ -109,6 +167,16 @@ class StandardMetrics:
         test_files = [f for f in self.index.files if self._is_test_file(f)]
         indexed_paths = {f["path"].lower().replace("\\", "/") for f in self.index.files}
         source_files = [f for f in self.index.files if not self._is_test_file(f)]
+
+        # D3（WP-4）：FOS-012 命中的遗留无测试模块从覆盖率分母剔除，
+        # 避免与 FOS-012 重复扣分；仅在显式传入 exclude_test_coverage_dirs 时生效。
+        if self.exclude_test_coverage_dirs:
+            def _excluded(path: str) -> bool:
+                p = path.lower().replace("\\", "/")
+                return any(p == d or p.startswith(d + "/")
+                           for d in self.exclude_test_coverage_dirs)
+            source_files = [f for f in source_files if not _excluded(f["path"])]
+            test_files = [f for f in test_files if not _excluded(f["path"])]
 
         # out-of-tree 测试根目录：声明在 test_dirs 下的文件计入测试文件
         for td in self.test_dirs:
@@ -132,7 +200,7 @@ class StandardMetrics:
                 return True
             if ext == ".cpp":
                 try:
-                    content = read_text_smart(f["abs_path"])
+                    content = self._read_text(f["abs_path"])
                 except Exception:
                     content = ""
                 if ".def(" in content or "py::" in content:
@@ -151,6 +219,18 @@ class StandardMetrics:
             return 0.0, {"dir_coverage": 0, "lang_coverage": 0, "file_ratio": 0,
                          "binding_coverage": 0, "dir_score": 0, "lang_score": 0,
                          "file_score": 0, "binding_score": 0}
+        if not source_files:
+            # 没有生产源码（只有测试/文档/配置）→ 测试覆盖度不适用，而非 0 分。
+            return None, {
+                "applicable": False, "reason": "no_source_files",
+                "dir_coverage": None, "lang_coverage": None, "file_ratio": None,
+                "binding_coverage": None, "dir_score": None, "lang_score": None,
+                "file_score": None, "binding_score": None,
+                "test_files_by_lang": dict(_lang_count(test_files)),
+                "source_files_by_lang": {},
+                "is_multilang": False,
+                "excluded_legacy_modules": list(self.exclude_test_coverage_dirs),
+            }
 
         # L1 目录覆盖：有测试的源码目录占比（模块级一一对应语义）
         # 对齐《软件架构质量评估验证案例集（1.3版)》1.5 案例：
@@ -166,6 +246,8 @@ class StandardMetrics:
             test_dirs.add(d)
         for f in source_files:
             d = os.path.dirname(f["path"]).replace("\\", "/")
+            if not d:
+                d = "."  # 根目录源码不应被当成“无源码目录”
             if d and not self._is_test_file(f):
                 source_dirs.add(d)
         # 忽略非源码测试目录自身（如顶层 tests/、test/）
@@ -201,7 +283,14 @@ class StandardMetrics:
             return False
 
         covered_src_dirs = set(sd for sd in source_dirs if _dir_covered(sd, test_dirs))
-        dir_coverage = len(covered_src_dirs) / len(source_dirs) if source_dirs else 0
+        # 若遗留模块被全部剔除，分母为空 → 视为无需覆盖（1.0），避免 0 分误导；
+        # 普通项目无源码目录时保持原语义（0.0）。
+        if source_dirs:
+            dir_coverage = len(covered_src_dirs) / len(source_dirs)
+        elif self.exclude_test_coverage_dirs:
+            dir_coverage = 1.0
+        else:
+            dir_coverage = 0.0
 
         # L2 语言覆盖：有测试文件的语言占比
         test_langs = {f["lang"] for f in test_files}
@@ -248,6 +337,7 @@ class StandardMetrics:
             "test_files_by_lang": dict(_lang_count(test_files)),
             "source_files_by_lang": dict(_lang_count(source_files)),
             "is_multilang": is_multilang,
+            "excluded_legacy_modules": list(self.exclude_test_coverage_dirs),
         }
         return max(0, min(100, score)), detail
 
@@ -258,7 +348,7 @@ class StandardMetrics:
             if self._is_test_file(f):
                 continue  # 排除测试/合成项目文件（避免污染绑定层检测）
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 content = ""
             if f["ext"] == ".cpp":
@@ -281,7 +371,7 @@ class StandardMetrics:
         """判断绑定函数名是否出现在任一测试文件中"""
         for tf in test_files:
             try:
-                content = read_text_smart(tf["abs_path"])
+                content = self._read_text(tf["abs_path"])
             except Exception:
                 continue
             if re.search(r'\b' + re.escape(bound_name) + r'\b', content):
@@ -294,7 +384,7 @@ class StandardMetrics:
             node_id = f["path"]
             self.graph.add_node(node_id, f["lang"], f["path"])
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 content = ""
 
@@ -367,14 +457,14 @@ class StandardMetrics:
             "test_coverage": tc_score,
             "test_coverage_detail": tc_detail,
         }
-        total = 0
         score_keys = ["modularity", "coupling", "cohesion", "complexity", "test_coverage"]
-        for key in score_keys:
-            weight_key = {"modularity": "模块化", "coupling": "耦合度",
-                          "cohesion": "内聚度", "complexity": "复杂度",
-                          "test_coverage": "测试覆盖度"}[key]
-            total += scores[key] * w.get(weight_key, 0.2)
-        return total, scores
+        weight_keys = {"modularity": "模块化", "coupling": "耦合度",
+                       "cohesion": "内聚度", "complexity": "复杂度",
+                       "test_coverage": "测试覆盖度"}
+        active = [k for k in score_keys if scores.get(k) is not None]
+        total_w = sum(w.get(weight_keys[k], 0.2) for k in active)
+        total = sum(scores[k] * w.get(weight_keys[k], 0.2) for k in active)
+        return (total / total_w if total_w else 0), scores
 
     # ── 设计质量辅助 ──
     _DESIGN_PATTERNS = [
@@ -400,66 +490,55 @@ class StandardMetrics:
     }
 
     def calc_solid_score(self):
-        """SOLID 原则：S/O/L/I/D 五原则启发式检测（置信度：中）"""
+        """SOLID principles heuristic (medium confidence)."""
         if not self.index.files:
             return 0, {"s": 0, "o": 0, "l": 100, "i": 100, "d": 0,
                        "confidence": "中", "n_files": 0}
-        # 统计面向对象语言文件（cpp/hpp/py/java）
         oo_files = [f for f in self.index.files
                     if f["lang"] in ("cpp", "python", "java") or f["ext"] in (".hpp", ".h")]
         if not oo_files:
             return None, {"confidence": "中", "reason": "无面向对象代码"}
 
-        s_violations = 0      # 职责过多（大文件+多函数启发式）
-        o_uses_interface = 0  # 使用接口/抽象（O 正面）
-        o_modifies_new = 0    # new 具体类（O 反面）
-        l_override_no_super = 0  # override 不调 super（L 违反）
-        i_interface_methods = [] # 接口方法数（I）
-        d_constructor_di = 0   # 构造注入（D 正面）
-        d_new_concrete = 0     # new 具体类（D 反面，Factory 例外）
+        s_violations = 0
+        o_uses_interface = 0
+        o_modifies_new = 0
+        l_override_no_super = 0
+        d_constructor_di = 0
+        d_new_concrete = 0
 
         for f in oo_files:
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
-            lines = content.splitlines()
-            if len(lines) > 400:
-                s_violations += 1  # 超大文件疑似多职责
-            if re.search(r"interface\s+\w+|abstract\s+class|ABC\b|Protocol\b", content):
+            low = self._lower(f["path"], content)
+            line_count = content.count("\n") + (0 if content.endswith("\n") else 1)
+            if line_count > 400:
+                s_violations += 1
+            if ("interface" in low or "abstract" in low or "abc" in low or "protocol" in low) \
+                    and _SOLID_INTERFACE_RE.search(content):
                 o_uses_interface += 1
-            if re.search(r"\bnew\s+\w+\s*\(|\bnew\s+[A-Z]\w+", content):
+            if "new " in content and _SOLID_NEW_RE.search(content):
                 o_modifies_new += 1
-            if re.search(r"def\s+\w+\([^)]*super\([^)]*\)\)|super\(\)\.\w+", content):
+            if "super" in content and _SOLID_SUPER_RE.search(content):
                 l_override_no_super += 1
-            if re.search(r"class\s+\w+(?:implements|extends)\s+\w+", content):
-                for m in re.finditer(r"def\s+(\w+)\s*\(", content):
-                    pass
-            # D: 构造注入（__init__ 或 constructor 有参数）
-            if re.search(r"__init__\s*\(\s*self,\s*\w+", content) \
-                    or re.search(r"constructor\s*\([^)]*\w+", content):
+            if ("__init__" in content or "constructor" in content) \
+                    and (_SOLID_DI_RE.search(content) or _SOLID_CONSTRUCTOR_DI_RE.search(content)):
                 d_constructor_di += 1
-            if re.search(r"\bnew\s+[A-Z]\w+\s*\(", content):
-                # Factory 例外：方法名含 create/make/build/factory
-                if not re.search(r"def\s+(?:create|make|build|factory)\w*", content):
+            if "new " in content and _SOLID_NEW_CONCRETE_RE.search(content):
+                if not _SOLID_FACTORY_RE.search(content):
                     d_new_concrete += 1
 
         n = len(oo_files)
-        # S: 职责（100 - (职责数-1)*25），以超大文件比例代理
         s_ratio = s_violations / n
         s = max(0, 100 - s_ratio * 200)
-        # O: 100 + 接口使用加分 - new 扣分
         o = min(100, 60 + (o_uses_interface / n) * 40 - (o_modifies_new / n) * 40)
         o = max(0, o)
-        # L: 100 - override 不调 super 比例*33
         l = max(0, 100 - (l_override_no_super / n) * 33)
-        # I: 100（无精确接口方法数时给默认，接口膨胀在反模式/规则层检测）
         i = 100
-        # D: constructor_di 加分 - new_concrete 扣分
         d = max(0, min(100, (d_constructor_di / n) * 50 - (d_new_concrete / n) * 50 + 50))
         if n == 0:
             s = o = l = i = d = 0
-
         score = (s + o + l + i + d) / 5
         return round(score, 2), {
             "s": round(s, 2), "o": round(o, 2), "l": round(l, 2),
@@ -469,26 +548,34 @@ class StandardMetrics:
         }
 
     def calc_pattern_score(self):
-        """设计模式：12 种模式多样性 + 正确性（置信度：低）"""
+        """Design pattern heuristic (low confidence)."""
         if not self.index.files:
             return 0, {"patterns": [], "confidence": "低"}
-        found = []
-        for name, pat in self._DESIGN_PATTERNS:
-            for f in self.index.files:
-                try:
-                    content = read_text_smart(f["abs_path"])
-                except Exception:
+        found_set = set()
+        total = len(self._DESIGN_PATTERNS)
+        for f in self.index.files:
+            try:
+                content = self._read_text(f["abs_path"])
+            except Exception:
+                continue
+            low = self._lower(f["path"], content)
+            for name, pat in self._DESIGN_PATTERNS:
+                if name in found_set:
+                    continue
+                prefilter = _PATTERN_PREFILTERS.get(name, ())
+                if prefilter and not any(k in low for k in prefilter):
                     continue
                 if re.search(pat, content):
-                    found.append(name)
-                    break
+                    found_set.add(name)
+            if len(found_set) == total:
+                break
+        found = [name for name, _ in self._DESIGN_PATTERNS if name in found_set]
         pattern_count = min(8, len(found))
         diversity = pattern_count * 10
-        # 正确性：以"模式出现的文件数/总文件数"代理（简单实现）
         correctness = min(20, pattern_count * 2)
-        score = diversity + correctness
-        return min(100, score), {"patterns": found, "pattern_count": pattern_count,
-                                 "confidence": "低"}
+        return min(100, diversity + correctness), {
+            "patterns": found, "pattern_count": pattern_count, "confidence": "低",
+        }
 
     def calc_style_score(self):
         """架构风格：6 种风格目录模式 + 依赖方向（置信度：中）"""
@@ -515,7 +602,7 @@ class StandardMetrics:
                 path_l = f["path"].lower().replace("\\", "/")
                 if "repository" in path_l:
                     try:
-                        content = read_text_smart(f["abs_path"])
+                        content = self._read_text(f["abs_path"])
                     except Exception:
                         continue
                     if re.search(r"controller|service", content, re.IGNORECASE):
@@ -525,68 +612,67 @@ class StandardMetrics:
                                            "confidence": "中"}
 
     def calc_anti_pattern_score(self):
-        """反模式：God Class/Long Method/硬编码/霰弹修改（从 100 扣，上限 30）"""
+        """Anti-patterns: God Class / Long Method / hardcode (deduct from 100, cap 30)."""
         deduction = 0
         detail = {"god_class": 0, "long_method": 0, "hardcode": 0, "shotgun": 0}
         for f in self.index.files:
             if self._is_test_file(f):
-                continue  # 测试文件多函数为正常设计，不计反模式
+                continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             lines = content.splitlines()
-            # God Class: 针对类的检测（类块内 >300 行且方法 >10，支持 C++/Java/Python）
+            low = self._lower(f["path"], content)
+
+            # God Class: only class-bearing files can hit; avoid splitlines on every file.
             god_found = False
-            # 匹配 class 定义（花括号 C++/Java 或冒号 Python）
-            class_pat = re.compile(
-                r"(?m)^\s*(?:public\s+|private\s+|protected\s+|final\s+|abstract\s+)?class\s+\w+[^:{]*[\:{]"
-            )
-            cls_matches = list(class_pat.finditer(content))
-            for ci, cm in enumerate(cls_matches):
-                cls_start = cm.start()
-                # 类块结束：下一个顶层 class 或文件尾
-                cls_end = cls_matches[ci + 1].start() if ci + 1 < len(cls_matches) else len(content)
-                cls_body = content[cls_start:cls_end]
-                cls_lines = cls_body.splitlines()
-                if len(cls_lines) > 300:
-                    cls_methods = len(re.findall(
-                        r"(?m)^\s*(?:public|private|protected|static|def|void|int|str|bool|double|float|auto|\w+\s+\w+\s*\()",
-                        cls_body,
-                    ))
-                    if cls_methods > 10:
-                        god_found = True
-                        break
+            if "class " in content or "class\t" in content:
+                cls_matches = list(_ANTI_CLASS_RE.finditer(content))
+                for ci, cm in enumerate(cls_matches):
+                    cls_start = cm.start()
+                    cls_end = cls_matches[ci + 1].start() if ci + 1 < len(cls_matches) else len(content)
+                    cls_body = content[cls_start:cls_end]
+                    cls_line_count = cls_body.count("\n") + (0 if cls_body.endswith("\n") else 1)
+                    if cls_line_count > 300:
+                        if len(_ANTI_METHOD_RE.findall(cls_body)) > 10:
+                            god_found = True
+                            break
             if god_found:
                 deduction += 10
                 detail["god_class"] += 1
-            # Long Method: 单个函数体 >100 行（启发式：连续缩进块 >100 行）
+
+            # Long Method: fast path for short files inside helper.
             if self._has_long_method(lines):
                 deduction += 5
                 detail["long_method"] += 1
-            # 硬编码：疑似应配置化的魔法值（IP/密钥）
-            if re.search(r"\b(?:1\.2\.3\.4|8\.8\.8\.8|password\s*=\s*[\"x]\w+|api[_-]?key\s*=\s*[\"x]\w+)", content, re.IGNORECASE):
-                deduction += 5
-                detail["hardcode"] += 1
-        # 霰弹修改：启发式（多文件引用同一常量模块）
+
+            # Hardcode: cheap prefilter before regex.
+            if ("1.2.3.4" in content or "8.8.8.8" in content or
+                    "password" in low or "api_key" in low or "api-key" in low):
+                if _ANTI_HARDCODE_RE.search(content):
+                    deduction += 5
+                    detail["hardcode"] += 1
+
         detail["shotgun"] = 0
         deduction = min(30, deduction)
-        score = max(0, 100 - deduction)
-        return score, detail
+        return max(0, 100 - deduction), detail
 
     def _has_long_method(self, lines) -> bool:
-        """启发式：文件中存在 >100 行的连续缩进块（疑似长函数）"""
+        """Detect a >100-line same-indent run; short files are skipped."""
+        if len(lines) <= 100:
+            return False
         run = 0
         prev_indent = None
         for line in lines:
-            if not line.strip():
+            if not line or line.isspace():
                 continue
             indent = len(line) - len(line.lstrip())
             if prev_indent is None:
                 run = 1
             elif indent == prev_indent:
                 run += 1
-                if run > 100:  # 提前返回，避免全量遍历
+                if run > 100:
                     return True
             else:
                 run = 1
@@ -651,7 +737,7 @@ class StandardMetrics:
         if not os.path.exists(p):
             return None
         try:
-            return read_text_smart(p)
+            return self._read_text(p)
         except Exception:
             return ""
 
@@ -729,7 +815,7 @@ class StandardMetrics:
             if self._is_test_file(f):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             lines = content.splitlines()
@@ -768,7 +854,7 @@ class StandardMetrics:
             if f["ext"] not in (".ts", ".tsx", ".js", ".mjs"):
                 continue
             try:
-                content = read_text_smart(f["abs_path"])
+                content = self._read_text(f["abs_path"])
             except Exception:
                 continue
             lines = content.splitlines()
@@ -829,7 +915,7 @@ class StandardMetrics:
 
     def _safe_read_md(self, path):
         try:
-            return read_text_smart(path)
+            return self._read_text(path)
         except Exception:
             return ""
 
@@ -937,7 +1023,7 @@ class StandardMetrics:
     def _parse_pyproject_deps(self, pyproject_path):
         """解析 pyproject.toml 的 [project.dependencies] / [project.optional-dependencies]"""
         deps = []
-        content = read_text_smart(pyproject_path)
+        content = self._read_text(pyproject_path)
         # tomllib 为 Python 3.11+ 标准库；3.10 回退到 tomli（若安装）
         try:
             import tomllib
@@ -976,7 +1062,7 @@ class StandardMetrics:
         if os.path.exists(pkg_json):
             try:
                 import json as _json
-                data = _json.loads(read_text_smart(pkg_json))
+                data = _json.loads(self._read_text(pkg_json))
                 deps = list((data.get("dependencies") or {}).keys())
                 manifest_type = "package.json"
             except Exception:
@@ -986,7 +1072,7 @@ class StandardMetrics:
             manifest_type = "pyproject.toml"
         elif os.path.exists(req_txt):
             deps = [l.split("==")[0].strip() for l in
-                    read_text_smart(req_txt).splitlines()
+                    self._read_text(req_txt).splitlines()
                     if l.strip() and not l.strip().startswith("#")]
             manifest_type = "requirements.txt"
         total = len(deps)
@@ -1024,16 +1110,10 @@ class StandardMetrics:
                 if fn.lower().endswith(self._DEAD_BACKUP_EXTS):
                     detail["backup_files"] += 1
                     score -= 10
-        # 被注释的大段代码（启发式）
-        for f in self.index.files:
-            try:
-                content = read_text_smart(f["abs_path"])
-            except Exception:
-                continue
-            blocks = re.findall(r"/\*[^*]*(?:\bif\b|\bfor\b|\bclass\b|\breturn\b)[^*]*\*/", content)
-            if blocks:
-                detail["commented_blocks"] += len(blocks)
-                score -= 5 * min(3, len(blocks))
+        # D1 裁决（WP-4）：注释代码统一归 FOS-006，标准侧只保留备份文件。
+        # 保留 commented_blocks 字段用于报告兼容，但不再扣分。
+        detail["commented_blocks"] = 0
+        detail["delegated_to"] = "FOS-006"
         score = max(0, score)
         return score, detail
 
@@ -1072,7 +1152,8 @@ class StandardMetrics:
             score -= 3
             detail["medium_issues"] += 1
             detail["low_cohesion"] = True
-        if struct_detail.get("test_coverage", 100) < 50:
+        tc = struct_detail.get("test_coverage")
+        if tc is not None and tc < 50:
             score -= 3
             detail["medium_issues"] += 1
             detail["low_test_coverage"] = True

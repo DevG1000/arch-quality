@@ -32,6 +32,7 @@ from arch_quality.arch_metrics_solver_physics import SolverPhysicsMetrics
 from arch_quality.arch_metrics_geometry_consistency import GeometryConsistencyMetrics
 from arch_quality.arch_metrics_anti_corruption import AntiCorruptionMetrics
 from arch_quality.arch_metrics_hpc import HpcArchitectureMetrics
+from arch_quality.arch_metrics_fossil_code import FossilCodeMetrics
 from arch_quality.arch_report_generator import ReportGenerator
 
 SKILL_QUALITY = str(Path(__file__).parent / "skills" / "arch-quality.md")
@@ -49,6 +50,36 @@ def _registry_path():
     return ""
 
 
+
+def _profile_source_display(root: str, source: str) -> str:
+    """Report-safe source path: relative when inside root, basename otherwise."""
+    if not source:
+        return ""
+    if source.startswith("<"):
+        return source
+    try:
+        rel = os.path.relpath(source, root)
+        if rel != ".." and not rel.startswith(".." + os.sep):
+            return rel.replace(os.sep, "/")
+    except (ValueError, OSError):
+        pass
+    return os.path.basename(source)
+
+
+def _profile_source_kind(profile: dict) -> str:
+    kind = profile.get("config_source_kind")
+    if kind:
+        return kind
+    source = profile.get("config_source", "")
+    if source.startswith("<CLI"):
+        return "cli"
+    if source.endswith("arch-quality.yaml"):
+        return "arch-quality.yaml"
+    if source.endswith("pyproject.toml"):
+        return "pyproject.toml"
+    return "none"
+
+
 class ComprehensiveReport:
     """综合报告数据生成器"""
 
@@ -63,7 +94,12 @@ class ComprehensiveReport:
         self.multilang_weights = load_weights_from_skill(SKILL_MULTILANG)
         self.template_weights = load_weights_from_skill(SKILL_TEMPLATE)
 
-        self.standard = StandardMetrics(root, build_dir=build_dir, test_dirs=self.test_dirs)
+        # D3：先取 FOS-012 的遗留无测试模块，再构造标准指标（覆盖率分母剔除）
+        self.fossil = FossilCodeMetrics(root)
+        _fossil_excluded = self.fossil.legacy_untested_modules()
+        self.standard = StandardMetrics(
+            root, build_dir=build_dir, test_dirs=self.test_dirs,
+            exclude_test_coverage_dirs=_fossil_excluded)
         self.multilang = MultilangMetrics(root, build_dir=build_dir)
         self.template = TemplateMetaprogrammingMetrics(root, build_dir=build_dir)
         self.numerical = NumericalAccuracyMetrics(root)
@@ -95,6 +131,8 @@ class ComprehensiveReport:
                      if ("anti-corruption" in enabled or not profile_active) else None) if getattr(self, "anti_corruption", None) else None
         hpc_result = (getattr(self, "hpc", None).all_metrics()
                       if ("hpc" in enabled or not profile_active) else None) if getattr(self, "hpc", None) else None
+        fos_result = (getattr(self, "fossil", None).all_metrics()
+                      if ("fossil" in enabled or not profile_active) else None) if getattr(self, "fossil", None) else None
 
         struct_score = std_result["structural"]["score"]
 
@@ -105,6 +143,7 @@ class ComprehensiveReport:
         has_geometry = gcs_result.get("is_geometry", False) if gcs_result else False
         has_acl = acl_result.get("is_acl", False) if acl_result else False
         has_hpc = hpc_result.get("is_hpc", False) if hpc_result else False
+        has_fossil = fos_result.get("is_fossil", False) if fos_result else False
 
         # 激活增强引擎列表：[(key, base_weight, result)]
         # 启发式模式由检测信号决定；显式 profile 模式由声明引擎集 + 引擎实际产出（overall 非 None）决定
@@ -118,6 +157,7 @@ class ComprehensiveReport:
                 ("gcs", "geometry-consistency", 0.15, gcs_result),
                 ("acl", "anti-corruption", 0.15, acl_result),
                 ("hpc", "hpc", 0.15, hpc_result),
+                ("fos", "fossil", 0.15, fos_result),
             ]:
                 if engine in enabled and result is not None and result.get("overall") is not None:
                     enh.append((key, w, result))
@@ -136,6 +176,8 @@ class ComprehensiveReport:
                 enh.append(("acl", 0.15, acl_result))
             if has_hpc and hpc_result is not None and hpc_result.get("overall") is not None:
                 enh.append(("hpc", 0.15, hpc_result))
+            if has_fossil and fos_result is not None and fos_result.get("overall") is not None:
+                enh.append(("fos", 0.15, fos_result))
 
         # ── 激活子集全局归一化（H3 WP-1）：registry 单一事实源 ──
         active_keys = [k for k, _, _ in enh]
@@ -148,6 +190,7 @@ class ComprehensiveReport:
         gcs_weight_applied = norm.get("dim.geometry_consistency", 0.0)
         acl_weight_applied = norm.get("dim.anti_corruption", 0.0)
         hpc_weight_applied = norm.get("dim.hpc", 0.0)
+        fos_weight_applied = norm.get("dim.fossil", 0.0)
         w_structural = norm["dim.structural"]
         w_design = norm["dim.design"]
         w_documentation = norm["dim.documentation"]
@@ -168,9 +211,15 @@ class ComprehensiveReport:
 
         skipped_engines = [e for e in ENHANCEMENT_ENGINES if e not in enabled] if profile_active else []
         subset_scoring = profile_active and bool(skipped_engines)
+        config_source = self.profile.get("config_source", "") if profile_active else ""
+        config_kind = _profile_source_kind(self.profile) if profile_active else "none"
         profile_meta = {
             "active": profile_active,
-            "config_source": self.profile.get("config_source", "") if profile_active else "",
+            "config_source": config_source,
+            "config_source_display": _profile_source_display(self.root, config_source) if profile_active else "",
+            "config_source_kind": config_kind,
+            "profile_source": (self.profile.get("profile_source") if profile_active else None) or config_kind,
+            "cli_override": bool(self.profile.get("cli_override", False)) if profile_active else False,
             "profile": self.profile.get("profile") if profile_active else None,
             "enable_engines": self.profile.get("enable_engines") if profile_active else None,
             "skip_engines": self.profile.get("skip_engines") if profile_active else None,
@@ -226,6 +275,25 @@ class ComprehensiveReport:
             "hpc_waiver_audit": hpc_result.get("waiver_audit", {}) if hpc_result else {},
             "hpc_version_info": hpc_result.get("version_info", {}) if hpc_result else {},
             "topology_advisory": hpc_result.get("topology_advisory", {}) if hpc_result else {},
+            "known_holes_audit": {
+                "policy": "H3 决策 6：静态不可判项保持 KNOWN_HOLES，文档化归因，不新增编号",
+                "scored_rules_known_holes": {
+                    "geometry_consistency": ["GCS-013", "GCS-014"],
+                    "anti_corruption": ["ACL-013"],
+                    "numerical": [],
+                    "solver_physics": [],
+                    "hpc": ["HPC-013", "HPC-014"],
+                    "fossil": ["FOS-013", "FOS-014"],
+                },
+                "runtime_candidates": ["GCS-001 闭合性运行时判定", "GCS 欧拉公式约束", "ACL 内核升级兼容测试"],
+            },
+            "fossil_applicability_set": fos_result.get("applicability_set", []) if fos_result else [],
+            "fossil_score_scope": fos_result.get("score_scope", "none") if fos_result else "none",
+            "fossil_gate_status": fos_result.get("gate_status", "PASS") if fos_result else "PASS",
+            "fossil_confirmed_max_severity": fos_result.get("confirmed_max_severity") if fos_result else None,
+            "fossil_waiver_audit": fos_result.get("waiver_audit", {}) if fos_result else {},
+            "fossil_version_info": fos_result.get("version_info", {}) if fos_result else {},
+            "legacy_untested_modules": fos_result.get("legacy_untested_modules", []) if fos_result else [],
             "files": std_result["files"],
             "score_breakdown": {
                 "formula": "overall = Σ dim.score × w'_dim（激活子集全局归一化，Σw'=1）",
@@ -294,6 +362,13 @@ class ComprehensiveReport:
                 "details": hpc_result["dimensions"],
             }
 
+        if fos_result is not None and ("fos" in (k for k, _, _ in enh)):
+            result["dimensions"]["structural"]["fossil_enhancement"] = {
+                "score": fos_result["overall"],
+                "weight_applied": fos_weight_applied,
+                "details": fos_result["dimensions"],
+            }
+
         # D-a：增强维升为顶层维度（归一化权重），保留 structural.*_enhancement 别名一版本
         _enh_meta = [
             ("multilang", "multilang_enhancement", ml_result, ml_weight_applied),
@@ -303,6 +378,7 @@ class ComprehensiveReport:
             ("geometry_consistency", "geometry_consistency_enhancement", gcs_result, gcs_weight_applied),
             ("anti_corruption", "anti_corruption_enhancement", acl_result, acl_weight_applied),
             ("hpc", "hpc_enhancement", hpc_result, hpc_weight_applied),
+            ("fossil", "fossil_enhancement", fos_result, fos_weight_applied),
         ]
         for engine_name, alias_key, res, wapp in _enh_meta:
             if alias_key in result["dimensions"]["structural"]:
@@ -322,6 +398,7 @@ class ComprehensiveReport:
                 "geometry-consistency": "几何内核一致性（GCS）",
                 "anti-corruption": "外部内核防腐层（ACL）",
                 "hpc": "并行/异构计算架构（HPC）",
+                "fossil": "化石代码与技术债（FOS）",
             }
             result["dimensions"]["structural"]["skipped_enhancements"] = [
                 {"engine": e, "label": skipped_labels.get(e, e),
@@ -335,16 +412,16 @@ class ComprehensiveReport:
             if tpl_violations:
                 merged_014_023 = False
                 for v in tpl_violations:
-                    if v.get("merge_to") == "MLR-014":
+                    if v.get("merge_to") == "TPL-002":
                         for existing in result["mlr_violations"]:
-                            if existing.get("rule") == "MLR-014":
+                            if existing.get("rule") == "TPL-002":
                                 existing["merged_with_023"] = True
-                                existing["detail"] += f"; 另有 {v['count']} 处多处重复实例化（MLR-023 已合并）"
+                                existing["detail"] += f"; 另有 {v['count']} 处多处重复实例化（TPL-011 已合并）"
                                 merged_014_023 = True
                                 break
                         if not merged_014_023:
                             result["mlr_violations"].append({
-                                "rule": "MLR-014", "name": v.get("name", ""),
+                                "rule": "TPL-002", "name": v.get("name", ""),
                                 "severity": v.get("severity", "MEDIUM"),
                                 "output_level": v.get("output_level", "WARNING"),
                                 "count": v.get("count", 0),
@@ -362,8 +439,8 @@ class ComprehensiveReport:
                             output_level_summary[ol] += 1
                         if v.get("waivable"):
                             sme_waiver_notes.append(f"{v['rule']}: severity={v['severity']}, output_level={ol}")
-                if any(v.get("rule") == "MLR-013" for v in tpl_violations) and any(v.get("rule") == "MLR-015" for v in tpl_violations):
-                    result["structural_note_cross_concern"] = "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块"
+                if any(v.get("rule") == "TPL-001" for v in tpl_violations) and any(v.get("rule") == "TPL-003" for v in tpl_violations):
+                    result["structural_note_cross_concern"] = "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块"
                 if sme_waiver_notes:
                     result["sme_waiver_summary"] = sme_waiver_notes
                 result["output_level_summary"] = output_level_summary
@@ -381,6 +458,8 @@ class ComprehensiveReport:
         if gcs_result is not None:
             for v in gcs_result.get("gcs_violations", []):
                 result["mlr_violations"].append(v)
+            for v in gcs_result.get("gcs_candidates", []):
+                result["mlr_violations"].append(v)
 
         # 合并 ACL 防腐层违规到报告
         if acl_result is not None:
@@ -390,6 +469,11 @@ class ComprehensiveReport:
         # 合并 HPC 并行/异构违规到报告
         if hpc_result is not None:
             for v in hpc_result.get("hpc_violations", []):
+                result["mlr_violations"].append(v)
+
+        # 合并 FOS 化石代码/技术债违规到报告
+        if fos_result is not None:
+            for v in fos_result.get("fossil_violations", []):
                 result["mlr_violations"].append(v)
 
         # 合并标准架构质量 SAR 违规到报告
@@ -435,6 +519,12 @@ def main():
         cfg = dict(cfg)
         # 单 profile 归一为字符串（保持历史报告语义），多 profile 保留 list
         cfg["profile"] = args.profile if len(args.profile) > 1 else args.profile[0]
+        cfg["profile_source"] = "cli"
+        if cfg.get("config_source"):
+            cfg["cli_override"] = True
+        else:
+            cfg["config_source"] = "<CLI --profile>"
+            cfg["config_source_kind"] = "cli"
     if args.profile or cfg:
         cfg = dict(cfg)
         cfg["enabled_engines"] = resolve_enabled_engines(

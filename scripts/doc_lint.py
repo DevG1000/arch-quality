@@ -44,6 +44,13 @@ DIMENSIONS: Dict[str, Dict[str, str]] = {
         "skill": "src/arch_quality/skills/geometry-consistency.md",
         "opencode_skill": ".opencode/skills/geometry-consistency/SKILL.md",
     },
+    "fossil": {
+        "guide": "docs/zh/化石代码与技术债评估/化石代码与技术债评估指南.md",
+        "cases": "docs/zh/化石代码与技术债评估/化石代码与技术债评估验证案例集.md",
+        "rationale": "docs/zh/化石代码与技术债评估/化石代码与技术债评估设计依据.md",
+        "skill": "src/arch_quality/skills/fossil-code-debt.md",
+        "opencode_skill": ".opencode/skills/fossil-code-debt/SKILL.md",
+    },
 }
 
 # 指南必需章节（正则，作用于整份文档）
@@ -64,7 +71,7 @@ LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 PCT_RE = re.compile(r"^(\d+(?:\.\d+)?)\s*%$")
 SEVERITIES = ("HIGH", "MEDIUM", "LOW")
 OUTPUT_LEVELS = ("ERROR", "WARNING", "INFO")
-CONFIDENCES = ("高", "中", "低")
+CONFIDENCES = ("高", "中", "中低", "低")
 SEV_TO_OUTPUT = {"HIGH": "ERROR", "MEDIUM": "WARNING", "LOW": "INFO"}
 
 
@@ -130,6 +137,18 @@ def first_in(cells: List[str], allowed: Tuple[str, ...]) -> Optional[str]:
     return None
 
 
+def first_output_level(cells: List[str]) -> Optional[str]:
+    """解析 output_level 单元格，兼容 INFO/WARNING（>10 行）等复合写法。"""
+    for c in cells:
+        if c in OUTPUT_LEVELS:
+            return c
+        for token in re.split(r"[/（(]", c):
+            token = token.strip()
+            if token in OUTPUT_LEVELS:
+                return token
+    return None
+
+
 def parse_weights(text: str) -> Dict[str, Tuple[float, int]]:
     out: Dict[str, Tuple[float, int]] = {}
     for table in parse_tables(text):
@@ -164,7 +183,7 @@ def parse_rules(text: str) -> Dict[str, Dict[str, Any]]:
                 "id": rid,
                 "line": no,
                 "severity": first_in(cells, SEVERITIES),
-                "output_level": first_in(cells, OUTPUT_LEVELS),
+                "output_level": first_output_level(cells),
                 "confidence": first_in(cells, CONFIDENCES),
             }
     return rules
@@ -189,16 +208,18 @@ def version_history_versions(text: str) -> List[str]:
 
 def bound_guide_version(text: str) -> Optional[str]:
     patterns = (
+        r"本评估指南版本\**\s*[：:]\s*v?(\d+\.\d+)",
+        r"依据指南版本\**\s*[：:][^\n]{0,40}?(\d+\.\d+)",
         r"指南（\s*(\d+\.\d+)\s*版\s*）",
-        r"指南》[^\n]{0,24}?(\d+\.\d+)\s*版",
+        r"指南、[^\n]{0,24}?(\d+\.\d+)\s*版",
         r"指南版本\s*[：:]\s*(\d+\.\d+)",
+        r"指南[、，]?[^\n]{0,24}?(\d+\.\d+)\s*版",
     )
     for pat in patterns:
         m = re.search(pat, text)
         if m:
             return m.group(1)
     return None
-
 
 # --------------------------------------------------------------------------
 # 报告

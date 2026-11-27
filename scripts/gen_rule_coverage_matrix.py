@@ -26,27 +26,36 @@ OUT_JSON = PROJECT / "docs" / "zh" / "计划" / "rule_coverage_matrix.json"
 
 ALL_RULES = [
     # 多语言（14）
-    "MLR-001", "MLR-001b", "MLR-002", "MLR-003", "MLR-004", "MLR-004b",
+    "MLR-001", "MLR-002", "MLR-003", "MLR-004",
     "MLR-005", "MLR-006", "MLR-007", "MLR-008", "MLR-009", "MLR-010",
     "MLR-011", "MLR-012",
     # 数值（11，NVR-009 空洞）
     "NVR-001", "NVR-002", "NVR-003", "NVR-004", "NVR-005", "NVR-006",
-    "NVR-007", "NVR-008", "NVR-010", "NVR-011", "NVR-012",
+    "NVR-007", "NVR-008", "NVR-009", "NVR-010", "NVR-011", "NVR-012",
     # 物理场（11，MPR-011 空洞）
     "MPR-001", "MPR-002", "MPR-003", "MPR-004", "MPR-005", "MPR-006",
-    "MPR-007", "MPR-008", "MPR-009", "MPR-010", "MPR-012",
-    # 模板（12，当前 MLR-013~024，WP-7 将改 TPL）
-    "MLR-013", "MLR-014", "MLR-015", "MLR-016", "MLR-017", "MLR-018",
-    "MLR-019", "MLR-020", "MLR-021", "MLR-022", "MLR-023", "MLR-024",
+    "MPR-007", "MPR-008", "MPR-009", "MPR-010", "MPR-011", "MPR-012",
+    # 模板（12，当前 TPL-001~012，WP-7 将改 TPL）
+    "TPL-001", "TPL-002", "TPL-003", "TPL-004", "TPL-005", "TPL-006",
+    "TPL-007", "TPL-008", "TPL-009", "TPL-010", "TPL-011", "TPL-012",
     # 标准（12）
     "SAR-001", "SAR-002", "SAR-003", "SAR-004", "SAR-005", "SAR-006",
     "SAR-007", "SAR-008", "SAR-009", "SAR-010", "SAR-011", "SAR-012",
     # HPC（12）
     "HPC-001", "HPC-002", "HPC-003", "HPC-004", "HPC-005", "HPC-006",
     "HPC-007", "HPC-008", "HPC-009", "HPC-010", "HPC-011", "HPC-012",
+    # 化石代码（12条）
+    "FOS-001", "FOS-002", "FOS-003", "FOS-004", "FOS-005", "FOS-006",
+    "FOS-007", "FOS-008", "FOS-009", "FOS-010", "FOS-011", "FOS-012",
+    # 几何一致性（12条）
+    "GCS-001", "GCS-002", "GCS-003", "GCS-004", "GCS-005", "GCS-006",
+    "GCS-007", "GCS-008", "GCS-009", "GCS-010", "GCS-011", "GCS-012",
+    # 防腐层（12条）
+    "ACL-001", "ACL-002", "ACL-003", "ACL-004", "ACL-005", "ACL-006",
+    "ACL-007", "ACL-008", "ACL-009", "ACL-010", "ACL-011", "ACL-012",
 ]
 
-RULE_PAT = re.compile(r"\b(MLR|NVR|MPR|TPL|SAR|HPC)-(\d+)([a-z]?)\b")
+RULE_PAT = re.compile(r"\b(MLR|NVR|MPR|TPL|SAR|HPC|FOS|GCS|ACL)-(\d+)([a-z]?)\b")
 
 # 合成项目 → 触发规则映射（WP-2 新增）
 SYNTHETIC_MAP = {

@@ -2,7 +2,7 @@
 
 **方法**：Leave-One-Out (9-fold)
 **项目**：gcs_occt, gcs_salome_geom, gcs_freecad, gcs_mfem, gcs_elmerfem, gcs_gmsh, gcs_kratos, gcs_code_aster, gcs_synth_unhealthy
-**日期**：2026-10-19
+**日期**：2026-11-25
 
 ## 汇总
 | 指标 | 数值 |
@@ -59,4 +59,4 @@
 
 
 ---
-*生成时间：2026-10-19 10:16:55*
+*生成时间：2026-11-25 14:16:32*

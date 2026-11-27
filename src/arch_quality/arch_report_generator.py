@@ -42,6 +42,18 @@ def _hpc_display_grade(score: float, gate_status: str = "PASS",
     return grade
 
 
+def _fossil_display_grade(score: float, gate_status: str = "PASS",
+                          confirmed_max_severity=None) -> str:
+    """化石维度显示等级：confirmed HIGH 时封顶为“需改进”（取较低，不抬升）。"""
+    grade = _score_grade(score)
+    if gate_status == "BLOCK" or confirmed_max_severity == "HIGH":
+        rank = {"🔴 差": 0, "🟠 需改进": 1, "🟡 良好": 2, "🟢 优秀": 3}
+        cap = "🟠 需改进"
+        if rank.get(grade, 0) > rank[cap]:
+            return cap
+    return grade
+
+
 def _trend_icon(delta: float) -> str:
     if delta > 0:
         return "↑"
@@ -216,7 +228,7 @@ class ReportGenerator:
         lines = [title, "",
                  "| 规则 | 覆盖来源 | 回归 | 合成 | 单元 |",
                  "|:-----|:--------|:----:|:----:|:----:|"]
-        for prefix in ["MLR", "NVR", "MPR", "TPL", "SAR"]:
+        for prefix in ["MLR", "NVR", "MPR", "TPL", "SAR", "HPC", "GCS", "ACL", "FOS"]:
             rules = sorted(groups.get(prefix, []))
             if not rules:
                 continue
@@ -243,6 +255,48 @@ class ReportGenerator:
 
     # ── 章节 2: 总体评分 ──
 
+    def _profile_section(self) -> str:
+        p = self.m.get("profile") or {}
+        if not p:
+            return ""
+        if not p.get("active"):
+            return "## Profile 配置来源\n\n未启用显式 profile；使用启发式全量引擎检测。"
+        source = p.get("config_source_display") or p.get("config_source") or "未指定"
+        profile = p.get("profile")
+        if isinstance(profile, (list, tuple)):
+            profile = ", ".join(str(x) for x in profile)
+        elif profile is None:
+            profile = "（未声明，按 enable/skip 解析）"
+        profile_source = p.get("profile_source")
+        if p.get("cli_override"):
+            profile_source = "CLI --profile（覆盖配置文件）"
+        elif profile_source == "cli":
+            profile_source = "CLI --profile"
+        elif profile_source == "arch-quality.yaml":
+            profile_source = "配置文件（arch-quality.yaml）"
+        elif profile_source == "pyproject.toml":
+            profile_source = "配置文件（pyproject.toml）"
+        else:
+            profile_source = "未指定"
+        enabled = ", ".join(p.get("enabled_engines", [])) or "（无）"
+        skipped = ", ".join(p.get("skipped_engines", [])) or "（无）"
+        rows = [
+            ("Profile", str(profile)),
+            ("配置来源", str(source)),
+            ("来源类型", str(p.get("config_source_kind", "none"))),
+            ("Profile 来源", str(profile_source)),
+            ("启用引擎", enabled),
+            ("跳过引擎", skipped),
+            ("子集评分", "是" if p.get("subset_scoring") else "否"),
+        ]
+        body = "\n".join(f"| {k} | {v} |" for k, v in rows)
+        return (
+            "## Profile 配置来源\n\n"
+            "| 项 | 值 |\n|:--|:--|\n"
+            + body
+            + "\n\n> 配置来源使用相对路径/占位符展示，不泄露本机绝对路径。"
+        )
+
     def _overall_score(self) -> str:
         overall = self.m.get("overall_score", 0)
         grade = _score_grade(overall)
@@ -256,6 +310,7 @@ class ReportGenerator:
             ("numerical", "数值算法精度"), ("solver_physics", "求解器/物理场"),
             ("geometry_consistency", "几何内核一致性"), ("anti_corruption", "外部内核防腐层"),
             ("hpc", "并行/异构计算架构"),
+            ("fossil", "化石代码与技术债"),
         ]
         for key, label in label_map:
             d = dims.get(key) or {}
@@ -330,7 +385,8 @@ class ReportGenerator:
             if isinstance(sub_score, dict):
                 sub_score = sub_score.get("score", 0)
             if sub_score is None:
-                sub_score = 0
+                rows.append(f"| {zh_key} | {w_pct} | N/A | 不适用（无生产源码） |")
+                continue
             rationale = ""
             if sub_formatters and eng_key in sub_formatters:
                 rationale = sub_formatters[eng_key](sub_score)
@@ -363,6 +419,8 @@ class ReportGenerator:
         tc = sub.get("test_coverage_detail", {})
         if not isinstance(tc, dict) or not tc:
             return base
+        if tc.get("applicable") is False or tc.get("dir_coverage") is None:
+            return base + "\n\n> **测试覆盖度：不适用**（无生产源码，不计入结构质量权重）。"
         rows = [
             f"| L1 目录覆盖 | {tc.get('dir_score', 0):.1f} | {tc.get('dir_coverage', 0)*100:.1f}%（有测试的源码目录占比）|",
             f"| L2 语言覆盖 | {tc.get('lang_score', 0):.1f} | {tc.get('lang_coverage', 0)*100:.1f}%（有测试文件的语言占比）|",
@@ -528,7 +586,31 @@ class ReportGenerator:
                 ("hybrid_parallel", "混合并行（MPI×OpenMP）冲突"),
             ],
         },
+        "fossil_enhancement": {
+            "title": "化石代码与技术债增强评估",
+            "dims": [
+                ("legacy", "历史遗留 API 与语言方言"),
+                ("dead", "死代码与不可达逻辑"),
+                ("clone", "重复代码与重复实现"),
+                ("debt", "技术债密度与可维护性"),
+            ],
+        },
     }
+
+    def _known_holes_section(self) -> str:
+        audit = self.m.get("known_holes_audit") or {}
+        if not audit:
+            return ""
+        lines = ["## KNOWN_HOLES 审计", "",
+                 f"> {audit.get('policy', '')}", "",
+                 "| 引擎 | 已知空洞 |", "|:--|:--|"]
+        for engine, holes in (audit.get("scored_rules_known_holes") or {}).items():
+            lines.append(f"| {engine} | {', '.join(holes) if holes else '—'} |")
+        lines.append("")
+        rt = audit.get("runtime_candidates") or []
+        if rt:
+            lines.append("运行时候选：" + ", ".join(rt) + "。")
+        return "\n".join(lines) + "\n"
 
     def _topology_advisory_section(self) -> str:
         """多级计算结构 advisory（不计分、不改 overall/gate）。"""
@@ -603,6 +685,27 @@ class ReportGenerator:
                         f" / deferred={((wa.get('deferred') or {}).get('count', 0))}"
                         f" / gpu_only={((wa.get('gpu_only') or {}).get('count', 0))}"
                         f" / abuse_warning={wa.get('abuse_warning') or '无'}\n\n")
+            if enh_key == "fossil_enhancement":
+                gate = self.m.get("fossil_gate_status", "PASS")
+                app = self.m.get("fossil_applicability_set", []) or []
+                scope = self.m.get("fossil_score_scope", "none")
+                maxsev = self.m.get("fossil_confirmed_max_severity")
+                disp = _fossil_display_grade(score, gate, maxsev)
+                capped = disp != _score_grade(score)
+                header = (f"## {spec['title']}\n\n"
+                          f"**综合得分**: {score:.1f}/100 — {disp}（占总分 {weight_pct}）\n\n"
+                          f"**门禁**: {gate}　**适用集**: {', '.join(app) if app else '—'}"
+                          f"　**评分范围**: {scope}\n\n")
+                if capped:
+                    header += "> 注：项目总分未变，但化石维度受封顶（confirmed HIGH）。\n\n"
+                wa = self.m.get("fossil_waiver_audit") or {}
+                if wa:
+                    header += (
+                        "**豁免审计**: "
+                        f"legacy_ok={((wa.get('legacy_ok') or {}).get('count', 0))}"
+                        f" / deferred={((wa.get('deferred') or {}).get('count', 0))}"
+                        f" / not_dead={((wa.get('not_dead') or {}).get('count', 0))}"
+                        f" / abuse_warning={wa.get('abuse_warning') or '无'}\n\n")
             blocks.append(
                 header
                 + "| 子维度 | 得分 |\n"
@@ -615,7 +718,7 @@ class ReportGenerator:
     def _origin_annotation(v: dict) -> str:
         """WP-6：违规来源标注 [third-party]/[test]（计数感知）。
 
-        优先使用 origin_counts（如 MLR-024 循环依赖按成员归类），
+        优先使用 origin_counts（如 TPL-012 循环依赖按成员归类），
         回退到 origin 单值。first_party（项目自身）不标注。
         """
         counts = v.get("origin_counts") or {}
@@ -936,6 +1039,7 @@ class ReportGenerator:
         sections = [
             self._header(),
             self._overall_score(),
+            self._profile_section(),
             self._comparison_with_previous(),
             self._structural_quality(),
             self._design_quality(),
@@ -944,6 +1048,7 @@ class ReportGenerator:
             self._multilang_section(),
             self._enhancement_sections(),
             self._topology_advisory_section(),
+            self._known_holes_section(),
             self._mlr_violations(),
             self._rule_coverage_matrix(),
             self._scissors_gap_risk(),

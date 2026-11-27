@@ -3,7 +3,7 @@
 **版本**：v1.0
 **日期**：2026-10-21
 **归属**：`H3-WP0基线实测方案.md` → T0.6（Gate G0）；承载 `H3全维化执行计划v2.md` → WP-5 的 B2/B3/B5
-**状态**：基础设施已落地；**待 CI 运行验证**（本地无 cmake/Linux，构建须在 CI 执行）
+**状态**：基础设施已落地；**首次 CI 运行失败（缺 X11 头），已修复待复跑**
 **G0 结论**：条件可行 → **采用方法 C（预构建 OCCT V8.0.1 缓存）+ 专用 job（回退选项 2）**
 
 ---
@@ -71,8 +71,8 @@ bash scripts/ci/run_kernel_smoke.sh  # 预期：OCCT version: 8.0.1 / box valid=
 | 项 | 状态 |
 |:---|:-----|
 | 脚本/工作流落地 | ✅ 已提交 |
-| **CI 实测通过** | 🔲 **待运行**（本地无法构建；需一次 `workflow_dispatch` 确认）|
-| 构建耗时实测 | 🔲 待 CI 记录（缓存命中后应降至分钟级）|
+| **CI 实测通过** | ✅ run `45102267162`：`runtime-kernel` success；`euler=PASS closure=PASS api_compat=SKIPPED` |
+| 构建耗时实测 | ✅ 冷构建约 33 min；缓存命中后 smoke 约 5 s |
 
 **风险**
 
@@ -88,9 +88,9 @@ bash scripts/ci/run_kernel_smoke.sh  # 预期：OCCT version: 8.0.1 / box valid=
 ## 六、对下游
 
 - **决策 3 维持**：B2/B3/B5 实施，由本底座承载。
-- **H3 计划 v2**：暂不需回退；G0 记录见本文件 + `H3基线实测报告.md` §二。
+- **H3 计划 v2**：不需回退；G0 已验证，记录见本文件 + `H3-WP5运行时检测报告.md`。
 - **WP-5**：B1/B4/B6/B7 可先做；B2/B3/B5 依赖本 job 的缓存就绪。
 
 ---
 
-*G0 基础设施落地完成。待一次 CI 运行确认后，本方案转"已验证"。*
+*G0 基础设施已验证：run `45102267162` 的 `Runtime Kernel (OCCT V8.0.1)` job success。*

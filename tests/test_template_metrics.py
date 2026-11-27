@@ -10,10 +10,11 @@ test_template_metrics.py — arch_metrics_template.py 单元测试
 6. 模板嵌套度评分
 7. 二进制膨胀率评分
 8. 不必要模板化评分
-9. MLR规则检测（MLR-013~024）
+9. MLR规则检测（TPL-001~012）
 10. 综合评分权重计算
 """
 
+import json
 import os
 import shutil
 import tempfile
@@ -349,9 +350,9 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr014 = [v for v in violations if v["rule"] == "MLR-014"]
-            self.assertTrue(any(v["rule"] == "MLR-014" for v in violations))
-            v014 = next(v for v in violations if v["rule"] == "MLR-014")
+            mlr014 = [v for v in violations if v["rule"] == "TPL-002"]
+            self.assertTrue(any(v["rule"] == "TPL-002" for v in violations))
+            v014 = next(v for v in violations if v["rule"] == "TPL-002")
             self.assertEqual(v014["severity"], "HIGH")
             self.assertEqual(v014["output_level"], "INFO")
             self.assertTrue(v014.get("waivable", False))
@@ -372,7 +373,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr014 = [v for v in violations if v["rule"] == "MLR-014"]
+            mlr014 = [v for v in violations if v["rule"] == "TPL-002"]
             if mlr014:
                 self.assertEqual(mlr014[0]["severity"], "HIGH")
         finally:
@@ -397,7 +398,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr017 = [v for v in violations if v["rule"] == "MLR-017"]
+            mlr017 = [v for v in violations if v["rule"] == "TPL-005"]
             if mlr017:
                 self.assertEqual(mlr017[0]["severity"], "MEDIUM")
                 self.assertEqual(mlr017[0]["output_level"], "INFO")
@@ -422,7 +423,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr018 = [v for v in violations if v["rule"] == "MLR-018"]
+            mlr018 = [v for v in violations if v["rule"] == "TPL-006"]
             if mlr018:
                 self.assertEqual(mlr018[0]["severity"], "HIGH")
                 self.assertEqual(mlr018[0]["output_level"], "INFO")
@@ -443,9 +444,9 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr023 = [v for v in violations if v["rule"] == "MLR-023"]
+            mlr023 = [v for v in violations if v["rule"] == "TPL-011"]
             if mlr023:
-                self.assertEqual(mlr023[0].get("merge_to"), "MLR-014")
+                self.assertEqual(mlr023[0].get("merge_to"), "TPL-002")
         finally:
             shutil.rmtree(tmp)
 
@@ -459,7 +460,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr024 = [v for v in violations if v["rule"] == "MLR-024"]
+            mlr024 = [v for v in violations if v["rule"] == "TPL-012"]
             if mlr024:
                 self.assertEqual(mlr024[0]["severity"], "LOW")
         finally:
@@ -474,7 +475,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr024 = [v for v in violations if v["rule"] == "MLR-024"]
+            mlr024 = [v for v in violations if v["rule"] == "TPL-012"]
             self.assertGreaterEqual(len(mlr024), 0)
         finally:
             try:
@@ -498,7 +499,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr018 = [v for v in violations if v["rule"] == "MLR-018"]
+            mlr018 = [v for v in violations if v["rule"] == "TPL-006"]
             self.assertGreaterEqual(len(mlr018), 0)
         finally:
             shutil.rmtree(tmp)
@@ -517,7 +518,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr019 = [v for v in violations if v["rule"] == "MLR-019"]
+            mlr019 = [v for v in violations if v["rule"] == "TPL-007"]
             self.assertGreaterEqual(len(mlr019), 0)
         finally:
             shutil.rmtree(tmp)
@@ -540,9 +541,9 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr014 = [v for v in violations if v["rule"] == "MLR-014"]
+            mlr014 = [v for v in violations if v["rule"] == "TPL-002"]
             # 只有 Vec<double> v1 是真正的实例化，typedef/using 被过滤
-            # 1 次实例化不触发 MLR-014 (>2 才触发)
+            # 1 次实例化不触发 TPL-002 (>2 才触发)
             self.assertEqual(len(mlr014), 0)
         finally:
             shutil.rmtree(tmp)
@@ -566,7 +567,7 @@ class TestMLRRules(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr014 = [v for v in violations if v["rule"] == "MLR-014"]
+            mlr014 = [v for v in violations if v["rule"] == "TPL-002"]
             if mlr014:
                 # 使用 extern template 后，output_level 应为 INFO
                 self.assertEqual(mlr014[0]["output_level"], "INFO")
@@ -655,7 +656,7 @@ class TestOutputLevel4(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr022 = [v for v in violations if v["rule"] == "MLR-022"]
+            mlr022 = [v for v in violations if v["rule"] == "TPL-010"]
             if mlr022:
                 self.assertEqual(mlr022[0]["severity"], "HIGH")
                 self.assertEqual(mlr022[0]["output_level"], "ERROR")
@@ -671,7 +672,7 @@ class TestOutputLevel4(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr024 = [v for v in violations if v["rule"] == "MLR-024"]
+            mlr024 = [v for v in violations if v["rule"] == "TPL-012"]
             if mlr024:
                 self.assertEqual(mlr024[0]["output_level"], "ERROR")
                 self.assertEqual(mlr024[0]["severity"], "HIGH")
@@ -688,7 +689,7 @@ class TestOutputLevel4(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr024 = [v for v in violations if v["rule"] == "MLR-024"]
+            mlr024 = [v for v in violations if v["rule"] == "TPL-012"]
             if mlr024:
                 self.assertEqual(mlr024[0]["output_level"], "LOW")
                 self.assertEqual(mlr024[0]["severity"], "LOW")
@@ -715,7 +716,7 @@ class TestOutputLevel4(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr017 = [v for v in violations if v["rule"] == "MLR-017"]
+            mlr017 = [v for v in violations if v["rule"] == "TPL-005"]
             if mlr017:
                 self.assertEqual(mlr017[0]["output_level"], "WARNING")
         finally:
@@ -735,7 +736,7 @@ class TestOutputLevel4(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr014 = [v for v in violations if v["rule"] == "MLR-014"]
+            mlr014 = [v for v in violations if v["rule"] == "TPL-002"]
             if mlr014:
                 self.assertEqual(mlr014[0]["severity"], "HIGH")
                 self.assertEqual(mlr014[0]["output_level"], "WARNING")
@@ -769,7 +770,7 @@ class TestOutputLevel4(unittest.TestCase):
         try:
             metrics = TemplateMetaprogrammingMetrics(tmp)
             violations = metrics.check_mlr_rules()
-            mlr017 = [v for v in violations if v["rule"] == "MLR-017"]
+            mlr017 = [v for v in violations if v["rule"] == "TPL-005"]
             if mlr017:
                 self.assertIn("跨规则协调", mlr017[0]["detail"])
         finally:
@@ -822,6 +823,60 @@ class TestDimensionNames(unittest.TestCase):
             self.assertIn("template_nesting_depth", result["dimensions"])
             self.assertNotIn("template_nesting_degree", result["dimensions"])
             self.assertIn("unnecessary_templating", result["dimensions"])
+        finally:
+            shutil.rmtree(tmp)
+
+
+class TestB1CompileDB(unittest.TestCase):
+    """B1 跨 TU 实例化：compile_commands.json + 多 TU 模板使用"""
+
+    def _make(self, files):
+        tmp = tempfile.mkdtemp()
+        for path, content in files.items():
+            full = os.path.join(tmp, path)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w", encoding="utf-8") as f:
+                f.write(content)
+        return tmp
+
+    def _db(self, root):
+        return json.dumps([
+            {"directory": root, "file": "src/a.cpp",
+             "arguments": ["g++", "-Iinclude", "-DUSE_A", "-c", "src/a.cpp"]},
+            {"directory": root, "file": "src/b.cpp",
+             "arguments": ["g++", "-Iinclude", "-DUSE_B", "-c", "src/b.cpp"]},
+        ])
+
+    def test_b1_cross_tu_template_candidate(self):
+        tmp = self._make({
+            "src/vec.h": "template<typename T> class Vec { T data[3]; };\n",
+            "src/a.cpp": '#include "vec.h"\nVec<int> a;\n',
+            "src/b.cpp": '#include "vec.h"\nVec<int> b;\n',
+        })
+        try:
+            with open(os.path.join(tmp, "compile_commands.json"), "w", encoding="utf-8") as f:
+                f.write(self._db(tmp))
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            rules = metrics.check_mlr_rules()
+            b1 = [v for v in rules if v["rule"] == "TPL-006" and v.get("candidate")]
+            self.assertTrue(b1, "B1 应产生 TPL-006 candidate")
+            self.assertIn("compile_commands", b1[0]["detail"])
+            self.assertEqual(b1[0]["tu_count"], 2)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_b1_silent_with_extern_template(self):
+        tmp = self._make({
+            "src/vec.h": "template<typename T> class Vec { T data[3]; };\nextern template class Vec<int>;\n",
+            "src/a.cpp": '#include "vec.h"\nVec<int> a;\n',
+            "src/b.cpp": '#include "vec.h"\nVec<int> b;\n',
+        })
+        try:
+            with open(os.path.join(tmp, "compile_commands.json"), "w", encoding="utf-8") as f:
+                f.write(self._db(tmp))
+            metrics = TemplateMetaprogrammingMetrics(tmp)
+            rules = metrics.check_mlr_rules()
+            self.assertFalse(any(v["rule"] == "TPL-006" and v.get("candidate") for v in rules))
         finally:
             shutil.rmtree(tmp)
 

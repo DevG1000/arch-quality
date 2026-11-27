@@ -1,0 +1,71 @@
+{
+  "is_fossil": true,
+  "overall": 60.5,
+  "applicability_set": [
+    "clone",
+    "dead",
+    "debt",
+    "legacy"
+  ],
+  "score_scope": "project",
+  "gate_status": "WARN",
+  "dimensions": {
+    "clone": {
+      "score": 0,
+      "applicable": true
+    },
+    "dead": {
+      "score": 100,
+      "applicable": true
+    },
+    "debt": {
+      "score": 75,
+      "applicable": true
+    },
+    "legacy": {
+      "score": 60,
+      "applicable": true
+    }
+  },
+  "violations": [
+    {
+      "rule": "FOS-001",
+      "count": 218,
+      "output_level": "WARNING",
+      "candidate": false,
+      "confirmed": true
+    },
+    {
+      "rule": "FOS-007",
+      "count": 200,
+      "output_level": "WARNING",
+      "candidate": true,
+      "confirmed": false
+    },
+    {
+      "rule": "FOS-008",
+      "count": 463,
+      "output_level": "INFO",
+      "candidate": true,
+      "confirmed": false
+    },
+    {
+      "rule": "FOS-009",
+      "count": 44,
+      "output_level": "WARNING",
+      "candidate": true,
+      "confirmed": false
+    },
+    {
+      "rule": "FOS-012",
+      "count": 1,
+      "output_level": "WARNING",
+      "candidate": true,
+      "confirmed": false
+    }
+  ],
+  "version_info": {
+    "guide_version": "0.2",
+    "skill_version": "1.0"
+  }
+}

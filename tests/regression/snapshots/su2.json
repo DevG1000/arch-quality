@@ -1,0 +1,51 @@
+{
+  "project": "SU2",
+  "snapshot_date": "2026-11-25",
+  "root_path": "D:\\opensource\\SU2",
+  "multilang_overall": 65.36,
+  "is_single_language": false,
+  "languages": [
+    "swig",
+    "cpp",
+    "python",
+    "c",
+    "fortran"
+  ],
+  "file_count": 1819,
+  "files_by_lang": {
+    "c": 923,
+    "cpp": 790,
+    "python": 90,
+    "fortran": 13,
+    "swig": 3
+  },
+  "dimensions": {
+    "coupling_intensity": 99.42,
+    "impact_radius": 99.75,
+    "call_depth": 80,
+    "binding_consistency": 30.0,
+    "script_boundary": 0,
+    "cross_lang_cycles": 100
+  },
+  "mlr_violations": {
+    "MLR-006|MEDIUM": 7,
+    "MLR-010|LOW": 236,
+    "MLR-010|MEDIUM": 19,
+    "MLR-012|INFO": 2
+  },
+  "fortran_mapping": {
+    "module_map_size": 0,
+    "subroutine_map_size": 7,
+    "use_total": 386,
+    "use_resolved": 0,
+    "use_hit_rate": 0.0,
+    "call_total": 32,
+    "call_resolved": 27,
+    "call_hit_rate": 0.8438
+  },
+  "required_mlr_rules": [
+    "MLR-006",
+    "MLR-010",
+    "MLR-012"
+  ]
+}

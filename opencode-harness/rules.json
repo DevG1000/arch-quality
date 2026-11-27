@@ -1,4 +1,4 @@
-﻿{
+{
   "$comment": "agent harness 断言规则单一事实源。Python 断言器与 opencode 插件 hook 共享，修改需同时保证两者读取一致。",
   "eval_bash_prefixes": [
     "arch-quality",
@@ -51,7 +51,7 @@
     "data_transfer"
   ],
   "assert_mode": "log",
-  "version": "1.2",
+  "version": "1.3",
   "gcs_dimension_fields": [
     "geometry_kernel_consistency",
     "precision_unit_consistency",
@@ -68,12 +68,26 @@
     "arch-quality-standard",
     "arch-quality-multilang",
     "arch-quality-template",
-    "python -m arch_quality.arch_metrics_hpc"
+    "python -m arch_quality.arch_metrics_hpc",
+    "python -m arch_quality.arch_metrics_fossil_code",
+    "python -m arch_quality.arch_metrics_anti_corruption"
   ],
   "hpc_dimension_fields": [
     "backend_consistency",
     "mpi_halo",
     "load_topology",
     "hybrid_parallel"
+  ],
+  "fossil_dimension_fields": [
+    "legacy",
+    "dead",
+    "clone",
+    "debt"
+  ],
+  "acl_dimension_fields": [
+    "external_access",
+    "wrapper_coverage",
+    "data_exchange",
+    "fidelity"
   ]
 }

@@ -151521,7 +151521,7 @@
     },
     "mlr_violations": [
       {
-        "rule": "MLR-013",
+        "rule": "TPL-001",
         "name": "热模板头文件",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -151529,17 +151529,17 @@
         "detail": "367 个头文件影响 >50 编译单元: src\\OpenFOAM\\primitives\\ints\\uint8\\uint8.H(308); src\\OpenFOAM\\primitives\\hashes\\Hash\\Hasher.H(308); src\\OpenFOAM\\primitives\\ints\\uint16\\uint16.H(308); src\\OpenFOAM\\db\\IOstreams\\IOstreams\\InfoProxy.H(308); src\\OpenFOAM\\primitives\\ints\\uLabel\\uLabel.H(308); src\\OpenFOAM\\primitives\\ints\\uint32\\uint32.H(308); src\\OpenFOAM\\primitives\\Scalar\\floatScalar\\floatScalar.H(308); src\\OpenFOAM\\primitives\\bools\\bool\\bool.H(308); src\\OpenFOAM\\primitives\\direction\\direction.H(308); src\\OpenFOAM\\primitives\\ints\\int16\\int16.H(308)"
       },
       {
-        "rule": "MLR-014",
+        "rule": "TPL-002",
         "name": "模板重复实例化",
         "severity": "HIGH",
         "output_level": "WARNING",
         "count": 86,
-        "detail": "86 个模板被 >2 个编译单元重复实例化: RectangularMatrix<Type>×34; SquareMatrix<Type>×32; List<Type>×22; DiagonalMatrix<Type>×17; Field<Type>×15; List<label>×13; DynamicList<label>×12; List<word>×12; Enum<int>×12; SphericalTensor<Type>×12; 另有 541 处多处重复实例化（MLR-023 已合并）",
+        "detail": "86 个模板被 >2 个编译单元重复实例化: RectangularMatrix<Type>×34; SquareMatrix<Type>×32; List<Type>×22; DiagonalMatrix<Type>×17; Field<Type>×15; List<label>×13; DynamicList<label>×12; List<word>×12; Enum<int>×12; SphericalTensor<Type>×12; 另有 541 处多处重复实例化（TPL-011 已合并）",
         "waivable": true,
         "merged_with_023": true
       },
       {
-        "rule": "MLR-015",
+        "rule": "TPL-003",
         "name": "头文件传染链过长",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151547,7 +151547,7 @@
         "detail": "49 个头文件存在 >3 层传播链 (影响 >20 文件): src\\finiteArea\\distributed\\faMeshDistributor.txx(305); src\\conversion\\ensight\\output\\ensightOutputVolField.txx(258); applications\\utilities\\parallelProcessing\\redistributePar\\parFvFieldDistributor.txx(227); src\\parallel\\decompose\\faDecompose\\faFieldDecomposer.txx(200); applications\\utilities\\parallelProcessing\\redistributePar\\parPointFieldDistributor.txx(198); applications\\utilities\\parallelProcessing\\redistributePar\\parLagrangianDistributor.txx(198); src\\parallel\\reconstruct\\reconstruct\\fvFieldReconstructor.txx(196); src\\parallel\\reconstruct\\faReconstruct\\faFieldReconstructor.txx(195); src\\conversion\\vtk\\output\\foamVtkInternalWriter.txx(186); src\\finiteArea\\faMesh\\faMeshSubset\\faMeshSubset.txx(176)"
       },
       {
-        "rule": "MLR-016",
+        "rule": "TPL-004",
         "name": "模板嵌套深度过高",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151555,7 +151555,7 @@
         "detail": "最大模板嵌套深度 16，76 个文件嵌套 >6: applications\\test\\DynamicList2\\Test-DynamicList2.cxx(D=8); applications\\test\\DynamicList\\Test-DynamicList.cxx(D=16); applications\\test\\FixedList\\Test-FixedList.cxx(D=10); applications\\test\\HashPtrTable\\Test-HashPtrTable.cxx(D=8); applications\\test\\HashTable2\\Test-HashTable2.cxx(D=8); applications\\test\\HashTable3\\Test-HashTable3.cxx(D=10); applications\\test\\HashTable4\\Test-HashTable4.cxx(D=10); applications\\test\\IOField\\Test-IOField.cxx(D=10); applications\\test\\IjkField\\Test-IjkField.cxx(D=10); applications\\test\\List3\\Test-List3.cxx(D=8)"
       },
       {
-        "rule": "MLR-017",
+        "rule": "TPL-005",
         "name": "二进制膨胀超标",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151564,7 +151564,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-018",
+        "rule": "TPL-006",
         "name": "虚泛型（镀金模板）",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -151573,7 +151573,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-019",
+        "rule": "TPL-007",
         "name": "未使用 extern template 优化",
         "severity": "LOW",
         "output_level": "INFO",
@@ -151581,7 +151581,7 @@
         "detail": "项目有 1113 个模板实例化但未发现 extern template 声明"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151589,7 +151589,7 @@
         "detail": "applications\\test\\Hashing1\\HashFunction.H: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151597,7 +151597,7 @@
         "detail": "applications\\utilities\\parallelProcessing\\redistributePar\\parFvFieldDistributor.H: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151605,7 +151605,7 @@
         "detail": "applications\\utilities\\surface\\surfaceCoarsen\\bunnylod\\list.hxx: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151613,7 +151613,7 @@
         "detail": "src\\OpenFOAM\\algorithms\\indexedOctree\\indexedOctree.H: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151621,7 +151621,7 @@
         "detail": "src\\OpenFOAM\\containers\\HashTables\\HashTable\\HashTableDetail.H: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151629,7 +151629,7 @@
         "detail": "src\\OpenFOAM\\db\\IOstreams\\Pstreams\\Pstream.H: 47 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151637,7 +151637,7 @@
         "detail": "src\\OpenFOAM\\db\\functionObjects\\functionObjectProperties\\functionObjectProperties.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151645,7 +151645,7 @@
         "detail": "src\\OpenFOAM\\db\\functionObjects\\regionFunctionObject\\regionFunctionObject.H: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151653,7 +151653,7 @@
         "detail": "src\\OpenFOAM\\dimensionedTypes\\dimensionedType\\dimensionedType.H: 26 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151661,7 +151661,7 @@
         "detail": "src\\OpenFOAM\\expressionTemplates\\GenericExpression.H: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151669,7 +151669,7 @@
         "detail": "src\\OpenFOAM\\expressionTemplates\\GeometricFieldExpression.H: 70 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151677,7 +151677,7 @@
         "detail": "src\\OpenFOAM\\expressionTemplates\\ListExpression.H: 42 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151685,7 +151685,7 @@
         "detail": "src\\OpenFOAM\\expressions\\exprOps\\exprOps.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151693,7 +151693,7 @@
         "detail": "src\\OpenFOAM\\expressions\\value\\exprValueFieldTag.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151701,7 +151701,7 @@
         "detail": "src\\OpenFOAM\\fields\\DimensionedFields\\DimensionedField\\DimensionedFieldReuseFunctions.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151709,7 +151709,7 @@
         "detail": "src\\OpenFOAM\\fields\\FieldFields\\FieldField\\FieldFieldReuseFunctions.H: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151717,7 +151717,7 @@
         "detail": "src\\OpenFOAM\\fields\\Fields\\Field\\FieldReuseFunctions.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151725,7 +151725,7 @@
         "detail": "src\\OpenFOAM\\fields\\pointPatchFields\\pointPatchField\\pointPatchField.H: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151733,7 +151733,7 @@
         "detail": "src\\OpenFOAM\\matrices\\LduMatrix\\lduAddressing\\lduInterface\\processorLduInterface.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151741,7 +151741,7 @@
         "detail": "src\\OpenFOAM\\matrices\\simpleMatrix\\simpleMatrix.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151749,7 +151749,7 @@
         "detail": "src\\OpenFOAM\\meshes\\MeshObject\\MeshObject.H: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151757,7 +151757,7 @@
         "detail": "src\\OpenFOAM\\meshes\\polyMesh\\mapPolyMesh\\mapDistribute\\mapDistribute.H: 27 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151765,7 +151765,7 @@
         "detail": "src\\OpenFOAM\\meshes\\polyMesh\\mapPolyMesh\\mapDistribute\\mapDistributeBase.H: 25 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151773,7 +151773,7 @@
         "detail": "src\\OpenFOAM\\meshes\\polyMesh\\syncTools\\dummyTransform.H: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151781,7 +151781,7 @@
         "detail": "src\\OpenFOAM\\meshes\\polyMesh\\syncTools\\syncTools.H: 36 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151789,7 +151789,7 @@
         "detail": "src\\OpenFOAM\\meshes\\primitiveMesh\\PatchTools\\PatchTools.H: 17 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151797,7 +151797,7 @@
         "detail": "src\\OpenFOAM\\meshes\\primitiveShapes\\cut\\cut.H: 16 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151805,7 +151805,7 @@
         "detail": "src\\OpenFOAM\\parallel\\fieldsDistributor\\fieldsDistributor.H: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151813,7 +151813,7 @@
         "detail": "src\\OpenFOAM\\primitives\\VectorSpace\\products.H: 16 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151821,7 +151821,7 @@
         "detail": "src\\OpenFOAM\\primitives\\coordinate\\systems\\coordinateSystem.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151829,7 +151829,7 @@
         "detail": "src\\OpenFOAM\\primitives\\ops\\flipOp.H: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151837,7 +151837,7 @@
         "detail": "src\\OpenFOAM\\primitives\\ops\\ops.H: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151845,7 +151845,7 @@
         "detail": "src\\OpenFOAM\\primitives\\strings\\lists\\stringListOps.H: 28 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151853,7 +151853,7 @@
         "detail": "src\\OpenFOAM\\primitives\\subModelBase\\subModelBase.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151861,7 +151861,7 @@
         "detail": "src\\dynamicMesh\\fvMeshAdder\\fvMeshAdder.H: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151869,7 +151869,7 @@
         "detail": "src\\dynamicMesh\\fvMeshDistribute\\fvMeshDistribute.H: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151877,7 +151877,7 @@
         "detail": "src\\dynamicMesh\\motionSmoother\\motionSmootherAlgo.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151885,7 +151885,7 @@
         "detail": "src\\fileFormats\\ensight\\type\\ensightPTraits.H: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151893,7 +151893,7 @@
         "detail": "src\\fileFormats\\vtk\\base\\foamVtkPTraits.H: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151901,7 +151901,7 @@
         "detail": "src\\finiteArea\\distributed\\faMeshDistributor.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151909,7 +151909,7 @@
         "detail": "src\\finiteArea\\faMatrices\\faMatrix\\faMatrix.H: 89 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151917,7 +151917,7 @@
         "detail": "src\\finiteArea\\fields\\faPatchFields\\faPatchField\\faPatchField.H: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151925,7 +151925,7 @@
         "detail": "src\\finiteArea\\fields\\faePatchFields\\faePatchField\\faePatchField.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151933,7 +151933,7 @@
         "detail": "src\\finiteArea\\interpolation\\volSurfaceMapping\\volSurfaceMapping.H: 31 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151941,7 +151941,7 @@
         "detail": "src\\finiteVolume\\expressionTemplates\\fvMatrixExpression.H: 25 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151949,7 +151949,7 @@
         "detail": "src\\finiteVolume\\fields\\fvPatchFields\\derived\\mappedField\\mappedPatchFieldBase.H: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151957,7 +151957,7 @@
         "detail": "src\\finiteVolume\\fields\\fvPatchFields\\fvPatchField\\fvPatchField.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151965,7 +151965,7 @@
         "detail": "src\\finiteVolume\\fields\\fvsPatchFields\\fvsPatchField\\fvsPatchField.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151973,7 +151973,7 @@
         "detail": "src\\finiteVolume\\finiteVolume\\ddtSchemes\\CrankNicolsonDdtScheme\\CrankNicolsonDdtScheme.H: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151981,7 +151981,7 @@
         "detail": "src\\finiteVolume\\finiteVolume\\ddtSchemes\\ddtScheme\\ddtScheme.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151989,7 +151989,7 @@
         "detail": "src\\finiteVolume\\fvMatrices\\fvMatrix\\fvMatrix.H: 93 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -151997,7 +151997,7 @@
         "detail": "src\\functionObjects\\field\\fieldAverage\\fieldAverage.H: 14 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152005,7 +152005,7 @@
         "detail": "src\\functionObjects\\field\\fieldStatistics\\fieldStatistics.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152013,7 +152013,7 @@
         "detail": "src\\functionObjects\\field\\wallBoundedStreamLine\\wallBoundedParticle.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152021,7 +152021,7 @@
         "detail": "src\\mesh\\snappyHexMesh\\meshRefinement\\meshRefinement.H: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152029,7 +152029,7 @@
         "detail": "src\\optimisation\\adjointOptimisation\\adjoint\\solvers\\variablesSet\\variablesSet\\variablesSet.H: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152037,7 +152037,7 @@
         "detail": "src\\overset\\cellCellStencil\\cellCellStencil\\cellCellStencil.H: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152045,7 +152045,7 @@
         "detail": "src\\overset\\oversetFvMesh\\oversetFvMeshBase.H: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152053,7 +152053,7 @@
         "detail": "src\\parallel\\decompose\\decompose\\lagrangianFieldDecomposer.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152061,7 +152061,7 @@
         "detail": "src\\parallel\\decompose\\faDecompose\\faFieldDecomposer.H: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152069,7 +152069,7 @@
         "detail": "src\\parallel\\reconstruct\\faReconstruct\\faFieldReconstructor.H: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -152077,7 +152077,7 @@
         "detail": "src\\parallel\\reconstruct\\reconstruct\\fvFieldReconstructor.H: 12 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152085,7 +152085,7 @@
         "detail": "src\\OpenFOAM\\containers\\HashTables\\HashPtrTable\\HashPtrTable.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152093,7 +152093,7 @@
         "detail": "src\\OpenFOAM\\containers\\HashTables\\HashSet\\HashSet.H: 检测到递归模板模式，嵌套深度 6"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152101,7 +152101,7 @@
         "detail": "src\\OpenFOAM\\containers\\HashTables\\HashTable\\HashTable.H: 检测到递归模板模式，嵌套深度 6"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152109,7 +152109,7 @@
         "detail": "src\\OpenFOAM\\containers\\Lists\\FixedList\\FixedList.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152117,7 +152117,7 @@
         "detail": "src\\OpenFOAM\\db\\IOstreams\\output\\FlatOutput.H: 检测到递归模板模式，嵌套深度 0"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152125,7 +152125,7 @@
         "detail": "src\\OpenFOAM\\meshes\\MeshObject\\MeshObject.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152133,7 +152133,7 @@
         "detail": "src\\OpenFOAM\\meshes\\MeshObject\\MeshObject.txx: 检测到递归模板模式，嵌套深度 10"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152141,7 +152141,7 @@
         "detail": "src\\OpenFOAM\\meshes\\boundBox\\boundBox.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152149,7 +152149,7 @@
         "detail": "src\\OpenFOAM\\meshes\\primitiveShapes\\objectHit\\pointIndexHit.H: 检测到递归模板模式，嵌套深度 6"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152157,7 +152157,7 @@
         "detail": "src\\OpenFOAM\\meshes\\treeBoundBox\\treeBoundBox.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152165,7 +152165,7 @@
         "detail": "src\\OpenFOAM\\primitives\\Barycentric2D\\Barycentric2D.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152173,7 +152173,7 @@
         "detail": "src\\OpenFOAM\\primitives\\Barycentric\\Barycentric.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152181,7 +152181,7 @@
         "detail": "src\\OpenFOAM\\primitives\\Barycentric\\BarycentricTensor.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152189,7 +152189,7 @@
         "detail": "src\\OpenFOAM\\primitives\\DiagTensor\\DiagTensor.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152197,7 +152197,7 @@
         "detail": "src\\OpenFOAM\\primitives\\SphericalTensor\\SphericalTensor.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152205,7 +152205,7 @@
         "detail": "src\\OpenFOAM\\primitives\\SphericalTensor\\SphericalTensor2D.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152213,7 +152213,7 @@
         "detail": "src\\OpenFOAM\\primitives\\SymmTensor\\SymmTensor.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152221,7 +152221,7 @@
         "detail": "src\\OpenFOAM\\primitives\\SymmTensor\\SymmTensor2D.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152229,7 +152229,7 @@
         "detail": "src\\OpenFOAM\\primitives\\Tensor\\Tensor.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152237,7 +152237,7 @@
         "detail": "src\\OpenFOAM\\primitives\\Tensor\\Tensor2D.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152245,7 +152245,7 @@
         "detail": "src\\OpenFOAM\\primitives\\Vector\\Vector.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152253,7 +152253,7 @@
         "detail": "src\\OpenFOAM\\primitives\\Vector\\Vector2D.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152261,7 +152261,7 @@
         "detail": "src\\OpenFOAM\\primitives\\ints\\int64\\int64.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152269,7 +152269,7 @@
         "detail": "src\\OpenFOAM\\primitives\\ints\\uint64\\uint64.H: 检测到递归模板模式，嵌套深度 0"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152277,7 +152277,7 @@
         "detail": "src\\OpenFOAM\\primitives\\spatialVectorAlgebra\\CompactSpatialTensorT\\CompactSpatialTensorT.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152285,7 +152285,7 @@
         "detail": "src\\OpenFOAM\\primitives\\spatialVectorAlgebra\\CompactSpatialTensor\\CompactSpatialTensor.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152293,7 +152293,7 @@
         "detail": "src\\OpenFOAM\\primitives\\spatialVectorAlgebra\\SpatialTensor\\SpatialTensor.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152301,7 +152301,7 @@
         "detail": "src\\OpenFOAM\\primitives\\spatialVectorAlgebra\\SpatialVector\\SpatialVector.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152309,7 +152309,7 @@
         "detail": "src\\OpenFOAM\\primitives\\tuples\\Pair.H: 检测到递归模板模式，嵌套深度 6"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152317,7 +152317,7 @@
         "detail": "src\\fileFormats\\gltf\\foamGltfList.H: 检测到递归模板模式，嵌套深度 0"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152325,7 +152325,7 @@
         "detail": "src\\finiteVolume\\fvMesh\\wallDist\\wallDistAddressing\\wallPointAddressing.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152333,7 +152333,7 @@
         "detail": "src\\meshTools\\algorithms\\PatchEdgeFaceWave\\edgeTopoDistanceData.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152341,7 +152341,7 @@
         "detail": "src\\meshTools\\algorithms\\PointEdgeWave\\PointData.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152349,7 +152349,7 @@
         "detail": "src\\meshTools\\cellDist\\directionalWallPoint\\directionalWallPointData.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152357,7 +152357,7 @@
         "detail": "src\\meshTools\\cellDist\\wallPoint\\wallPointData.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152365,7 +152365,7 @@
         "detail": "src\\meshTools\\meshStructure\\pointTopoDistanceData.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152373,7 +152373,7 @@
         "detail": "src\\meshTools\\meshStructure\\topoDistanceData.H: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -152381,7 +152381,7 @@
         "detail": "src\\mesh\\snappyHexMesh\\meshRefinement\\transportData.H: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -204508,11 +204508,11 @@
         "weighted_sum": 41.53
       }
     },
-    "structural_note_cross_concern": "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
+    "structural_note_cross_concern": "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
     "sme_waiver_summary": [
-      "MLR-014: severity=HIGH, output_level=WARNING",
-      "MLR-017: severity=MEDIUM, output_level=WARNING",
-      "MLR-018: severity=HIGH, output_level=WARNING"
+      "TPL-002: severity=HIGH, output_level=WARNING",
+      "TPL-005: severity=MEDIUM, output_level=WARNING",
+      "TPL-006: severity=HIGH, output_level=WARNING"
     ],
     "output_level_summary": {
       "ERROR": 39,

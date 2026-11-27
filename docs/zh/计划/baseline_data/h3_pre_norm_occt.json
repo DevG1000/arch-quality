@@ -192702,7 +192702,7 @@
         "detail": "ModelingAlgorithms\\TKMesh\\BRepMesh\\delabella.cpp: 2 处 malloc/calloc/realloc，有配对 free(4)/2 alloc，但建议审查所有权"
       },
       {
-        "rule": "MLR-013",
+        "rule": "TPL-001",
         "name": "热模板头文件",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -192710,17 +192710,17 @@
         "detail": "1112 个头文件影响 >50 编译单元: FoundationClasses\\TKernel\\Standard\\Standard_Macro.hxx(6325); FoundationClasses\\TKernel\\Standard\\Standard_TypeDef.hxx(6323); FoundationClasses\\TKernel\\Standard\\Standard_Std.hxx(6316); FoundationClasses\\TKernel\\Standard\\Standard_Integer.hxx(6316); FoundationClasses\\TKernel\\Standard\\Standard_DefineAlloc.hxx(6316); FoundationClasses\\TKernel\\Standard\\Standard.hxx(6316); FoundationClasses\\TKernel\\Standard\\Standard_Failure.hxx(6315); FoundationClasses\\TKernel\\Standard\\Standard_SStream.hxx(6315); FoundationClasses\\TKernel\\Standard\\Standard_OStream.hxx(6315); FoundationClasses\\TKernel\\Standard\\Standard_DefineException.hxx(6314)"
       },
       {
-        "rule": "MLR-014",
+        "rule": "TPL-002",
         "name": "模板重复实例化",
         "severity": "HIGH",
         "output_level": "WARNING",
         "count": 515,
-        "detail": "515 个模板被 >2 个编译单元重复实例化: NCollection_List<TopoDS_Shape>×3096; NCollection_Array1<double>×2320; NCollection_Array1<int>×743; NCollection_Array1<gp_Pnt>×668; NCollection_Map<TopoDS_Shape, TopTools_ShapeMapHasher>×507; NCollection_List<occ::handle<TopOpeBRepDS_Interference>×434; NCollection_Array1<gp_Pnt2d>×391; NCollection_IndexedMap<TopoDS_Shape, TopTools_ShapeMapHasher>×322; NCollection_Array2<gp_Pnt>×274; NCollection_List<int>×263; 另有 17251 处多处重复实例化（MLR-023 已合并）",
+        "detail": "515 个模板被 >2 个编译单元重复实例化: NCollection_List<TopoDS_Shape>×3096; NCollection_Array1<double>×2320; NCollection_Array1<int>×743; NCollection_Array1<gp_Pnt>×668; NCollection_Map<TopoDS_Shape, TopTools_ShapeMapHasher>×507; NCollection_List<occ::handle<TopOpeBRepDS_Interference>×434; NCollection_Array1<gp_Pnt2d>×391; NCollection_IndexedMap<TopoDS_Shape, TopTools_ShapeMapHasher>×322; NCollection_Array2<gp_Pnt>×274; NCollection_List<int>×263; 另有 17251 处多处重复实例化（TPL-011 已合并）",
         "waivable": true,
         "merged_with_023": true
       },
       {
-        "rule": "MLR-015",
+        "rule": "TPL-003",
         "name": "头文件传染链过长",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192728,7 +192728,7 @@
         "detail": "5093 个头文件存在 >3 层传播链 (影响 >20 文件): ModelingAlgorithms\\TKShHealing\\ShapeFix\\ShapeFix_Wire.hxx(326); ModelingAlgorithms\\TKFeat\\BRepFeat\\BRepFeat_MakeRevolutionForm.hxx(309); ModelingAlgorithms\\TKFeat\\BRepFeat\\BRepFeat_MakeLinearForm.hxx(296); ModelingAlgorithms\\TKShHealing\\ShapeFix\\ShapeFix_Face.hxx(296); ModelingAlgorithms\\TKOffset\\BRepOffset\\BRepOffset_Offset.hxx(294); ModelingAlgorithms\\TKShHealing\\ShapeAnalysis\\ShapeAnalysis_CheckSmallFace.hxx(285); ModelingAlgorithms\\TKFeat\\BRepFeat\\BRepFeat_RibSlot.hxx(285); Visualization\\TKOpenGl\\OpenGl\\OpenGl_View.hxx(274); ModelingAlgorithms\\TKShHealing\\ShapeAnalysis\\ShapeAnalysis_Wire.hxx(265); ModelingAlgorithms\\TKShHealing\\ShapeCustom\\ShapeCustom_BSplineRestriction.hxx(259)"
       },
       {
-        "rule": "MLR-016",
+        "rule": "TPL-004",
         "name": "模板嵌套深度过高",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192736,7 +192736,7 @@
         "detail": "最大模板嵌套深度 18，16 个文件嵌套 >6: ApplicationFramework\\TKStd\\ShapePersistent\\ShapePersistent_Geom2d_Curve.hxx(D=8); ApplicationFramework\\TKStd\\ShapePersistent\\ShapePersistent_Geom_Curve.hxx(D=8); ApplicationFramework\\TKStd\\ShapePersistent\\ShapePersistent_Geom_Surface.hxx(D=8); ApplicationFramework\\TKStd\\ShapePersistent\\ShapePersistent_Poly.hxx(D=8); DataExchange\\TKDESTEP\\StepToGeom\\StepToGeom.cxx(D=10); Draw\\TKDraw\\Draw\\Draw.cxx(D=10); Draw\\TKViewerTest\\ViewerTest\\ViewerTest.cxx(D=18); Draw\\TKViewerTest\\ViewerTest\\ViewerTest_OpenGlCommands.cxx(D=14); Draw\\TKViewerTest\\ViewerTest\\ViewerTest_ViewerCommands.cxx(D=14); Draw\\TKXDEDRAW\\XDEDRAW\\XDEDRAW_Colors.cxx(D=14)"
       },
       {
-        "rule": "MLR-018",
+        "rule": "TPL-006",
         "name": "虚泛型（镀金模板）",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -192745,7 +192745,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-019",
+        "rule": "TPL-007",
         "name": "未使用 extern template 优化",
         "severity": "LOW",
         "output_level": "INFO",
@@ -192753,7 +192753,7 @@
         "detail": "项目有 3479 个模板实例化但未发现 extern template 声明"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192761,7 +192761,7 @@
         "detail": "ApplicationFramework\\TKStd\\ShapePersistent\\ShapePersistent_HSequence.hxx: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192769,7 +192769,7 @@
         "detail": "FoundationClasses\\TKMath\\BVH\\BVH_BinnedBuilder.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192777,7 +192777,7 @@
         "detail": "FoundationClasses\\TKMath\\BVH\\BVH_LinearBuilder.hxx: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192785,7 +192785,7 @@
         "detail": "FoundationClasses\\TKMath\\BVH\\BVH_Properties.hxx: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192793,7 +192793,7 @@
         "detail": "FoundationClasses\\TKMath\\MathInteg\\MathInteg_DoubleExp.hxx: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192801,7 +192801,7 @@
         "detail": "FoundationClasses\\TKMath\\MathUtils\\MathUtils_FunctorScalar.hxx: 20 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192809,7 +192809,7 @@
         "detail": "FoundationClasses\\TKMath\\MathUtils\\MathUtils_FunctorVector.hxx: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192817,7 +192817,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_AliasedArray.hxx: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192825,7 +192825,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_Allocator.hxx: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192833,7 +192833,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_Array1.hxx: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192841,7 +192841,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_DataMap.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192849,7 +192849,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_DefaultHasher.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192857,7 +192857,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_DynamicArray.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192865,7 +192865,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_ForwardRange.hxx: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192873,7 +192873,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_IndexedDataMap.hxx: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192881,7 +192881,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_IndexedMap.hxx: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192889,7 +192889,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_ItemsView.hxx: 19 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192897,7 +192897,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_KDTree.hxx: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192905,7 +192905,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_List.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192913,7 +192913,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_Map.hxx: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192921,7 +192921,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_OccAllocator.hxx: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192929,7 +192929,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_OrderedDataMap.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192937,7 +192937,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_OrderedMap.hxx: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192945,7 +192945,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_PackedMap.hxx: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192953,7 +192953,7 @@
         "detail": "FoundationClasses\\TKernel\\NCollection\\NCollection_Sequence.hxx: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192961,7 +192961,7 @@
         "detail": "FoundationClasses\\TKernel\\OSD\\OSD_Parallel.hxx: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192969,7 +192969,7 @@
         "detail": "ModelingData\\TKBRep\\BRepGraphInc\\BRepGraphInc_Storage.hxx: 20 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192977,7 +192977,7 @@
         "detail": "ModelingData\\TKBRep\\BRepGraph\\BRepGraph_Iterator.hxx: 13 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192985,7 +192985,7 @@
         "detail": "ModelingData\\TKBRep\\BRepGraph\\BRepGraph_NodeId.hxx: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -192993,7 +192993,7 @@
         "detail": "ModelingData\\TKBRep\\BRepGraph\\BRepGraph_RefId.hxx: 9 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193001,7 +193001,7 @@
         "detail": "ModelingData\\TKBRep\\BRepGraph\\BRepGraph_RefsIterator.hxx: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193009,7 +193009,7 @@
         "detail": "ModelingData\\TKBRep\\BRepGraph\\BRepGraph_ReverseIterator.hxx: 17 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193017,7 +193017,7 @@
         "detail": "ModelingData\\TKGeomBase\\Extrema\\Extrema_GFuncExtCC.hxx: 11 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193025,7 +193025,7 @@
         "detail": "ModelingData\\TKGeomBase\\GCPnts\\GCPnts_TangentialDeflection.hxx: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193033,7 +193033,7 @@
         "detail": "ModelingData\\TKGeomBase\\LProp\\LProp_CurveUtils.hxx: 28 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193041,7 +193041,7 @@
         "detail": "Visualization\\TKOpenGl\\OpenGl\\OpenGl_Vec.hxx: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193049,7 +193049,7 @@
         "detail": "Visualization\\TKService\\Graphic3d\\Graphic3d_Flipper.hxx: 6 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193057,7 +193057,7 @@
         "detail": "Visualization\\TKService\\Graphic3d\\Graphic3d_ShaderVariable.hxx: 15 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193065,7 +193065,7 @@
         "detail": "Visualization\\TKService\\Graphic3d\\Graphic3d_TransformPers.hxx: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -193073,7 +193073,7 @@
         "detail": "Visualization\\TKService\\Graphic3d\\Graphic3d_TransformUtils.hxx: 25 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193081,7 +193081,7 @@
         "detail": "DataExchange\\TKDESTEP\\StepToTopoDS\\StepToTopoDS_PointPair.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193089,7 +193089,7 @@
         "detail": "DataExchange\\TKDEVRML\\VrmlData\\VrmlData_Node.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193097,7 +193097,7 @@
         "detail": "DataExchange\\TKXCAF\\XCAFDoc\\XCAFDoc_AssemblyItemId.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193105,7 +193105,7 @@
         "detail": "DataExchange\\TKXCAF\\XCAFPrs\\XCAFPrs_DocumentNode.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193113,7 +193113,7 @@
         "detail": "DataExchange\\TKXCAF\\XCAFPrs\\XCAFPrs_Style.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193121,7 +193121,7 @@
         "detail": "FoundationClasses\\TKMath\\Poly\\Poly_MakeLoops.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193129,7 +193129,7 @@
         "detail": "FoundationClasses\\TKMath\\gp\\gp_Pnt.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193137,7 +193137,7 @@
         "detail": "FoundationClasses\\TKernel\\GTests\\NCollection_DoubleMap_Test.cxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193145,7 +193145,7 @@
         "detail": "FoundationClasses\\TKernel\\GTests\\NCollection_IndexedDataMap_Test.cxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193153,7 +193153,7 @@
         "detail": "FoundationClasses\\TKernel\\Quantity\\Quantity_Color.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193161,7 +193161,7 @@
         "detail": "FoundationClasses\\TKernel\\Quantity\\Quantity_ColorRGBA.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193169,7 +193169,7 @@
         "detail": "FoundationClasses\\TKernel\\Standard\\Standard_GUID.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193177,7 +193177,7 @@
         "detail": "FoundationClasses\\TKernel\\Standard\\Standard_Handle.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193185,7 +193185,7 @@
         "detail": "FoundationClasses\\TKernel\\TCollection\\TCollection_ExtendedString.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193193,7 +193193,7 @@
         "detail": "FoundationClasses\\TKernel\\TCollection\\TCollection_HExtendedString.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193201,7 +193201,7 @@
         "detail": "ModelingAlgorithms\\TKBO\\BOPDS\\BOPDS_Pair.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193209,7 +193209,7 @@
         "detail": "ModelingAlgorithms\\TKBO\\BOPDS\\BOPDS_Pave.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193217,7 +193217,7 @@
         "detail": "ModelingAlgorithms\\TKBO\\BOPTools\\BOPTools_Set.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193225,7 +193225,7 @@
         "detail": "ModelingAlgorithms\\TKBO\\IntTools\\IntTools_CurveRangeSample.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193233,7 +193233,7 @@
         "detail": "ModelingAlgorithms\\TKGeomAlgo\\IntPolyh\\IntPolyh_Couple.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193241,7 +193241,7 @@
         "detail": "ModelingAlgorithms\\TKMesh\\BRepMesh\\BRepMesh_Edge.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193249,7 +193249,7 @@
         "detail": "ModelingAlgorithms\\TKMesh\\BRepMesh\\BRepMesh_OrientedEdge.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193257,7 +193257,7 @@
         "detail": "ModelingAlgorithms\\TKMesh\\BRepMesh\\BRepMesh_Triangle.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193265,7 +193265,7 @@
         "detail": "ModelingAlgorithms\\TKMesh\\BRepMesh\\BRepMesh_Vertex.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193273,7 +193273,7 @@
         "detail": "ModelingAlgorithms\\TKTopAlgo\\BRepBuilderAPI\\BRepBuilderAPI_MakeShapeOnMesh.cxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193281,7 +193281,7 @@
         "detail": "ModelingAlgorithms\\TKTopAlgo\\BRepLib\\BRepLib.cxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193289,7 +193289,7 @@
         "detail": "ModelingAlgorithms\\TKTopAlgo\\MAT2d\\MAT2d_BiInt.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193297,7 +193297,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_CompSolid.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193305,7 +193305,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Compound.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193313,7 +193313,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Edge.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193321,7 +193321,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Face.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193329,7 +193329,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Shape.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193337,7 +193337,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Shell.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193345,7 +193345,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Solid.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193353,7 +193353,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Vertex.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193361,7 +193361,7 @@
         "detail": "ModelingData\\TKBRep\\TopoDS\\TopoDS_Wire.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193369,7 +193369,7 @@
         "detail": "Visualization\\TKMeshVS\\MeshVS\\MeshVS_TwoColors.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193377,7 +193377,7 @@
         "detail": "Visualization\\TKMeshVS\\MeshVS\\MeshVS_TwoNodes.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -193385,7 +193385,7 @@
         "detail": "Visualization\\TKService\\Font\\Font_SystemFont.hxx: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -193393,7 +193393,7 @@
         "detail": "ApplicationFramework\\TKStdL\\StdLPersistent\\StdLPersistent_Collection.hxx: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-024",
+        "rule": "TPL-012",
         "name": "头文件包含循环依赖",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -260726,10 +260726,10 @@
         "weighted_sum": 42.87
       }
     },
-    "structural_note_cross_concern": "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
+    "structural_note_cross_concern": "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
     "sme_waiver_summary": [
-      "MLR-014: severity=HIGH, output_level=WARNING",
-      "MLR-018: severity=HIGH, output_level=WARNING"
+      "TPL-002: severity=HIGH, output_level=WARNING",
+      "TPL-006: severity=HIGH, output_level=WARNING"
     ],
     "output_level_summary": {
       "ERROR": 2,

@@ -2,7 +2,7 @@
 test_template_regression.py - Template metaprogramming regression test framework
 
 Validates that TemplateMetaprogrammingMetrics produces stable, predictable results
-against benchmark C++ projects covering 12 MLR rules (MLR-013 through MLR-024).
+against benchmark C++ projects covering 12 MLR rules (TPL-001 through TPL-012).
 
 Projects (3 tiers):
   Tier 1 (smoke - always available):
@@ -10,7 +10,7 @@ Projects (3 tiers):
     - Boost.MPL: template metaprogramming, deep nesting + SFINAE
   Tier 2 (full - large open-source C++):
     - OpenFOAM-v2512: C++/C/Python, moderate template usage
-    - BRL-CAD: C++/C/Tcl/Fortran/Python, MLR-013/015/024
+    - BRL-CAD: C++/C/Tcl/Fortran/Python, TPL-001/003/012
     - FreeCAD: C++/Python, heavy template + header coupling
   Tier 3 (specialized):
     - ElmerFEM: Fortran/C++/C, light template usage
@@ -23,24 +23,24 @@ Projects (3 tiers):
 Snapshot update: set environment variable ARCH_REGRESSION_UPDATE=1
 
 MLR rule coverage:
-  MLR-013  compile-time coupling      -> OpenFOAM, BRL-CAD, FreeCAD
-  MLR-014  redundant instantiation    -> Eigen, Boost.MPL, Folly
-  MLR-015  header influence radius    -> OpenFOAM, BRL-CAD, FreeCAD
-  MLR-016  deep nesting depth         -> Eigen, Boost.MPL, Hana
-  MLR-017  binary bloat ratio        -> Eigen, Boost.GIL, Range-v3
-  MLR-018  unnecessary templating      -> OpenFOAM, FreeCAD
-  MLR-019  missing extern template    -> Folly, Abseil
-  MLR-020  concept overloading         -> Range-v3
-  MLR-021  SFINAE complexity           -> Boost.MPL, Hana
-  MLR-022  ADL ambiguity              -> Folly, Abseil
-  MLR-023  duplicated instantiation   -> Eigen, Folly (merged with MLR-014)
-  MLR-024  header cycle dependency    -> BRL-CAD, FreeCAD
+  TPL-001  compile-time coupling      -> OpenFOAM, BRL-CAD, FreeCAD
+  TPL-002  redundant instantiation    -> Eigen, Boost.MPL, Folly
+  TPL-003  header influence radius    -> OpenFOAM, BRL-CAD, FreeCAD
+  TPL-004  deep nesting depth         -> Eigen, Boost.MPL, Hana
+  TPL-005  binary bloat ratio        -> Eigen, Boost.GIL, Range-v3
+  TPL-006  unnecessary templating      -> OpenFOAM, FreeCAD
+  TPL-007  missing extern template    -> Folly, Abseil
+  TPL-008  concept overloading         -> Range-v3
+  TPL-009  SFINAE complexity           -> Boost.MPL, Hana
+  TPL-010  ADL ambiguity              -> Folly, Abseil
+  TPL-011  duplicated instantiation   -> Eigen, Folly (merged with TPL-002)
+  TPL-012  header cycle dependency    -> BRL-CAD, FreeCAD
 
 NOT covered by project regression (unit tests only):
-  MLR-014 waiver (@template_specialization_required)
-  MLR-017 waiver (@allow_binary_bloat)
-  MLR-018 waiver (@reserved_for_future_extension)
-  MLR-024 C++20 modules downgrade (.ixx/.cppm/.mpp)
+  TPL-002 waiver (@template_specialization_required)
+  TPL-005 waiver (@allow_binary_bloat)
+  TPL-006 waiver (@reserved_for_future_extension)
+  TPL-012 C++20 modules downgrade (.ixx/.cppm/.mpp)
 """
 
 import json

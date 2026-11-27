@@ -1,4 +1,4 @@
-name: Architecture Quality CI
+﻿name: Architecture Quality CI
 
 on:
   push:
@@ -89,7 +89,7 @@ jobs:
           path: perf_baseline.json
 
   # ── 运行时内核检测（专用 job：schedule/dispatch，不阻塞 PR）──
-  # G0 结论：方法 C（预构建 OCCT V8.0.1 缓存）+ 专用 job。禁用 apt（7.6.3 版本漂移）。
+  # G0 结论：方法 C（预构建 OCCT V8.0.1 缓存）+ 专用 job。禁用 apt 安装 OCCT（7.6.3 版本漂移）；仅安装 X11 开发头文件。
   # 承载 H3 WP-5 的 B2/B3/B5（欧拉公式/B-Rep 闭合/ACL 内核升级兼容）运行时检测底座。
   runtime-kernel:
     name: Runtime Kernel (OCCT V8.0.1)
@@ -105,6 +105,8 @@ jobs:
         with:
           path: .occt-cache/install
           key: occt-v8.0.1-${{ runner.os }}-${{ hashFiles('scripts/ci/build_occt.sh') }}
+      - name: Install X11 development headers (OCCT build deps)
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxext-dev
       - name: Build OCCT V8.0.1
         if: steps.occt-cache.outputs.cache-hit != 'true'
         run: bash scripts/ci/build_occt.sh

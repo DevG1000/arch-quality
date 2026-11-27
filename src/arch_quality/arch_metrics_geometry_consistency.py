@@ -623,6 +623,7 @@ class GeometryConsistencyMetrics:
         if not self._is_geometry:
             return []
         results = []
+        self._gcs_candidates = []
         d1, d1d = self.calc_geometry_kernel_consistency() or (0, {})
 
         # GCS-001 加分项缺失提示（INFO，非违规）
@@ -649,6 +650,33 @@ class GeometryConsistencyMetrics:
                 "severity": "MEDIUM", "output_level": "WARNING",
                 "count": d1d["error_propagation"]["missing_check_count"],
                 "detail": "内核调用点紧邻未检查 IsDone()/IsValid()，失败可能被静默吞没",
+            })
+
+        # H3 WP-5 B4：跨函数失败传递 + builder 委托（candidate，文件级）
+        builder_re = re.compile(
+            r"(?i)\b(BRepFeat\w*|BRepFill\w*|CheckAndLoad|Perform|Build|Make[A-Z]\w*)\b")
+        status_re = re.compile(r"(?i)\b(IsDone|IsValid)\s*\(")
+        builder_files = []
+        for abs_path, content in self._all_contents.items():
+            if self._skip(abs_path, exclude_kernel_self=True, exclude_test=True):
+                continue
+            if os.path.splitext(abs_path)[1].lower() not in {".cpp", ".cxx", ".cc", ".c"}:
+                continue
+            hits = list(builder_re.finditer(content))
+            if not hits or status_re.search(content):
+                continue
+            line = content[:hits[0].start()].count("\n") + 1
+            builder_files.append(f"{os.path.relpath(abs_path, self.root)}:{line}")
+        if builder_files:
+            sample = ", ".join(builder_files[:5])
+            self._gcs_candidates.append({
+                "rule": "GCS-003", "name": "内核异常/失败状态传播",
+                "severity": "MEDIUM", "output_level": "WARNING",
+                "count": len(builder_files), "candidate": True,
+                "detail": (f"检测到 {len(builder_files)} 个源文件含 builder/delegate 调用但文件内无 "
+                           f"IsDone()/IsValid() 检查（B4 candidate）：{sample}"),
+                "evidence": "builder/delegate pattern without file-level status check",
+                "locations": builder_files[:20],
             })
 
         # GCS-004
@@ -777,6 +805,7 @@ class GeometryConsistencyMetrics:
                 "data_access_norm": {"score": d4, "detail": dd4},
             },
             "gcs_violations": self.check_gcs_rules(),
+            "gcs_candidates": getattr(self, "_gcs_candidates", []),
             "waiver_audit": self._waiver_audit(),
             "version_info": {
                 "guide_version": GUIDE_VERSION,
@@ -794,7 +823,8 @@ def main():
 
     metrics = GeometryConsistencyMetrics(args.root)
     if args.gcs_only:
-        result = {"gcs_violations": metrics.check_gcs_rules()}
+        result = {"gcs_violations": metrics.check_gcs_rules(),
+                  "gcs_candidates": getattr(metrics, "_gcs_candidates", [])}
     else:
         result = metrics.all_metrics()
 

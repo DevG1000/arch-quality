@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 arch_metrics_solver_physics.py — 求解器和物理场模块化架构模式识别评估
 
 实现《求解器与物理场模块化架构模式识别评估指南（1.3版）》定义的 4 维评分模型
-和 11 条 MPR 规则（MPR-001~MPR-010、MPR-012）的静态分析检测。
+和 12 条 MPR 规则（MPR-001~MPR-012）的静态分析检测。
 
 版本绑定：
   - 指南版本：1.3（2026-07-23）
@@ -1272,7 +1272,7 @@ class SolverPhysicsMetrics:
     # ── MPR 规则检查 ──
 
     def check_mpr_rules(self) -> list:
-        """执行全部 11 条 MPR 规则检测"""
+        """执行全部 12 条 MPR 规则检测"""
         if not self._is_multiphysics:
             return []
 
@@ -1404,6 +1404,26 @@ class SolverPhysicsMetrics:
                 "severity": "LOW", "output_level": "INFO",
                 "count": convert_count,
                 "detail": f"数据格式转换函数分散在 {convert_count} 个位置，建议集中管理",
+            })
+
+        # MPR-011：跨场时域同步规范（多场 + 无同步信号 → candidate WARNING）
+        all_text = "\n".join(self._all_contents.values())
+        field_terms = set(
+            m.group(0).lower()
+            for m in re.finditer(r"(?i)\b(fluid|structure|solid|thermal|mesh|electro)\w*", all_text)
+        )
+        field_hits = len(field_terms)
+        dt_values = set(re.findall(r"(?i)\bdt\w*\s*=\s*([0-9.eE+-]+)", all_text))
+        sync_signal = re.search(
+            r"(?i)\b(synchronize|sync|align[\s_-]?time|interpolate[\s_-]?in[\s_-]?time|"
+            r"coupling[\s_-]?iteration|sub[\s_-]?cycle|precice)\b", all_text)
+        if field_hits >= 2 and not sync_signal:
+            results.append({
+                "rule": "MPR-011", "name": "跨场时域同步规范",
+                "severity": "MEDIUM", "output_level": "WARNING", "candidate": True,
+                "count": len(dt_values) or 1,
+                "detail": (f"检测到 {field_hits} 个物理场信号、{len(dt_values)} 种时间步定义"
+                           "，未发现同步/对齐/耦合迭代信号；candidate，需人工确认"),
             })
 
         return results

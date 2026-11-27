@@ -44086,7 +44086,7 @@
         "detail": "src\\util\\ttcp.c: 1 处 malloc/calloc/realloc，有配对 free(1)/1 alloc，但建议审查所有权"
       },
       {
-        "rule": "MLR-013",
+        "rule": "TPL-001",
         "name": "热模板头文件",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -44094,17 +44094,17 @@
         "detail": "256 个头文件影响 >50 编译单元: include\\common.h(817); include\\bu\\defines.h(794); include\\bu\\magic.h(784); include\\bu\\vls.h(783); include\\bu\\exit.h(782); include\\bu\\hook.h(782); include\\bu\\parse.h(781); include\\bu\\log.h(781); include\\vmath.h(772); include\\bu\\malloc.h(766)"
       },
       {
-        "rule": "MLR-014",
+        "rule": "TPL-002",
         "name": "模板重复实例化",
         "severity": "HIGH",
         "output_level": "WARNING",
         "count": 51,
-        "detail": "51 个模板被 >2 个编译单元重复实例化: ON_SimpleArray<ON_Curve *>×29; ON_ClassArray<ON_PX_EVENT>×22; ON_SimpleArray<ON_X_EVENT>×19; get_required<double>×18; i_c<seg_count; ++i_c) {\r\n\t    BU_ALLOC(lsg, struct line_seg);\r\n\t    lsg->×17; ON_SimpleArray<int>×11; ON_SimpleArray<ON_Curve*>×11; RTree<size_t, double, 3>×9; STEPfile_id<< std::endl;\r\n\tif (sse->×8; ON_SimpleArray<TrimmedFace *>×8; 另有 329 处多处重复实例化（MLR-023 已合并）",
+        "detail": "51 个模板被 >2 个编译单元重复实例化: ON_SimpleArray<ON_Curve *>×29; ON_ClassArray<ON_PX_EVENT>×22; ON_SimpleArray<ON_X_EVENT>×19; get_required<double>×18; i_c<seg_count; ++i_c) {\r\n\t    BU_ALLOC(lsg, struct line_seg);\r\n\t    lsg->×17; ON_SimpleArray<int>×11; ON_SimpleArray<ON_Curve*>×11; RTree<size_t, double, 3>×9; STEPfile_id<< std::endl;\r\n\tif (sse->×8; ON_SimpleArray<TrimmedFace *>×8; 另有 329 处多处重复实例化（TPL-011 已合并）",
         "waivable": true,
         "merged_with_023": true
       },
       {
-        "rule": "MLR-015",
+        "rule": "TPL-003",
         "name": "头文件传染链过长",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -44112,7 +44112,7 @@
         "detail": "270 个头文件存在 >3 层传播链 (影响 >20 文件): src\\qged\\QgEdMainWindow.h(243); src\\libged\\lint\\ged_lint.h(235); src\\qged\\QgEdApp.h(232); src\\libged\\ged_private.h(220); src\\libged\\include\\plugin.h(214); src\\libged\\edit\\ged_edit.h(214); src\\libged\\pnts_util.h(211); include\\qtcad\\QgModel.h(210); src\\libged\\brep\\ged_brep.h(206); src\\libged\\bot\\ged_bot.h(206)"
       },
       {
-        "rule": "MLR-016",
+        "rule": "TPL-004",
         "name": "模板嵌套深度过高",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -44120,7 +44120,7 @@
         "detail": "最大模板嵌套深度 18，12 个文件嵌套 >6: include\\bn\\dvec.h(D=10); regress\\repository\\repocheck.cpp(D=8); src\\gtools\\gdiff\\group.cpp(D=10); src\\libanalyze\\wnsurface.cpp(D=18); src\\libbg\\QuickHull.hpp(D=14); src\\libbg\\detria.hpp(D=10); src\\libbu\\json.hpp(D=8); src\\libgcv\\plugins\\fastgen4\\fastgen4_write.cpp(D=10); src\\libgcv\\plugins\\rhino\\rhino_read.cpp(D=18); src\\libged\\tests\\search_tests.cpp(D=8)"
       },
       {
-        "rule": "MLR-018",
+        "rule": "TPL-006",
         "name": "虚泛型（镀金模板）",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -44129,7 +44129,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-019",
+        "rule": "TPL-007",
         "name": "未使用 extern template 优化",
         "severity": "LOW",
         "output_level": "INFO",
@@ -44137,7 +44137,7 @@
         "detail": "项目有 546 个模板实例化但未发现 extern template 声明"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -44145,7 +44145,7 @@
         "detail": "src\\libbg\\RTree.h: 8 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -44153,7 +44153,7 @@
         "detail": "src\\libbg\\geogram\\basic\\attributes.h: 10 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-020",
+        "rule": "TPL-008",
         "name": "头文件包含不必要模板定义",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -44161,7 +44161,7 @@
         "detail": "src\\libbg\\geogram\\voronoi\\generic_RVD_cell.h: 7 处模板定义且非 inline，建议移至 .cpp 或使用显式实例化"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -44169,7 +44169,7 @@
         "detail": "include\\bu\\hash.h: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -44177,7 +44177,7 @@
         "detail": "src\\gtools\\gdiff\\group.cpp: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -44185,7 +44185,7 @@
         "detail": "src\\libbg\\GTE\\Mathematics\\MeshRepair.h: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-021",
+        "rule": "TPL-009",
         "name": "模板特化放在错误命名空间",
         "severity": "LOW",
         "output_level": "INFO",
@@ -44193,7 +44193,7 @@
         "detail": "src\\librt\\search.cpp: 发现 namespace std 中的 hash 特化，应使用命名空间注入"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -44201,7 +44201,7 @@
         "detail": "src\\libbg\\geogram\\basic\\memory.h: 检测到递归模板模式，嵌套深度 2"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -44209,7 +44209,7 @@
         "detail": "src\\libbg\\predicates.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -44217,7 +44217,7 @@
         "detail": "src\\libbu\\json.hpp: 检测到递归模板模式，嵌套深度 8"
       },
       {
-        "rule": "MLR-022",
+        "rule": "TPL-010",
         "name": "递归模板导致实例化爆炸",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -44225,7 +44225,7 @@
         "detail": "src\\libged\\bot\\concurrentqueue.h: 检测到递归模板模式，嵌套深度 3"
       },
       {
-        "rule": "MLR-024",
+        "rule": "TPL-012",
         "name": "头文件包含循环依赖",
         "severity": "HIGH",
         "output_level": "ERROR",
@@ -61619,10 +61619,10 @@
         "weighted_sum": 40.16
       }
     },
-    "structural_note_cross_concern": "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
+    "structural_note_cross_concern": "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
     "sme_waiver_summary": [
-      "MLR-014: severity=HIGH, output_level=WARNING",
-      "MLR-018: severity=HIGH, output_level=WARNING"
+      "TPL-002: severity=HIGH, output_level=WARNING",
+      "TPL-006: severity=HIGH, output_level=WARNING"
     ],
     "output_level_summary": {
       "ERROR": 5,

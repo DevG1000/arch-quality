@@ -11208,7 +11208,7 @@
     },
     "mlr_violations": [
       {
-        "rule": "MLR-013",
+        "rule": "TPL-001",
         "name": "热模板头文件",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -11216,17 +11216,17 @@
         "detail": "11 个头文件影响 >50 编译单元: GEOM\\GEOM_Function.hxx(154); GEOM\\GEOM_BaseDriver.hxx(111); GEOMImpl\\GEOMImpl_Types.hxx(111); GEOM\\GEOM_Object.hxx(104); GEOM\\GEOM_BaseObject.hxx(104); GEOM\\GEOM_Application.hxx(94); GEOM\\GEOM_Engine.hxx(93); GEOM\\GEOM_DataMapOfAsciiStringTransient.hxx(93); GEOM\\GEOM_Solver.hxx(73); GEOM\\GEOM_IOperations.hxx(70)"
       },
       {
-        "rule": "MLR-014",
+        "rule": "TPL-002",
         "name": "模板重复实例化",
         "severity": "HIGH",
         "output_level": "WARNING",
         "count": 18,
-        "detail": "18 个模板被 >2 个编译单元重复实例化: QList<int>×25; GEOM_List_i<GEOM::ListOfGO>×17; QList<QVariant>×10; QList<SUIT_ViewWindow*>×9; QMap<QString,QString>×6; QListIterator<SUIT_ViewWindow*>×5; QList<GEOM::GeomObjPtr>×4; QList<SUIT_ViewManager*>×4; NCollection_List<TopoDS_Shape>×4; U<U21 || U>×4; 另有 112 处多处重复实例化（MLR-023 已合并）",
+        "detail": "18 个模板被 >2 个编译单元重复实例化: QList<int>×25; GEOM_List_i<GEOM::ListOfGO>×17; QList<QVariant>×10; QList<SUIT_ViewWindow*>×9; QMap<QString,QString>×6; QListIterator<SUIT_ViewWindow*>×5; QList<GEOM::GeomObjPtr>×4; QList<SUIT_ViewManager*>×4; NCollection_List<TopoDS_Shape>×4; U<U21 || U>×4; 另有 112 处多处重复实例化（TPL-011 已合并）",
         "waivable": true,
         "merged_with_023": true
       },
       {
-        "rule": "MLR-015",
+        "rule": "TPL-003",
         "name": "头文件传染链过长",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -11234,7 +11234,7 @@
         "detail": "9 个头文件存在 >3 层传播链 (影响 >20 文件): GEOMImpl\\GEOMImpl_Gen.hxx(26); IGESPlugin\\IGESPlugin_OperationsCreator.hxx(21); BREPPlugin\\BREPPlugin_OperationsCreator.hxx(21); XAOPlugin\\XAOPlugin_OperationsCreator.hxx(21); XAO\\tests\\FieldTest.hxx(21); AdvancedEngine\\AdvancedEngine_OperationsCreator.hxx(21); STEPPlugin\\STEPPlugin_OperationsCreator.hxx(21); STLPlugin\\STLPlugin_OperationsCreator.hxx(21); VTKPlugin\\VTKPlugin_OperationsCreator.hxx(21)"
       },
       {
-        "rule": "MLR-016",
+        "rule": "TPL-004",
         "name": "模板嵌套深度过高",
         "severity": "MEDIUM",
         "output_level": "WARNING",
@@ -11242,7 +11242,7 @@
         "detail": "最大模板嵌套深度 10，2 个文件嵌套 >6: GEOM\\GEOM_BaseDriver.cxx(D=10); GEOM\\GEOM_Field.cxx(D=10)"
       },
       {
-        "rule": "MLR-018",
+        "rule": "TPL-006",
         "name": "虚泛型（镀金模板）",
         "severity": "HIGH",
         "output_level": "WARNING",
@@ -11251,7 +11251,7 @@
         "waivable": true
       },
       {
-        "rule": "MLR-019",
+        "rule": "TPL-007",
         "name": "未使用 extern template 优化",
         "severity": "LOW",
         "output_level": "INFO",
@@ -15217,10 +15217,10 @@
         "weighted_sum": 40.39
       }
     },
-    "structural_note_cross_concern": "MLR-013(编译时扇入) 与 MLR-015(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
+    "structural_note_cross_concern": "TPL-001(编译时扇入) 与 TPL-003(头文件传染链过长) 同时触发，保留独立评分但建议团队优先解决同时触犯两条规则的模块",
     "sme_waiver_summary": [
-      "MLR-014: severity=HIGH, output_level=WARNING",
-      "MLR-018: severity=HIGH, output_level=WARNING"
+      "TPL-002: severity=HIGH, output_level=WARNING",
+      "TPL-006: severity=HIGH, output_level=WARNING"
     ],
     "output_level_summary": {
       "ERROR": 0,

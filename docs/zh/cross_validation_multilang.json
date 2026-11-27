@@ -1,0 +1,96 @@
+{
+  "dimension": "multilang",
+  "method": "Leave-One-Out Cross Validation (9-fold)",
+  "criterion": "LOOCV overall in [train_min, train_max]",
+  "projects": [
+    "brl-cad",
+    "openfoam",
+    "freecad-cam",
+    "freecad-fem",
+    "elmerfem",
+    "mfem",
+    "precice",
+    "su2",
+    "kratos"
+  ],
+  "folds": [
+    {
+      "fold": "brl-cad",
+      "test_overall": 82.2,
+      "train_min": 61.84,
+      "train_max": 82.5,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "openfoam",
+      "test_overall": 79.5,
+      "train_min": 61.84,
+      "train_max": 82.5,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "freecad-cam",
+      "test_overall": 65.34,
+      "train_min": 61.84,
+      "train_max": 82.5,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "freecad-fem",
+      "test_overall": 62.13,
+      "train_min": 61.84,
+      "train_max": 82.5,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "elmerfem",
+      "test_overall": 67.5,
+      "train_min": 61.84,
+      "train_max": 82.5,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "mfem",
+      "test_overall": 82.5,
+      "train_min": 61.84,
+      "train_max": 82.2,
+      "in_range": false,
+      "outlier_distance": 0.3
+    },
+    {
+      "fold": "precice",
+      "test_overall": 72.5,
+      "train_min": 61.84,
+      "train_max": 82.5,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "su2",
+      "test_overall": 65.36,
+      "train_min": 61.84,
+      "train_max": 82.5,
+      "in_range": true,
+      "outlier_distance": 0.0
+    },
+    {
+      "fold": "kratos",
+      "test_overall": 61.84,
+      "train_min": 62.13,
+      "train_max": 82.5,
+      "in_range": false,
+      "outlier_distance": 0.29
+    }
+  ],
+  "summary": {
+    "total_folds": 9,
+    "in_range_count": 7,
+    "generalization_rate": "7/9",
+    "generalization_verdict": "PASS"
+  }
+}

@@ -25,3 +25,8 @@ opencode.json.bak
 docs/zh/mms/*_mms_*/
 docs/zh/mms/mms_*/
 .doc-pr/
+# PPT 媒体与生成物（体积大，不入库）
+docs/ppt/voiceover/
+docs/ppt/*.rar
+docs/zh/*.rar
+opencode-harness/reports/

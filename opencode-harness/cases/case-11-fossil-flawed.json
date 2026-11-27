@@ -1,0 +1,21 @@
+{
+  "id": "case-11-fossil-flawed",
+  "name": "化石代码评估-债务项目",
+  "description": "验证 agent 对 debt_fossil 识别 FOS-002/FOS-010/FOS-012",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\debt_fossil",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\debt_fossil 直接运行化石代码评估：python -m arch_quality.arch_metrics_fossil_code D:\\opensource\\arch-quality\\tests\\mutation\\projects\\debt_fossil --json，然后报告 is_fossil、overall、gate_status 和触发的 FOS 规则。不要阅读源码实现，直接运行命令并报告结果。",
+  "expect": {
+    "is_fossil": true,
+    "overall_range": [
+      50,
+      90
+    ],
+    "dimension_fields": [
+      "legacy",
+      "dead",
+      "clone",
+      "debt"
+    ],
+    "max_retries": 2
+  }
+}

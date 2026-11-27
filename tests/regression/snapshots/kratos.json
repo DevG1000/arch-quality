@@ -1,0 +1,61 @@
+{
+  "project": "Kratos",
+  "snapshot_date": "2026-11-25",
+  "root_path": "D:\\opensource\\Kratos",
+  "multilang_overall": 61.84,
+  "is_single_language": false,
+  "languages": [
+    "python",
+    "cpp",
+    "tcl",
+    "c",
+    "fortran"
+  ],
+  "file_count": 8512,
+  "files_by_lang": {
+    "cpp": 3801,
+    "c": 2898,
+    "python": 1762,
+    "fortran": 29,
+    "tcl": 22
+  },
+  "dimensions": {
+    "coupling_intensity": 82.32,
+    "impact_radius": 98.71,
+    "call_depth": 100,
+    "binding_consistency": 18.99,
+    "script_boundary": 0,
+    "cross_lang_cycles": 100
+  },
+  "mlr_violations": {
+    "MLR-001|MEDIUM": 33,
+    "MLR-003|HIGH": 11,
+    "MLR-004b|WARNING": 12,
+    "MLR-006|MEDIUM": 1683,
+    "MLR-007|MEDIUM": 77,
+    "MLR-008|HIGH": 1,
+    "MLR-010|LOW": 131,
+    "MLR-010|MEDIUM": 5,
+    "MLR-012|INFO": 23
+  },
+  "fortran_mapping": {
+    "module_map_size": 0,
+    "subroutine_map_size": 425,
+    "use_total": 0,
+    "use_resolved": 0,
+    "use_hit_rate": 1.0,
+    "call_total": 132,
+    "call_resolved": 125,
+    "call_hit_rate": 0.947
+  },
+  "required_mlr_rules": [
+    "MLR-001",
+    "MLR-003",
+    "MLR-004b",
+    "MLR-006",
+    "MLR-007",
+    "MLR-008",
+    "MLR-010",
+    "MLR-012"
+  ]
+}

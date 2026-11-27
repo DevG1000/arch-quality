@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.4",
+  "schema_version": "1.5",
   "engines": [
     "standard",
     "multilang",
@@ -8,7 +8,8 @@
     "solver_physics",
     "geometry_consistency",
     "anti_corruption",
-    "hpc"
+    "hpc",
+    "fossil"
   ],
   "dimensions": [
     {
@@ -381,6 +382,35 @@
           "id": "dim.hpc.4",
           "name": "混合并行（MPI×OpenMP）冲突",
           "weight": 0.2
+        }
+      ],
+      "scope": "project"
+    },
+    {
+      "id": "dim.fossil",
+      "name": "化石代码与技术债",
+      "engine": "fossil",
+      "weight": 0.15,
+      "sub_dimensions": [
+        {
+          "id": "dim.fossil.1",
+          "name": "历史遗留 API 与语言方言",
+          "weight": 0.3
+        },
+        {
+          "id": "dim.fossil.2",
+          "name": "死代码与不可达逻辑",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.fossil.3",
+          "name": "重复代码与重复实现",
+          "weight": 0.2
+        },
+        {
+          "id": "dim.fossil.4",
+          "name": "技术债密度与可维护性",
+          "weight": 0.3
         }
       ],
       "scope": "project"
@@ -1346,13 +1376,126 @@
       "output_level": "WARNING",
       "waivable": true,
       "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-001",
+      "name": "F77 固定格式/COMMON/IMPLICIT",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "HIGH",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-002",
+      "name": "废弃 C++ API",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-003",
+      "name": "K&R C/非标准方言",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-004",
+      "name": "未引用函数/变量/文件",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-005",
+      "name": "不可达分支",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-006",
+      "name": "成块注释代码",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-007",
+      "name": "函数/文件级克隆",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-008",
+      "name": "跨文件重复常量",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-009",
+      "name": "同一算法多份实现",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-010",
+      "name": "债务标记密度",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "LOW",
+      "output_level": "INFO",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-011",
+      "name": "SQALE 修复成本比率",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
+    },
+    {
+      "id": "FOS-012",
+      "name": "遗留模块无测试",
+      "engine": "fossil",
+      "dimension": "dim.fossil",
+      "severity": "MEDIUM",
+      "output_level": "WARNING",
+      "waivable": true,
+      "waived_output_level": "INFO"
     }
-  ],
-  "rule_prefix_aliases": {
-    "TPL": {
-      "engine_prefix": "MLR",
-      "engine_ids": "MLR-013~024",
-      "note": "元模型规范前缀 TPL-001~012；模板引擎实现沿用 MLR-013~024（H3-D1 迁移前）"
-    }
-  }
+  ]
 }

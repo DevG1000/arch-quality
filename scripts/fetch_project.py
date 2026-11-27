@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """fetch_project.py — projects.yaml 参考样本可复现获取与校验（H2 WP-0.5）
 
 用法：
@@ -25,6 +25,13 @@ PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECTS_YAML = os.path.join(PROJECT, "projects.yaml")
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+
+# H3 WP-8 F2: 18 H1 projects must have fetch.ref + checksum.
+H1_REQUIRED_REF = {
+    "arch-quality", "openfoam", "brl-cad", "freecad", "elmerfem",
+    "moose", "dealii", "freefem", "mfem", "fenicsx", "kratos", "su2",
+    "precice", "eigen", "boost", "folly", "abseil", "range-v3",
+}
 
 
 def read(path):
@@ -134,7 +141,7 @@ def check_all(projects, checksums):
     ok_all = True
     for name, proj in projects.items():
         fetch = proj.get("fetch", {})
-        if fetch.get("method", "shallow") == "local":
+        if fetch.get("method", "shallow") == "local" or fetch.get("repo") == "local":
             continue
         repo = fetch.get("repo", "")
         ref = fetch.get("ref")
@@ -144,9 +151,17 @@ def check_all(projects, checksums):
             ok_all = False
             continue
         if not ref:
-            print(f"  [WARN] {name}: 缺 fetch.ref（无法固定 commit，可复现性弱）")
+            if name in H1_REQUIRED_REF:
+                print(f"  [FAIL] {name}: 缺少 fetch.ref（H1 强制项）")
+                ok_all = False
+            else:
+                print(f"  [WARN] {name}: 缺少 fetch.ref（无法固定 commit，可复现性弱）")
         if not checksum:
-            print(f"  [WARN] {name}: 缺 checksums 校验和（git_ref:{repo}）")
+            if name in H1_REQUIRED_REF:
+                print(f"  [FAIL] {name}: 缺少 checksums 校验和（git_ref:{repo}）")
+                ok_all = False
+            else:
+                print(f"  [WARN] {name}: 缺少 checksums 校验和（git_ref:{repo}）")
         else:
             print(f"  [OK] {name}: repo={repo} ref={ref or 'HEAD'} checksum={checksum[:12]}")
     return ok_all

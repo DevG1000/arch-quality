@@ -352,6 +352,7 @@ score = min(score + fmi_bonus, 100)
 | MPR-008 | 跨模块依赖关系 | **ERROR** | MEDIUM | 模块间依赖图中存在循环依赖 | 否 | §5.8 | §3.2 |
 | MPR-009 | 接口版本管理 | **WARNING** | MEDIUM | 接口变更未使用版本号/废弃标注 | 否 | §5.9 | §3.3 |
 | MPR-010 | 跨场数据传递标准化 | **WARNING** | MEDIUM | 缺乏统一 Field/Data 数据结构 | 是 | §5.10 | §4.1 |
+| MPR-011 | 跨场时域同步规范 | **WARNING** | MEDIUM | 多场共存且无同步/对齐信号 | candidate | §5.11 | §2.4 |
 | MPR-012 | 数据格式转换统一性 | **INFO** | LOW | 数据格式转换逻辑散落各处 | 否 | §5.12 | §4.3 |
 
 ### 规则详细描述
@@ -494,6 +495,12 @@ score = min(score + fmi_bonus, 100)
   2. 检测不同物理场间是否使用相同数据结构进行交换
   3. 若使用自定义非标准化数据结构，触发告警
 - **置信度说明**：基类使用情况可检测，但自定义结构的识别力不完全，置信度为**中**。
+
+#### MPR-011：跨场时域同步规范
+
+- 多物理场共存且有不同时间步/时间循环时，应有时域同步规范。
+- 缺少 `synchronize`/`alignTime`/`interpolateInTime`/`couplingIteration`/`subCycle`/`precice` 等信号时输出 candidate WARNING。
+- 外部配置/调度器驱动的同步无法静态保证，需人工确认。
 
 #### MPR-012：数据格式转换统一性
 

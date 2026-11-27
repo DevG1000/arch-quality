@@ -27,6 +27,7 @@ from arch_quality.arch_core import (
     ALL_ENGINES, ENHANCEMENT_ENGINES,
 )
 from arch_quality.arch_report import ComprehensiveReport
+from arch_quality.arch_report_generator import ReportGenerator
 
 
 def _write_tree(root, files: dict):
@@ -178,7 +179,7 @@ class TestEngineResolution(unittest.TestCase):
         self.assertEqual(
             set(resolve_enabled_engines(None, None, ["multilang", "solver-physics"])),
             {"standard", "template", "numerical", "geometry-consistency",
-             "anti-corruption", "hpc"})
+             "anti-corruption", "hpc", "fossil"})
 
     def test_profile_precedence_over_enable(self):
         # profile 声明优先于 enable_engines
@@ -254,7 +255,7 @@ class TestComprehensiveReportProfile(unittest.TestCase):
             profile = {"profile": "standard", "enabled_engines": ["standard"]}
             data = ComprehensiveReport(tmp, profile=profile).generate()
             self.assertTrue(data["profile"]["subset_scoring"])
-            self.assertEqual(len(data["profile"]["skipped_engines"]), 7)
+            self.assertEqual(len(data["profile"]["skipped_engines"]), 8)
             self.assertNotIn("numerical_enhancement", data["dimensions"]["structural"])
         finally:
             shutil.rmtree(tmp)
@@ -395,6 +396,63 @@ class TestProfileCLI(unittest.TestCase):
             data = json.loads(out[json_start:out.rfind("}") + 1])
             self.assertEqual(data["profile"]["profile"], "numerical")
             self.assertIn("numerical", data["profile"]["enabled_engines"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_cli_profile_source_meta(self):
+        tmp = _make_numerical_project()
+        try:
+            result = self._run_cli(tmp, ("--profile", "numerical"))
+            out = result.stdout
+            data = json.loads(out[out.find("{"):out.rfind("}") + 1])
+            p = data["profile"]
+            self.assertEqual(p["config_source_display"], "<CLI --profile>")
+            self.assertEqual(p["config_source_kind"], "cli")
+            self.assertEqual(p["profile_source"], "cli")
+            self.assertFalse(p["cli_override"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_config_source_display_relative(self):
+        tmp = _make_numerical_project()
+        try:
+            _write_tree(tmp, {"arch-quality.yaml": "profile: standard\n"})
+            result = self._run_cli(tmp)
+            out = result.stdout
+            data = json.loads(out[out.find("{"):out.rfind("}") + 1])
+            p = data["profile"]
+            self.assertEqual(p["config_source_display"], "arch-quality.yaml")
+            self.assertEqual(p["config_source_kind"], "arch-quality.yaml")
+            self.assertEqual(p["profile_source"], "arch-quality.yaml")
+            self.assertFalse(p["cli_override"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_cli_override_marks_provenance(self):
+        tmp = _make_numerical_project()
+        try:
+            _write_tree(tmp, {"arch-quality.yaml": "profile: standard\n"})
+            result = self._run_cli(tmp, ("--profile", "numerical"))
+            out = result.stdout
+            data = json.loads(out[out.find("{"):out.rfind("}") + 1])
+            p = data["profile"]
+            self.assertEqual(p["profile"], "numerical")
+            self.assertEqual(p["config_source_display"], "arch-quality.yaml")
+            self.assertEqual(p["profile_source"], "cli")
+            self.assertTrue(p["cli_override"])
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_markdown_shows_profile_source_without_absolute_path(self):
+        tmp = _make_numerical_project()
+        try:
+            _write_tree(tmp, {"arch-quality.yaml": "profile: standard\n"})
+            profile = load_profile_config(tmp)
+            data = ComprehensiveReport(tmp, profile=profile).generate()
+            md = ReportGenerator(tmp, data, []).generate()
+            self.assertIn("Profile 配置来源", md)
+            self.assertIn("arch-quality.yaml", md)
+            self.assertNotIn(profile["config_source"], md)
         finally:
             shutil.rmtree(tmp)
 

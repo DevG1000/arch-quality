@@ -40,6 +40,38 @@ DEXCH_SIGNAL_RE = re.compile(
     r"\b(STEPControl_|IGESControl_|IFC|IFSelect_|AP203|AP214|AP242|OCC_VERSION)\w*",
     re.MULTILINE)
 
+# E1: scientific kernels (PETSc / deal.II / VTK)
+SCI_KERNEL_SIGNAL_RE = re.compile(
+    r"\b(Petsc[A-Z]\w*|KSP[A-Z]\w*|SNES[A-Z]\w*|TS[A-Z]\w*|DM[A-Z]\w*|"
+    r"VecCreate|MatSetValues|KSPSolve|SNESSolve|"
+    r"dealii::|Triangulation\s*<|DoFHandler\s*<|FiniteElement\s*<|FEValues\s*<|"
+    r"vtk[A-Z]\w*|vtkSmartPointer|vtkNew)\b",
+    re.MULTILINE)
+SCI_RAW_USE_RE = re.compile(
+    r"\b(Petsc[A-Z]\w*|Vec[A-Z]\w*|Mat[A-Z]\w*|KSP[A-Z]\w*|SNES[A-Z]\w*|"
+    r"TS[A-Z]\w*|DM[A-Z]\w*|dealii::\w+|Triangulation\s*<|DoFHandler\s*<|"
+    r"FiniteElement\s*<|FEValues\s*<|vtk[A-Z]\w*)\b",
+    re.MULTILINE)
+SCI_PUBLIC_SIG_LEAK_RE = re.compile(
+    r"^\s*(?:virtual\s+|inline\s+|explicit\s+|static\s+)*"
+    r"(?:Petsc[A-Z]\w*|KSP[A-Z]\w*|SNES[A-Z]\w*|TS[A-Z]\w*|DM[A-Z]\w*|"
+    r"dealii::\w+|Triangulation\s*<|DoFHandler\s*<|FiniteElement\s*<|"
+    r"vtk[A-Z]\w*)\s+[A-Za-z_]\w*\s*\(",
+    re.MULTILINE)
+SCI_CORE_KERNEL_CLASS_RE = re.compile(
+    r"\b(PetscInitialize|PetscFinalize|KSPCreate|KSPSolve|SNESCreate|SNESSolve|"
+    r"TSCreate|TSStep|VecCreate|MatSetValues|"
+    r"dealii::Triangulation|dealii::DoFHandler|dealii::FiniteElement|dealii::FEValues|"
+    r"vtkPolyData|vtkUnstructuredGrid|vtkSmartPointer|vtkNew)\b")
+SCI_CALL_STMT_RE = re.compile(
+    r"\b(Petsc[A-Z]\w*|KSP[A-Z]\w*|SNES[A-Z]\w*|TS[A-Z]\w*|"
+    r"VecCreate|MatSetValues|KSPSolve|SNESSolve)\s*\([^;]*\)\s*;",
+    re.MULTILINE)
+SCI_ERROR_CHECK_RE = re.compile(
+    r"CHKERRQ|PetscCall|PetscErrorCode|AssertThrow|Assert\s*\(|ExcMessage")
+SCI_VERSION_GUARD_RE = re.compile(
+    r"#\s*if.*(?:PETSC_VERSION|DEAL_II_VERSION|VTK_VERSION|HDF5_VERSION)", re.MULTILINE)
+
 # ── 外部符号清单（对齐 Skill §6 / 指南 §7.1）──
 # 内核符号集（仅 ACL-001/004/005）
 KERNEL_SYMBOL_RE = re.compile(
@@ -199,7 +231,8 @@ def _detect_acl(root: str, index: FileIndex) -> bool:
             content = _strip_comments(read_text_smart(f["abs_path"]))
         except Exception:
             continue
-        if KERNEL_SIGNAL_RE.search(content) or DEXCH_SIGNAL_RE.search(content):
+        if (KERNEL_SIGNAL_RE.search(content) or DEXCH_SIGNAL_RE.search(content)
+                or SCI_KERNEL_SIGNAL_RE.search(content)):
             return True
     return False
 
@@ -217,6 +250,7 @@ class AntiCorruptionMetrics:
         self._acl_waiver = {}          # rel_path → reason（@acl_waiver，仅 ACL-001/012）
         self._invalid_waivers = []
         self._is_acl = False
+        self._science_dominant = False
         self._dims_cache = {}
         # 防腐边界目录白名单（可配置，默认识别常见目录名）
         self._wrapper_dirs = set(wrapper_dirs or WRAPPER_DIR_NAMES) | {
@@ -250,6 +284,8 @@ class AntiCorruptionMetrics:
             return str(abs_path).replace("\\", "/")
 
     def _scan_files(self):
+        sci_count = 0
+        geom_count = 0
         for f in self.index.files:
             if f["ext"] not in ALL_ACL_EXTS:
                 continue
@@ -272,7 +308,11 @@ class AntiCorruptionMetrics:
                 self._invalid_waivers.append(
                     {"file": rel, "annotation": "@acl_waiver",
                      "issue": "缺少 reason，豁免无效"})
-            self._all_contents[f["abs_path"]] = _strip_comments(raw)
+            clean = _strip_comments(raw)
+            self._all_contents[f["abs_path"]] = clean
+            sci_count += len(SCI_KERNEL_SIGNAL_RE.findall(clean))
+            geom_count += len(KERNEL_SIGNAL_RE.findall(clean))
+        self._science_dominant = sci_count > geom_count
 
     def _in_wrapper_dir(self, abs_path: str) -> bool:
         try:
@@ -420,6 +460,8 @@ class AntiCorruptionMetrics:
                 if self._in_wrapper_dir(abs_path):
                     continue
                 direct += len(RAW_KERNEL_USE_RE.findall(content))
+                if self._science_dominant:
+                    direct += len(SCI_RAW_USE_RE.findall(content))
             if direct == 0:
                 score += 40
             detail["direct_access"] = {"score": 40 if direct == 0 else 0,
@@ -436,6 +478,8 @@ class AntiCorruptionMetrics:
                 if abs_path.endswith((".h", ".hpp", ".hxx", ".hh")):
                     leak += len(PUBLIC_SIG_LEAK_RE.findall(content)) \
                         + len(TYPE_LEAK_RE.findall(content))
+                    if self._science_dominant:
+                        leak += len(SCI_PUBLIC_SIG_LEAK_RE.findall(content))
             if leak == 0:
                 score += 30
             detail["type_leak"] = {"score": 30 if leak == 0 else 0,
@@ -463,6 +507,15 @@ class AntiCorruptionMetrics:
                     if check_pat.search(scope_end):
                         continue
                     missing += 1
+            if self._science_dominant:
+                for abs_path, content in self._all_contents.items():
+                    if self._skip(abs_path, exclude_test=True):
+                        continue
+                    for m in SCI_CALL_STMT_RE.finditer(content):
+                        rest = content[m.end():]
+                        if SCI_ERROR_CHECK_RE.search(_scope_until_brace(rest)):
+                            continue
+                        missing += 1
             if missing == 0:
                 score += 30
             detail["error_handling"] = {"score": 30 if missing == 0 else 0,
@@ -488,6 +541,8 @@ class AntiCorruptionMetrics:
                 if self._skip(abs_path):
                     continue
                 core_used.update(CORE_KERNEL_CLASS_RE.findall(content))
+                if self._science_dominant:
+                    core_used.update(SCI_CORE_KERNEL_CLASS_RE.findall(content))
             wrapper_decl = set()
             for abs_path, content in self._all_contents.items():
                 if self._skip(abs_path):
@@ -495,6 +550,8 @@ class AntiCorruptionMetrics:
                 if not self._in_wrapper_dir(abs_path):
                     continue
                 wrapper_decl.update(CORE_KERNEL_DECL_RE.findall(content))
+                if self._science_dominant:
+                    wrapper_decl.update(SCI_CORE_KERNEL_CLASS_RE.findall(content))
             uncovered = sorted(core_used - wrapper_decl)
             coverage = round(len(wrapper_decl & core_used) / max(1, len(core_used)), 3)
             if coverage >= 0.6:
@@ -507,6 +564,8 @@ class AntiCorruptionMetrics:
 
             # ACL-003：内核版本守卫存在性
             guard_cnt = self._count(GENERIC_VERSION_GUARD_RE)
+            if self._science_dominant:
+                guard_cnt += self._count(SCI_VERSION_GUARD_RE)
             if guard_cnt > 0:
                 score += 50
             detail["version_guard"] = {"score": 50 if guard_cnt > 0 else 0,

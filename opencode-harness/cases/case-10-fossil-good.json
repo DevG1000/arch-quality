@@ -1,0 +1,21 @@
+{
+  "id": "case-10-fossil-good",
+  "name": "化石代码评估-遗留 Fortran 项目",
+  "description": "验证 agent 对 legacy_fortran_fossil 识别 FOS-001 并给出维度分",
+  "project_dir": "D:\\opensource\\arch-quality\\tests\\mutation\\projects\\legacy_fortran_fossil",
+  "prompt": "请对 D:\\opensource\\arch-quality\\tests\\mutation\\projects\\legacy_fortran_fossil 直接运行化石代码评估：python -m arch_quality.arch_metrics_fossil_code D:\\opensource\\arch-quality\\tests\\mutation\\projects\\legacy_fortran_fossil --json，然后报告 is_fossil、overall 和四个子维（legacy/dead/clone/debt）。不要阅读源码实现，直接运行命令并报告结果。",
+  "expect": {
+    "is_fossil": true,
+    "overall_range": [
+      80,
+      100
+    ],
+    "dimension_fields": [
+      "legacy",
+      "dead",
+      "clone",
+      "debt"
+    ],
+    "max_retries": 2
+  }
+}

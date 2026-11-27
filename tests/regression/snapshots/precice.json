@@ -1,0 +1,44 @@
+{
+  "project": "preCICE",
+  "snapshot_date": "2026-11-25",
+  "root_path": "D:\\opensource\\preCICE",
+  "multilang_overall": 72.5,
+  "is_single_language": false,
+  "languages": [
+    "python",
+    "cpp",
+    "c",
+    "fortran"
+  ],
+  "file_count": 765,
+  "files_by_lang": {
+    "cpp": 754,
+    "python": 8,
+    "c": 2,
+    "fortran": 1
+  },
+  "dimensions": {
+    "coupling_intensity": 100.0,
+    "impact_radius": 100.0,
+    "call_depth": 100,
+    "binding_consistency": 50.0,
+    "script_boundary": 0,
+    "cross_lang_cycles": 100
+  },
+  "mlr_violations": {
+    "MLR-010|LOW": 4
+  },
+  "fortran_mapping": {
+    "module_map_size": 0,
+    "subroutine_map_size": 0,
+    "use_total": 0,
+    "use_resolved": 0,
+    "use_hit_rate": 1.0,
+    "call_total": 0,
+    "call_resolved": 0,
+    "call_hit_rate": 1.0
+  },
+  "required_mlr_rules": [
+    "MLR-010"
+  ]
+}

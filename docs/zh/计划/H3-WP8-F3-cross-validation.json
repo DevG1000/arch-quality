@@ -1,0 +1,84 @@
+{
+  "generated_at": "2026-11-25 16:38:25",
+  "criterion": "LOOCV in-range; 7/9 rate threshold; nine_fold requires n>=9",
+  "engines": {
+    "standard": {
+      "engine": "standard",
+      "fold_count": 9,
+      "passed": 7,
+      "rate": 0.7778,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "PASS",
+      "status": "PASS"
+    },
+    "multilang": {
+      "engine": "multilang",
+      "fold_count": 9,
+      "passed": 7,
+      "rate": 0.7778,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "PASS",
+      "status": "PASS"
+    },
+    "numerical": {
+      "engine": "numerical",
+      "fold_count": 9,
+      "passed": 8,
+      "rate": 0.8889,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "WARNING",
+      "status": "PASS"
+    },
+    "solver_physics": {
+      "engine": "solver_physics",
+      "fold_count": 9,
+      "passed": 7,
+      "rate": 0.7778,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "WARNING",
+      "status": "PASS"
+    },
+    "geometry_consistency": {
+      "engine": "geometry_consistency",
+      "fold_count": 9,
+      "passed": 8,
+      "rate": 0.8889,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "PASS",
+      "status": "PASS"
+    },
+    "anti_corruption": {
+      "engine": "anti_corruption",
+      "fold_count": 9,
+      "passed": 7,
+      "rate": 0.7778,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "PASS",
+      "status": "PASS"
+    },
+    "hpc": {
+      "engine": "hpc",
+      "fold_count": 9,
+      "passed": 8,
+      "rate": 0.8889,
+      "rate_pass_7_of_9": true,
+      "nine_fold": true,
+      "source_verdict": "PASS",
+      "status": "PASS"
+    }
+  },
+  "pending_engines": [],
+  "summary": {
+    "engines_with_data": 7,
+    "rate_pass_count": 7,
+    "nine_fold_pass_count": 7,
+    "kpi_status": "PASS",
+    "note": "all seven engines are 9-fold"
+  }
+}

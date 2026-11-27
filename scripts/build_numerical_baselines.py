@@ -1,4 +1,4 @@
-"""
+﻿"""
 数值精度评估外部验证基线构建脚本
 
 对本地可用的开源项目运行工具，保存 JSON 结果作为基线。
@@ -14,6 +14,10 @@
       D:\opensource\FreeFEM-sources
       D:\opensource\mfem
       D:\opensource\dolfinx
+      D:\opensource\code_aster
+      D:\OPENSOURCE\ElmerFEM
+      D:\opensource\Kratos
+      D:\opensource\SU2
 """
 
 import sys, os, json, time, subprocess
@@ -28,6 +32,10 @@ PROJECTS = {
     'FreeFEM': r'D:\opensource\FreeFEM-sources',
     'MFEM': r'D:\opensource\mfem',
     'FEniCSx': r'D:\opensource\dolfinx',
+    'Code_Aster': r'D:\opensource\code_aster',
+    'ElmerFEM': r'D:\OPENSOURCE\ElmerFEM',
+    'Kratos': r'D:\opensource\Kratos',
+    'SU2': r'D:\opensource\SU2',
 }
 
 SNAPSHOT_DIR = os.path.join(PROJECT_ROOT, 'tests', 'regression', 'snapshots', 'numerical_baselines')

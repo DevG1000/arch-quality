@@ -1,0 +1,22 @@
+{
+  "snapshot_date": "2026-11-25",
+  "root_path": "D:\\opensource\\mfem",
+  "standard_overall": 38.74,
+  "dimensions": {
+    "structural": 36.15,
+    "design": 65.54,
+    "documentation": 29.0,
+    "evolution": 22.86
+  },
+  "file_count": 1085,
+  "sar_violations": {
+    "SAR-001": 1,
+    "SAR-002": 1,
+    "SAR-004": 1,
+    "SAR-005": 1,
+    "SAR-006": 116,
+    "SAR-007": 12,
+    "SAR-010": 1,
+    "SAR-012": 1
+  }
+}

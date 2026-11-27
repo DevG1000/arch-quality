@@ -97,7 +97,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^(SAR|MLR|TPL|NVR|MPR|GCS|ACL|HPC)-[0-9]{3}$"
+            "pattern": "^(SAR|MLR|TPL|NVR|MPR|GCS|ACL|HPC|FOS)-[0-9]{3}$"
           },
           "name": {
             "type": "string"
