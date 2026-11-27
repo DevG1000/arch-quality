@@ -353,6 +353,30 @@ projects:
       snapshot: []
     note: HPC healthy sample; release tarball (no .git), ref v2512
 
+  petsc:
+    desc: PETSc 科学计算框架（E1 科学内核 A 类样本）
+    fetch:
+      repo: https://gitlab.com/petsc/petsc.git
+      method: shallow
+      dir: ""
+      ref: c8d5ad6b37827809d4a5f144342c9f99b804723e
+    eval:
+      engine: [acl]
+      snapshot: []
+    note: H3 WP-8 E1；KSP/SNES/TS/PetscErrorCode 信号
+
+  vtk:
+    desc: VTK 科学可视化库（E1 科学内核 A 类样本）
+    fetch:
+      repo: https://gitlab.kitware.com/vtk/vtk.git
+      method: shallow
+      dir: ""
+      ref: 1f261ff9006ad5886e40a103d7f6c97f7854fa59
+    eval:
+      engine: [acl]
+      snapshot: []
+    note: H3 WP-8 E1；vtkSmartPointer/vtkPolyData 信号
+
 checksums:
   generated_by: scripts/fetch_project.py (H2 WP-0.5)
   format: "git_ref:<repo>:<commit_sha>"
@@ -377,3 +401,5 @@ checksums:
   git_ref:https://github.com/ericniebler/range-v3.git: 108f93c279c8f9cec175dac361084983d0176e99
   git_ref:https://gitlab.com/codeaster/src.git: 7cb48262af47548277f4824ea47f1cc90848f057
   git_ref:https://gitlab.com/kicad/code/kicad.git: 3b5ff541a1f8685c1bdf6558d2b5dc98a877c967
+  git_ref:https://gitlab.com/petsc/petsc.git: c8d5ad6b37827809d4a5f144342c9f99b804723e
+  git_ref:https://gitlab.kitware.com/vtk/vtk.git: 1f261ff9006ad5886e40a103d7f6c97f7854fa59

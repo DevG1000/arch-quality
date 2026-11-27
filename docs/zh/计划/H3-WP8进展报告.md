@@ -8,7 +8,7 @@
 
 | 项 | 状态 | 说明 |
 |:--|:--|:--|
-| E1 ACL 科学内核扩展 | ⏳ | PETSc/deal.II/VTK 扩展后续 |
+| E1 ACL 科学内核扩展 | ✅ | PETSc/deal.II/VTK 信号 + A 类样本 |
 | F1 元模型 §5.2 参考案例回填 | ✅ | 6 维 × 9 样本，校验器 PASS |
 | **F2 18 项目 fetch.ref + 严格校验** | ✅ | 本次完成 |
 | F3 全维度 9 折 LOOCV | ⏳ | 现有 numerical/solver/GCS/ACL/HPC 脚本，需统一汇总 |
@@ -133,9 +133,51 @@ python scripts/validate_reference_cases.py → PASS
 tests/test_reference_cases.py → 2 passed
 ```
 
+## 3.4 E1 实施内容
+
+ACL 引擎已扩展科学内核信号：
+
+- PETSc：`Petsc*`、`KSP*`、`SNES*`、`TS*`、`VecCreate`、`MatSetValues`；
+- deal.II：`dealii::`、`Triangulation<`、`DoFHandler<`、`FEValues<`；
+- VTK：`vtk[A-Z]*`、`vtkSmartPointer`、`vtkPolyData`、`vtkUnstructuredGrid`。
+
+接入规则：
+
+- ACL-001 直连内核；
+- ACL-002 Wrapper 覆盖；
+- ACL-003 版本守卫；
+- ACL-004 类型泄漏；
+- ACL-005 失败检查（PETSc `CHKERRQ/PetscCall`、deal.II `AssertThrow`）。
+
+为避免几何项目里的少量 VTK 引用改变既有基线，科学内核信号仅在**科学内核主导**时计入 ACL 计数。
+
+新增 A 类样本：
+
+- PETSc（固定 ref）
+- deal.II（已有固定 ref）
+- VTK（固定 ref）
+
+新增合成样本：
+
+- `sci_kernel_direct`：PETSc + VTK 直连，overall 44.0；
+- `sci_kernel_wrapped`：wrapper + 版本守卫 + 错误检查，overall 85.0。
+
+验证：
+
+```text
+tests/test_anti_corruption_science.py     3 passed
+ACL 回归                                 12 passed
+ACL 核心/集成 + doc lint                  57 passed
+```
+
+文档：
+
+- `科学内核A类样本.md`
+- 指南/设计依据/工具设计作用域已同步。
+
 ## 4. 下一步
 
 1. F4：补 ACL Agent Harness cases（good/flawed/non-ACL）与 `acl_dimension_fields`；
 2. F3：✅ 完成；7 引擎全部 9 折 PASS；
 3. F1：✅ 完成；元模型 §5.2 6 维 × 9 样本已回填；
-4. E1：ACL 科学内核扩展。
+4. E1：✅ 完成。
