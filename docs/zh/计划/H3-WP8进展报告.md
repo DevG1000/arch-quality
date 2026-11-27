@@ -9,7 +9,7 @@
 | 项 | 状态 | 说明 |
 |:--|:--|:--|
 | E1 ACL 科学内核扩展 | ⏳ | PETSc/deal.II/VTK 扩展后续 |
-| F1 元模型 §5.2 参考案例回填 | ⏳ | 9 案例结构回填后续 |
+| F1 元模型 §5.2 参考案例回填 | ✅ | 6 维 × 9 样本，校验器 PASS |
 | **F2 18 项目 fetch.ref + 严格校验** | ✅ | 本次完成 |
 | F3 全维度 9 折 LOOCV | ⏳ | 现有 numerical/solver/GCS/ACL/HPC 脚本，需统一汇总 |
 | F4 Agent Harness GCS/ACL 端到端 | ⏳ | GCS 已有 case 4~6；ACL cases 待补 |
@@ -106,9 +106,36 @@ python scripts/run_agent_harness.py --case case-13-acl-good/14/15
 tests/test_cross_validate_all.py → 5 passed
 ```
 
+## 3.3 F1 实施内容
+
+已将 4 个维度回填到 `WP7案例清单.json` 与元模型 §5.2：
+
+| 维度 | 样本数 | 标签 |
+|:--|--:|:--|
+| standard | 9 | 5 healthy + 4 unhealthy（相对排名预标注） |
+| multilang | 9 | 5 + 4（相对排名预标注） |
+| numerical | 9 | 5 + 4（相对排名预标注） |
+| solver_physics | 9 | 5 + 4（相对排名预标注） |
+| gcs | 9 | 专家标注 |
+| acl | 9 | 专家标注 |
+
+新增：
+
+- `scripts/validate_reference_cases.py`：强制 6 维 × 9 样本、5+4 标签分布；
+- `tests/test_reference_cases.py`：2 tests；
+- 元模型 §5.2 新增 standard/multilang/numerical/solver 四张 9 样本表；
+- 相对排名标签明确标注 `expert_confirmed=false`，待专家确认。
+
+验证：
+
+```text
+python scripts/validate_reference_cases.py → PASS
+tests/test_reference_cases.py → 2 passed
+```
+
 ## 4. 下一步
 
 1. F4：补 ACL Agent Harness cases（good/flawed/non-ACL）与 `acl_dimension_fields`；
 2. F3：✅ 完成；7 引擎全部 9 折 PASS；
-3. F1：按元模型 §5.2 回填标准/多语言/数值/物理场 9 案例；
+3. F1：✅ 完成；元模型 §5.2 6 维 × 9 样本已回填；
 4. E1：ACL 科学内核扩展。

@@ -1,6 +1,6 @@
 ﻿{
   "assessed_date": "2026-10-15",
-  "note": "WP-7 语料：每维 9 = 5 健康 + 4 不健康；健康标签为专家人工标注（AI 专家判断 + 评分佐证）",
+  "note": "WP-7 语料：每维 9 = 5 健康 + 4 不健康；GCS/ACL 为专家标注，standard/multilang/numerical/solver 为相对排名预标注，待专家确认。",
   "gcs": {
     "engine": "geometry_consistency",
     "samples": {
@@ -116,6 +116,254 @@
         "overall": 35.0,
         "health": "unhealthy",
         "type": "synthetic_bad"
+      }
+    }
+  },
+  "standard": {
+    "engine": "standard",
+    "label_method": "relative_score_rank_top5_healthy_bottom4_unhealthy",
+    "expert_confirmed": false,
+    "score_source": "cross_validation_standard.json",
+    "samples": {
+      "arch-quality": {
+        "path": "D:\\opensource\\arch-quality",
+        "overall": 54.78,
+        "health": "healthy",
+        "type": "self"
+      },
+      "precice": {
+        "path": "D:\\opensource\\preCICE",
+        "overall": 51.66,
+        "health": "healthy",
+        "type": "coupling"
+      },
+      "kratos": {
+        "path": "D:\\opensource\\Kratos",
+        "overall": 45.53,
+        "health": "healthy",
+        "type": "multiphysics"
+      },
+      "openfoam": {
+        "path": "D:\\OPENSOURCE\\OpenFOAM-v2512\\applications",
+        "overall": 41.55,
+        "health": "healthy",
+        "type": "cfd"
+      },
+      "su2": {
+        "path": "D:\\opensource\\SU2",
+        "overall": 39.97,
+        "health": "healthy",
+        "type": "cfd"
+      },
+      "mfem": {
+        "path": "D:\\opensource\\mfem",
+        "overall": 38.74,
+        "health": "unhealthy",
+        "type": "fem_lib"
+      },
+      "elmerfem": {
+        "path": "D:\\OPENSOURCE\\ElmerFEM",
+        "overall": 38.61,
+        "health": "unhealthy",
+        "type": "fem_suite"
+      },
+      "brl-cad": {
+        "path": "D:\\OPENSOURCE\\BRL-CAD",
+        "overall": 37.5,
+        "health": "unhealthy",
+        "type": "cad"
+      },
+      "freecad-cam": {
+        "path": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\CAM",
+        "overall": 34.96,
+        "health": "unhealthy",
+        "type": "cad"
+      }
+    }
+  },
+  "multilang": {
+    "engine": "multilang",
+    "label_method": "relative_score_rank_top5_healthy_bottom4_unhealthy",
+    "expert_confirmed": false,
+    "score_source": "cross_validation_multilang.json",
+    "samples": {
+      "mfem": {
+        "path": "D:\\opensource\\mfem",
+        "overall": 82.5,
+        "health": "healthy",
+        "type": "fem_lib"
+      },
+      "brl-cad": {
+        "path": "D:\\OPENSOURCE\\BRL-CAD",
+        "overall": 82.2,
+        "health": "healthy",
+        "type": "cad"
+      },
+      "openfoam": {
+        "path": "D:\\OPENSOURCE\\OpenFOAM-v2512",
+        "overall": 79.5,
+        "health": "healthy",
+        "type": "cfd"
+      },
+      "precice": {
+        "path": "D:\\opensource\\preCICE",
+        "overall": 72.5,
+        "health": "healthy",
+        "type": "coupling"
+      },
+      "elmerfem": {
+        "path": "D:\\OPENSOURCE\\ElmerFEM",
+        "overall": 67.5,
+        "health": "healthy",
+        "type": "fem_suite"
+      },
+      "su2": {
+        "path": "D:\\opensource\\SU2",
+        "overall": 65.36,
+        "health": "unhealthy",
+        "type": "cfd"
+      },
+      "freecad-cam": {
+        "path": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\CAM",
+        "overall": 65.34,
+        "health": "unhealthy",
+        "type": "cad"
+      },
+      "freecad-fem": {
+        "path": "D:\\OPENSOURCE\\FreeCAD\\src\\Mod\\Fem",
+        "overall": 62.13,
+        "health": "unhealthy",
+        "type": "cad"
+      },
+      "kratos": {
+        "path": "D:\\opensource\\Kratos",
+        "overall": 61.84,
+        "health": "unhealthy",
+        "type": "multiphysics"
+      }
+    }
+  },
+  "numerical": {
+    "engine": "numerical",
+    "label_method": "relative_score_rank_top5_healthy_bottom4_unhealthy",
+    "expert_confirmed": false,
+    "score_source": "cross_validation_numerical.json",
+    "samples": {
+      "MOOSE": {
+        "path": "D:\\opensource\\MOOSE",
+        "overall": 96.0,
+        "health": "healthy",
+        "type": "framework"
+      },
+      "deal.II": {
+        "path": "D:\\opensource\\dealii",
+        "overall": 96.0,
+        "health": "healthy",
+        "type": "fem_lib"
+      },
+      "FreeFEM": {
+        "path": "D:\\opensource\\FreeFEM-sources",
+        "overall": 96.0,
+        "health": "healthy",
+        "type": "solver"
+      },
+      "MFEM": {
+        "path": "D:\\opensource\\mfem",
+        "overall": 96.0,
+        "health": "healthy",
+        "type": "fem_lib"
+      },
+      "SU2": {
+        "path": "D:\\opensource\\SU2",
+        "overall": 91.5,
+        "health": "healthy",
+        "type": "cfd"
+      },
+      "Code_Aster": {
+        "path": "D:\\opensource\\code_aster",
+        "overall": 91.0,
+        "health": "unhealthy",
+        "type": "fem"
+      },
+      "ElmerFEM": {
+        "path": "D:\\OPENSOURCE\\ElmerFEM",
+        "overall": 91.0,
+        "health": "unhealthy",
+        "type": "fem_suite"
+      },
+      "Kratos": {
+        "path": "D:\\opensource\\Kratos",
+        "overall": 91.0,
+        "health": "unhealthy",
+        "type": "multiphysics"
+      },
+      "FEniCSx": {
+        "path": "D:\\opensource\\dolfinx",
+        "overall": 46.33,
+        "health": "unhealthy",
+        "type": "solver"
+      }
+    }
+  },
+  "solver_physics": {
+    "engine": "solver_physics",
+    "label_method": "relative_score_rank_top5_healthy_bottom4_unhealthy",
+    "expert_confirmed": false,
+    "score_source": "cross_validation_solver_physics.json",
+    "samples": {
+      "sp_moose": {
+        "path": "D:\\opensource\\MOOSE",
+        "overall": 70.5,
+        "health": "healthy",
+        "type": "framework_mp"
+      },
+      "sp_kratos": {
+        "path": "D:\\opensource\\Kratos",
+        "overall": 69.25,
+        "health": "healthy",
+        "type": "framework_mp"
+      },
+      "sp_su2": {
+        "path": "D:\\opensource\\SU2",
+        "overall": 64.0,
+        "health": "healthy",
+        "type": "solver_mp"
+      },
+      "sp_freefem": {
+        "path": "D:\\opensource\\FreeFEM-sources",
+        "overall": 58.75,
+        "health": "healthy",
+        "type": "solver_mp"
+      },
+      "sp_mfem": {
+        "path": "D:\\opensource\\mfem",
+        "overall": 57.0,
+        "health": "healthy",
+        "type": "library_mp"
+      },
+      "sp_elmerfem": {
+        "path": "D:\\OPENSOURCE\\ElmerFEM",
+        "overall": 56.0,
+        "health": "unhealthy",
+        "type": "framework_mp"
+      },
+      "sp_dealii": {
+        "path": "D:\\opensource\\dealii",
+        "overall": 54.0,
+        "health": "unhealthy",
+        "type": "library_mp"
+      },
+      "sp_precice": {
+        "path": "D:\\opensource\\preCICE",
+        "overall": 50.75,
+        "health": "unhealthy",
+        "type": "coupling_lib"
+      },
+      "sp_openfoam": {
+        "path": "D:\\OPENSOURCE\\OpenFOAM-v2512",
+        "overall": 41.0,
+        "health": "unhealthy",
+        "type": "framework_mp"
       }
     }
   }
